@@ -12,6 +12,7 @@ OPENOCD_BIN = $(ROOT)/openocd/bin/openocd
 
 
 ifeq ($(BOARD), discovery_stm32f0)
+	FWCFG  += -DSTM32F072xB
 	HALTYPE = STM32F0
 	LD_FILE ?= stm32f072xb.ld
 	OPENOCD_CFG_FILE = board/stm32f0discovery.cfg
@@ -23,14 +24,12 @@ SRCDIR    = src
 
 ifeq ($(HALTYPE), STM32F0)
 MCU       = cortex-m0
-STLIBROOT = libs/STM32F0xx_StdPeriph_Driver
+STLIBROOT = libs/STM32CubeF0
 
-INC       = -I$(STLIBROOT)/Libraries/CMSIS/Include
-INC      += -I$(STLIBROOT)/Libraries/CMSIS/Device/ST/STM32F0xx/Include
-INC      += -I$(STLIBROOT)/inc
-STLIBDIR  = $(STLIBROOT)/src
-
-CCOPTS   += -include $(HALDIR)/stm32f0xx_conf.h
+INC       = -I$(STLIBROOT)/Drivers/CMSIS/Include
+INC      += -I$(STLIBROOT)/Drivers/CMSIS/Device/ST/STM32F0xx/Include/
+INC      += -I$(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Inc/
+STLIBDIR  = $(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Src/
 endif
 
 SRCS = $(wildcard $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c)
@@ -47,7 +46,7 @@ BIN   = $(TOOLCHAIN)/bin/arm-none-eabi-objcopy -O binary
 
 DEBUG = gdb
 
-CCOPTS  += -mcpu=$(MCU) -mthumb -c -std=gnu99 -g$(DEBUG)
+CCOPTS   = -mcpu=$(MCU) -mthumb -c -std=gnu99 -g$(DEBUG)
 CCOPTS  += -fno-common -fmessage-length=0 -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -Os -Wall -Wshadow -Wstrict-aliasing -Wstrict-overflow -Wno-missing-field-initializers
 ASOPTS   = -mcpu=$(MCU) -mthumb -g$(DEBUG)
 LNLIBS   =
@@ -59,7 +58,7 @@ vpath %.s $(SRCDIR) $(STLIBDIR) $(HALDIR)
 
 # Source files from ST Library if any
 ifneq ($(STLIBDIR), "")
-SRCS += $(wildcard $(STLIBDIR)/*.c)
+SRCS += $(filter-out $(wildcard $(STLIBDIR)/*_template.c), $(wildcard $(STLIBDIR)/*.c))
 endif
 
 OBJS = $(patsubst %, $(BUILDDIR)/%.o, $(notdir $(basename $(SRCS))))
