@@ -145,11 +145,11 @@ uint8_t GBuf[GBufS];
 void PScrn(void){
 	uint16_t Cnt;
 
-	GPIO_ResetBits(IOGPIO, CE);
+	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_RESET);
 	for(Cnt = 0; Cnt<((XPix*YPix)/8); Cnt++){
 		SB(GBuf[Cnt], Dat, 0);
 	}
-	GPIO_SetBits(IOGPIO, CE);
+	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_SET);
 }
 
 void ClrBuf(void){

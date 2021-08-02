@@ -13,24 +13,25 @@
 
 GPIO_InitTypeDef G;
 SPI_InitTypeDef S;
+SPI_HandleTypeDef hspi1;
 
 void SSD1306_InitSetup(void){
 	static uint8_t Init = 1;
 	if(Init == 1){
 		Init = 0;
-		RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
+		__HAL_RCC_GPIOA_CLK_ENABLE();
+		__HAL_RCC_SPI1_CLK_ENABLE();
 
-		G.GPIO_Pin = DC | CE | RS;
-		G.GPIO_Mode = GPIO_Mode_OUT;
-		G.GPIO_OType = GPIO_OType_PP;
-		G.GPIO_PuPd = GPIO_PuPd_UP;
-		G.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_Init(IOGPIO, &G);
+		G.Pin  = DC | CE | RS;
+		G.Mode  = GPIO_MODE_OUTPUT_PP;
+		G.Pull  = GPIO_PULLUP;
+		G.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(IOGPIO, &G);
 
-		G.GPIO_Pin = Clk | DIn;
-		G.GPIO_Mode = GPIO_Mode_AF;
-		GPIO_Init(IOGPIO, &G);
+		G.Pin = Clk | DIn;
+		G.Mode  = GPIO_MODE_AF_PP;
+		G.Alternate = GPIO_AF0_SPI1;
+		HAL_GPIO_Init(IOGPIO, &G);
 
 		/* Screen power is taken directly from supply!
 		G.GPIO_Pin = VCC;
@@ -39,30 +40,41 @@ void SSD1306_InitSetup(void){
 		GPIO_Init(IOGPIO, &G);
 		*/
 
-		GPIO_PinAFConfig(IOGPIO, ClkPS, GPIO_AF_0);
-		GPIO_PinAFConfig(IOGPIO, DInPS, GPIO_AF_0);
+		hspi1.Instance               = SPI1;
+		hspi1.Init.Mode              = SPI_MODE_MASTER;
+		hspi1.Init.Direction         = SPI_DIRECTION_1LINE;
+		hspi1.Init.DataSize          = SPI_DATASIZE_8BIT;
+		hspi1.Init.CLKPolarity       = SPI_POLARITY_LOW;
+		hspi1.Init.CLKPhase          = SPI_PHASE_1EDGE;
+		hspi1.Init.NSS               = SPI_NSS_SOFT;
+		hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+		hspi1.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+		hspi1.Init.TIMode            = SPI_TIMODE_DISABLED;
+		hspi1.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
+		hspi1.Init.CRCPolynomial     = 7;
+		HAL_SPI_Init(&hspi1);
 
-		S.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
-		S.SPI_CPHA = SPI_CPHA_1Edge;
-		S.SPI_CPOL = SPI_CPOL_Low;
-		S.SPI_DataSize = SPI_DataSize_8b;
-		S.SPI_Direction = SPI_Direction_1Line_Tx;
-		S.SPI_FirstBit = SPI_FirstBit_MSB;
-		S.SPI_Mode = SPI_Mode_Master;
-		S.SPI_NSS = SPI_NSS_Soft;
-		SPI_Init(SPI1, &S);
-		SPI_Cmd(SPI1, ENABLE);
+		/* Enable 1LINE TX mode */
+		SPI_1LINE_TX(&hspi1);
+
+		__HAL_SPI_ENABLE(&hspi1);
 	}
 
 	//GPIO_ResetBits(IOGPIO, VCC);
 	Delay(100);
-	GPIO_ResetBits(IOGPIO, Clk|DIn|DC|CE|RS);
+	HAL_GPIO_WritePin(IOGPIO, Clk, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(IOGPIO, DIn, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_RESET);
 	Delay(1);
-	GPIO_SetBits(IOGPIO, RS);
+	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_SET);
 	Delay(1);
-	GPIO_ResetBits(IOGPIO, RS);
+	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_RESET);
 	Delay(1);
-	GPIO_SetBits(IOGPIO, RS|DC|CE);
+	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_SET);
 	Delay(10);
 
 	SB(SetMuxRatio, Reg, 1);
@@ -103,15 +115,16 @@ void SSD1306_InitSetup(void){
 }
 
 void SB(uint8_t Data, WMode CmdDat, uint8_t En){
-	if(CmdDat == Reg) GPIO_WriteBit(IOGPIO, DC, 0);
-	else GPIO_WriteBit(IOGPIO, DC, 1);
+	if(CmdDat == Reg) HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_RESET);
+	else HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_SET);
 
-	if(En) GPIO_ResetBits(IOGPIO, CE);
+	if(En) HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_RESET);
 
-	SPI_SendData8(SPI1, Data);
-	while(SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) == SET);
+	/* Bypass all the ckecks from HAL and write directly to SPI1 */
+	*(__IO uint8_t *) (&(hspi1.Instance)->DR) = Data;
+	while(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_BSY));
 
-	if(En) GPIO_SetBits(IOGPIO, CE);
+	if(En) HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_SET);
 }
 
 void LCDScreenMode(LCDScrnMode Mode){

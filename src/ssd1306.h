@@ -12,9 +12,8 @@
  * This code is provided AS IS and no warranty is included!
  */
 
-#include <stm32f0xx_gpio.h>
-#include <stm32f0xx_rcc.h>
-#include <stm32f0xx_spi.h>
+#include "stm32f0xx_hal.h"
+
 #include <string.h>
 #include <inttypes.h>
 
@@ -27,15 +26,12 @@
  * LCD Reset - PA6
  * LCD VCC (if used) - PA3
  */
-#define Clk GPIO_Pin_5
-#define DIn GPIO_Pin_7
-#define DC GPIO_Pin_1
-#define CE GPIO_Pin_2
-#define RS GPIO_Pin_6
-#define VCC GPIO_Pin_3
-
-#define ClkPS GPIO_PinSource5
-#define DInPS GPIO_PinSource7
+#define Clk GPIO_PIN_5
+#define DIn GPIO_PIN_7
+#define DC GPIO_PIN_1
+#define CE GPIO_PIN_2
+#define RS GPIO_PIN_6
+#define VCC GPIO_PIN_3
 
 #define IOGPIO GPIOA
 
