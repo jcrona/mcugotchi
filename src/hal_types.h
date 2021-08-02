@@ -1,5 +1,5 @@
 /*
- * TamaLIB - A hardware agnostic Tamagotchi P1 emulation library
+ * MCUGotchi - A Tamagotchi P1 emulator for microcontrollers
  *
  * Copyright (C) 2021 Jean-Christophe Rona <jc@rona.fr>
  *
