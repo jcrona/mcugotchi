@@ -63,6 +63,7 @@ void SSD1306_InitSetup(void){
 	GPIO_ResetBits(IOGPIO, RS);
 	Delay(1);
 	GPIO_SetBits(IOGPIO, RS|DC|CE);
+	Delay(10);
 
 	SB(SetMuxRatio, Reg, 1);
 	SB(0x3F, Reg, 1);
