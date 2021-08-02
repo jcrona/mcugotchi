@@ -394,8 +394,7 @@ int PChar(uint16_t Ch, int16_t X, int16_t Y, uint8_t Size, PixT Inv){
 }
 
 int PStr(const char* Str, int16_t X, int16_t Y, uint8_t Size, PixT Inv){
-	uint8_t SCnt, XO = X, StrL;
-	char CChar;
+	uint8_t SCnt, StrL;
 
 	StrL = strlen(Str);
 
@@ -436,7 +435,7 @@ int PNum(int Num, int16_t X, int16_t Y, uint8_t Pad, uint8_t Size, PixT Inv){
 		Num = -Num;
 		Sign = 1;
 	}
-	else if(Num>0){
+	else {
 		Sign = 0;
 	}
 
@@ -597,6 +596,7 @@ int PNumF(float Num, int16_t X, int16_t Y, uint8_t Prec, uint8_t Size, PixT Inv)
 		case 4:
 			FracI = (int32_t)(Frac*10000);
 			break;
+		default:
 		case 5:
 			FracI = (int32_t)(Frac*100000);
 			break;
