@@ -32,7 +32,7 @@ INC      += -I$(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Inc/
 STLIBDIR  = $(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Src/
 endif
 
-SRCS = $(wildcard $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c)
+SRCS = $(wildcard $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
 INC += -I$(HALDIR)
 
 TARGET = mcugotchi
@@ -52,7 +52,7 @@ ASOPTS   = -mcpu=$(MCU) -mthumb -g$(DEBUG)
 LNLIBS   =
 LNOPTS   = -mcpu=$(MCU) -mthumb -Wl,--gc-sections -Wl,-L$(HALDIR) -Wl,-Map=$(BUILDDIR)/$(TARGET).map -Wl,-T$(LD_FILE)
 
-vpath %.c $(SRCDIR) $(STLIBDIR) $(HALDIR)
+vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(HALDIR)
 vpath %.s $(SRCDIR) $(STLIBDIR) $(HALDIR)
 
 

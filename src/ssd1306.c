@@ -149,5 +149,5 @@ extern volatile uint32_t ticks;
 
 void Delay(uint32_t ms){
 	uint32_t ref = ticks;
-	while ((ticks - ref) < ms) __asm__ __volatile__ ("nop");
+	while ((ticks - ref) < (ms * 1000)) __asm__ __volatile__ ("nop");
 }
