@@ -346,13 +346,14 @@ static void board_init(void)
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
-	/* Left button (user button) */
-	g.Pin  = GPIO_PIN_3;
+	/* Left and right buttons */
+	g.Pin  = GPIO_PIN_2 | GPIO_PIN_3;
 	g.Mode  = GPIO_MODE_IT_RISING;
 	g.Pull  = GPIO_PULLDOWN;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(GPIOB, &g);
 
+	right_btn_handle.Line = EXTI_LINE_2;
 	left_btn_handle.Line = EXTI_LINE_3;
 
 	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
@@ -369,18 +370,6 @@ static void board_init(void)
 
 	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
 	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
-
-	/* Right button (user button) */
-	g.Pin  = GPIO_PIN_2;
-	g.Mode  = GPIO_MODE_IT_RISING;
-	g.Pull  = GPIO_PULLDOWN;
-	g.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(GPIOB, &g);
-
-	right_btn_handle.Line = EXTI_LINE_2;
-
-	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 
 	SSD1306_InitSetup();
 	LCDSleepMode(LCDWake);
