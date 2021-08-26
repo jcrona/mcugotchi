@@ -44,6 +44,10 @@
 
 #define PIXEL_SIZE					3
 #define ICON_SIZE					8
+#define ICON_STRIDE_X					24
+#define ICON_STRIDE_Y					56
+#define ICON_OFFSET_X					24
+#define ICON_OFFSET_Y					0
 #define LCD_OFFET_X					16
 #define LCD_OFFET_Y					8
 
@@ -238,7 +242,7 @@ static void hal_update_screen(void)
 	/* Icons */
 	for (i = 0; i < ICON_NUM; i++) {
 		if (icon_buffer[i]) {
-			draw_icon((i % 4) * 24 + 8 + 16, (i / 4) * 56 + 0 + 0, i, 1);
+			draw_icon((i % 4) * ICON_STRIDE_X + ICON_OFFSET_X, (i / 4) * ICON_STRIDE_Y + ICON_OFFSET_Y, i, 1);
 		}
 	}
 
