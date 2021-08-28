@@ -59,7 +59,7 @@ $ make flash
 
 ## License
 
-TamaTool is distributed under the GPLv2 license. See the LICENSE file for more information.
+MCUGotchi is distributed under the GPLv2 license. See the LICENSE file for more information.
 
 
 ## Hardware information
