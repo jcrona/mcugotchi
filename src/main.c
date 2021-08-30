@@ -41,8 +41,6 @@
 
 #include "rom.h"
 
-//#define INVERT_SCREEN
-
 #define PIXEL_SIZE					3
 #define ICON_SIZE					8
 #define ICON_STRIDE_X					24
@@ -62,6 +60,8 @@ static btn_state_t middle_state = BTN_STATE_RELEASED;
 static btn_state_t right_state = BTN_STATE_RELEASED;
 
 static timestamp_t right_ts = 0;
+
+static bool_t lcd_inverted = 0;
 
 static EXTI_HandleTypeDef left_btn_handle, middle_btn_handle, right_btn_handle;
 
@@ -296,6 +296,23 @@ static hal_t hal = {
 	.handler = &hal_handler,
 };
 
+static void menu_invert_screen(void)
+{
+	lcd_inverted = !lcd_inverted;
+	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
+}
+
+static menu_item_t menu_items[] = {
+	{"Inv. Screen", &menu_invert_screen, NULL},
+
+	{NULL, NULL, NULL},
+};
+
+static menu_t menu = {
+	.items = menu_items,
+	.parent = NULL,
+};
+
 void SysTick_Handler(void)
 {
 	ticks += 100;
@@ -398,14 +415,14 @@ static void board_init(void)
 
 	SSD1306_InitSetup();
 	LCDSleepMode(LCDWake);
-#ifdef INVERT_SCREEN
-	LCDScreenMode(LCDInv);
-#endif
+	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
 }
 
 int main(void)
 {
 	board_init();
+
+	menu_register(&menu);
 
 	tamalib_register_hal(&hal);
 
