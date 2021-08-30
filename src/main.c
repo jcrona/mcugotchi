@@ -35,6 +35,7 @@
 
 #include "ssd1306.h"
 #include "gfx.h"
+#include "menu.h"
 
 #include "lib/tamalib.h"
 
@@ -59,6 +60,8 @@ static bool_t icon_buffer[ICON_NUM] = {0};
 static btn_state_t left_state = BTN_STATE_RELEASED;
 static btn_state_t middle_state = BTN_STATE_RELEASED;
 static btn_state_t right_state = BTN_STATE_RELEASED;
+
+static timestamp_t right_ts = 0;
 
 static EXTI_HandleTypeDef left_btn_handle, middle_btn_handle, right_btn_handle;
 
@@ -227,6 +230,10 @@ static void draw_square(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t v)
 static void hal_update_screen(void)
 {
 	u8_t i, j;
+
+	if (menu_is_visible()) {
+		return;
+	}
 
 	ClrBuf();
 
@@ -420,12 +427,18 @@ void EXTI0_1_IRQHandler(void)
 		if (middle_state == BTN_STATE_RELEASED) {
 			middle_state = BTN_STATE_PRESSED;
 			config_int_line(&middle_btn_handle, EXTI_LINE_0, EXTI_GPIOA, EXTI_TRIGGER_FALLING);
+
+			if (menu_is_visible()) {
+				menu_enter();
+			}
 		} else {
 			middle_state = BTN_STATE_RELEASED;
 			config_int_line(&middle_btn_handle, EXTI_LINE_0, EXTI_GPIOA, EXTI_TRIGGER_RISING);
 		}
 
-		tamalib_set_button(BTN_MIDDLE, middle_state);
+		if (!menu_is_visible()) {
+			tamalib_set_button(BTN_MIDDLE, middle_state);
+		}
 	}
 }
 
@@ -438,12 +451,18 @@ void EXTI2_3_IRQHandler(void)
 		if (left_state == BTN_STATE_RELEASED) {
 			left_state = BTN_STATE_PRESSED;
 			config_int_line(&left_btn_handle, EXTI_LINE_3, EXTI_GPIOB, EXTI_TRIGGER_FALLING);
+
+			if (menu_is_visible()) {
+				menu_next();
+			}
 		} else {
 			left_state = BTN_STATE_RELEASED;
 			config_int_line(&left_btn_handle, EXTI_LINE_3, EXTI_GPIOB, EXTI_TRIGGER_RISING);
 		}
 
-		tamalib_set_button(BTN_LEFT, left_state);
+		if (!menu_is_visible()) {
+			tamalib_set_button(BTN_LEFT, left_state);
+		}
 	}
 
 	if (HAL_EXTI_GetPending(&right_btn_handle, EXTI_TRIGGER_RISING_FALLING)) {
@@ -451,13 +470,25 @@ void EXTI2_3_IRQHandler(void)
 		HAL_EXTI_ClearPending(&right_btn_handle, EXTI_TRIGGER_RISING_FALLING);
 
 		if (right_state == BTN_STATE_RELEASED) {
+			right_ts = ticks;
 			right_state = BTN_STATE_PRESSED;
 			config_int_line(&right_btn_handle, EXTI_LINE_2, EXTI_GPIOB, EXTI_TRIGGER_FALLING);
+
+			if (menu_is_visible()) {
+				menu_back();
+			}
 		} else {
+			right_ts = ticks - right_ts;
 			right_state = BTN_STATE_RELEASED;
 			config_int_line(&right_btn_handle, EXTI_LINE_2, EXTI_GPIOB, EXTI_TRIGGER_RISING);
 		}
 
-		tamalib_set_button(BTN_RIGHT, right_state);
+		if (!menu_is_visible()) {
+			tamalib_set_button(BTN_RIGHT, right_state);
+
+			if (right_state == BTN_STATE_RELEASED && right_ts >= 1000000) {
+				menu_open();
+			}
+		}
 	}
 }
