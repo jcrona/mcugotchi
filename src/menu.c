@@ -39,7 +39,7 @@ static void draw_menu(void)
 {
 	uint8_t i;
 	uint8_t top_item = 0;
-	uint8_t y = MENU_OFFSET_Y;
+	uint8_t y = MENU_OFFSET_Y, x;
 
 	if (current_item >= ITEMS_ON_SCREEN) {
 		top_item = current_item - ITEMS_ON_SCREEN + 1;
@@ -52,7 +52,12 @@ static void draw_menu(void)
 			break;
 		}
 
-		PStr(current_menu->items[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+		x = PStr(current_menu->items[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+
+		if (current_menu->items[top_item + i].arg_cb != NULL) {
+			PStr(current_menu->items[top_item + i].arg_cb(), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+		}
+
 		y += MENU_ITEM_STRIDE_Y;
 	}
 

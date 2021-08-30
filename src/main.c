@@ -296,14 +296,26 @@ static hal_t hal = {
 	.handler = &hal_handler,
 };
 
-static void menu_invert_screen(void)
+static void menu_screen_mode(void)
 {
 	lcd_inverted = !lcd_inverted;
 	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
 }
 
+static char * menu_screen_mode_arg(void)
+{
+	switch (lcd_inverted) {
+		case 0:
+			return "Inv.";
+
+		default:
+		case 1:
+			return "Norm.";
+	}
+}
+
 static menu_item_t menu_items[] = {
-	{"Inv. Screen", &menu_invert_screen, NULL},
+	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
 
 	{NULL, NULL, NULL},
 };

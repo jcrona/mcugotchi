@@ -25,6 +25,7 @@ typedef struct menu_item menu_item_t;
 
 struct menu_item {
 	char *name;
+	char * (*arg_cb)(void);
 	void (*cb)(void);
 	menu_t *sub_menu;
 };
