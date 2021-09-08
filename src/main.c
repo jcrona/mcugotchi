@@ -36,6 +36,7 @@
 #include "ssd1306.h"
 #include "gfx.h"
 #include "menu.h"
+#include "job.h"
 #include "time.h"
 
 #include "lib/tamalib.h"
@@ -51,15 +52,23 @@
 #define LCD_OFFET_X					16
 #define LCD_OFFET_Y					8
 
+#define FRAMERATE 					30
+
+#define MAIN_JOB_PERIOD					1000 //us
 
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
+
+static bool_t tamalib_is_late = 0;
 
 static btn_state_t left_state = BTN_STATE_RELEASED;
 static btn_state_t middle_state = BTN_STATE_RELEASED;
 static btn_state_t right_state = BTN_STATE_RELEASED;
 
 static time_t right_ts = 0;
+
+static job_t cpu_job;
+static job_t render_job;
 
 static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
@@ -182,7 +191,12 @@ static timestamp_t hal_get_timestamp(void)
 
 static void hal_sleep_until(timestamp_t ts)
 {
-	time_wait_until((time_t) ts);
+	/* Since TamaLIB is always late in implementations without mainloop,
+	 * notify the cpu job that TamaLIB catched up instead of waiting
+	 */
+	if ((int32_t) (ts - hal_get_timestamp()) > 0) {
+		tamalib_is_late = 0;
+	}
 }
 
 static void draw_icon(uint8_t x, uint8_t y, uint8_t num, uint8_t v)
@@ -468,6 +482,25 @@ static void board_init(void)
 	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
 }
 
+static void render_job_fn(job_t *job)
+{
+	job_schedule(&render_job, &render_job_fn, time_get() + 1000000/FRAMERATE);
+
+	hal_update_screen();
+}
+
+static void cpu_job_fn(job_t *job)
+{
+	job_schedule(&cpu_job, &cpu_job_fn, time_get() + MAIN_JOB_PERIOD);
+
+	tamalib_is_late = 1;
+
+	/* Execute all the missed steps at once */
+	while (tamalib_is_late) {
+		tamalib_step();
+	}
+}
+
 int main(void)
 {
 	board_init();
@@ -480,7 +513,10 @@ int main(void)
 		fatal_error();
 	}
 
-	tamalib_mainloop();
+	job_schedule(&render_job, &render_job_fn, JOB_ASAP);
+	job_schedule(&cpu_job, &cpu_job_fn, JOB_ASAP);
+
+	job_mainloop();
 
 	tamalib_release();
 }
