@@ -334,9 +334,28 @@ static char * menu_toggle_speed_arg(void)
 	}
 }
 
+static void menu_pause(void)
+{
+	emulation_paused = !emulation_paused;
+	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
+}
+
+static char * menu_pause_arg(void)
+{
+	switch (emulation_paused) {
+		case 0:
+			return "Pause";
+
+		default:
+		case 1:
+			return "Run";
+	}
+}
+
 static menu_item_t menu_items[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, NULL},
+	{"", &menu_pause_arg, &menu_pause, NULL},
 
 	{NULL, NULL, NULL},
 };
