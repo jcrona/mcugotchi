@@ -62,6 +62,8 @@ static btn_state_t right_state = BTN_STATE_RELEASED;
 static timestamp_t right_ts = 0;
 
 static bool_t lcd_inverted = 0;
+static uint8_t speed_ratio = 1;
+static bool_t emulation_paused = 0;
 
 static EXTI_HandleTypeDef left_btn_handle, middle_btn_handle, right_btn_handle;
 
@@ -314,8 +316,27 @@ static char * menu_screen_mode_arg(void)
 	}
 }
 
+static void menu_toggle_speed(void)
+{
+	speed_ratio = !speed_ratio;
+	tamalib_set_speed(speed_ratio);
+}
+
+static char * menu_toggle_speed_arg(void)
+{
+	switch (speed_ratio) {
+		case 0:
+			return "x1";
+
+		default:
+		case 1:
+			return "Max";
+	}
+}
+
 static menu_item_t menu_items[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
+	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, NULL},
 
 	{NULL, NULL, NULL},
 };
