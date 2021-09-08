@@ -52,7 +52,7 @@
 #define LCD_OFFET_Y					8
 
 
-static bool_t matrix_buffer[LCD_HEIGTH][LCD_WIDTH] = {{0}};
+static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
 
 static btn_state_t left_state = BTN_STATE_RELEASED;
@@ -238,7 +238,7 @@ static void hal_update_screen(void)
 	ClrBuf();
 
 	/* Dot matrix */
-	for (j = 0; j < LCD_HEIGTH; j++) {
+	for (j = 0; j < LCD_HEIGHT; j++) {
 		for (i = 0; i < LCD_WIDTH; i++) {
 			if (matrix_buffer[j][i]) {
 				draw_square(i * PIXEL_SIZE + LCD_OFFET_X, j * PIXEL_SIZE + LCD_OFFET_Y, PIXEL_SIZE, PIXEL_SIZE, 1);
