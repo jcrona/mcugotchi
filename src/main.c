@@ -36,6 +36,7 @@
 #include "ssd1306.h"
 #include "gfx.h"
 #include "menu.h"
+#include "time.h"
 
 #include "lib/tamalib.h"
 
@@ -50,7 +51,6 @@
 #define LCD_OFFET_X					16
 #define LCD_OFFET_Y					8
 
-volatile u32_t ticks = 0;
 
 static bool_t matrix_buffer[LCD_HEIGTH][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
@@ -59,7 +59,7 @@ static btn_state_t left_state = BTN_STATE_RELEASED;
 static btn_state_t middle_state = BTN_STATE_RELEASED;
 static btn_state_t right_state = BTN_STATE_RELEASED;
 
-static timestamp_t right_ts = 0;
+static time_t right_ts = 0;
 
 static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
@@ -177,14 +177,12 @@ static void hal_log(log_level_t level, char *buff, ...)
 
 static timestamp_t hal_get_timestamp(void)
 {
-	return (timestamp_t) ticks;
+	return (timestamp_t) time_get();
 }
 
 static void hal_sleep_until(timestamp_t ts)
 {
-	while ((int32_t) (ts - ticks) > 0) {
-		__asm__ __volatile__ ("nop");
-	}
+	time_wait_until((time_t) ts);
 }
 
 static void draw_icon(uint8_t x, uint8_t y, uint8_t num, uint8_t v)
@@ -365,14 +363,14 @@ static menu_t menu = {
 	.parent = NULL,
 };
 
-void SysTick_Handler(void)
-{
-	ticks += 100;
-}
-
 void fatal_error(void)
 {
 	while(1) __asm__ __volatile__ ("nop");
+}
+
+HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
+{
+	return HAL_OK;
 }
 
 /**
@@ -435,7 +433,7 @@ static void board_init(void)
 
 	SystemClock_Config();
 
-	SysTick_Config(SystemCoreClock/10000); //100us timebase
+	time_init();
 
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
@@ -539,7 +537,7 @@ void EXTI2_3_IRQHandler(void)
 		HAL_EXTI_ClearPending(&right_btn_handle, EXTI_TRIGGER_RISING_FALLING);
 
 		if (right_state == BTN_STATE_RELEASED) {
-			right_ts = ticks;
+			right_ts = time_get();
 			right_state = BTN_STATE_PRESSED;
 			config_int_line(&right_btn_handle, EXTI_LINE_2, EXTI_GPIOB, EXTI_TRIGGER_FALLING);
 
@@ -547,7 +545,7 @@ void EXTI2_3_IRQHandler(void)
 				menu_back();
 			}
 		} else {
-			right_ts = ticks - right_ts;
+			right_ts = time_get() - right_ts;
 			right_state = BTN_STATE_RELEASED;
 			config_int_line(&right_btn_handle, EXTI_LINE_2, EXTI_GPIOB, EXTI_TRIGGER_RISING);
 		}

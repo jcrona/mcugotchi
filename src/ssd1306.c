@@ -1,4 +1,5 @@
 #include "ssd1306.h"
+#include "time.h"
 
 /*
  * SSD1306.c
@@ -145,9 +146,6 @@ void LCDSleepMode(LCDPwrMode Mode){
 	}
 }
 
-extern volatile uint32_t ticks;
-
 void Delay(uint32_t ms){
-	uint32_t ref = ticks;
-	while ((ticks - ref) < (ms * 1000)) __asm__ __volatile__ ("nop");
+	time_delay(ms * 1000);
 }
