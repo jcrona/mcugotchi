@@ -56,14 +56,35 @@
 
 #define MAIN_JOB_PERIOD					1000 //us
 
+#define BTN_NUM						3
+
+#define DEBOUNCE_DURATION				100000 //us
+
+typedef struct {
+	btn_state_t state;
+	job_t debounce_job;
+	EXTI_HandleTypeDef handle;
+	uint32_t exti_port;
+	GPIO_TypeDef* port;
+	uint16_t pin;
+} btn_data_t;
+
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
 
 static bool_t tamalib_is_late = 0;
 
-static btn_state_t left_state = BTN_STATE_RELEASED;
-static btn_state_t middle_state = BTN_STATE_RELEASED;
-static btn_state_t right_state = BTN_STATE_RELEASED;
+static btn_data_t buttons[BTN_NUM] = {
+	{
+		.state = BTN_STATE_RELEASED,
+	},
+	{
+		.state = BTN_STATE_RELEASED,
+	},
+	{
+		.state = BTN_STATE_RELEASED,
+	},
+};
 
 static time_t right_ts = 0;
 
@@ -73,8 +94,6 @@ static job_t render_job;
 static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
-
-static EXTI_HandleTypeDef left_btn_handle, middle_btn_handle, right_btn_handle;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -428,11 +447,11 @@ static void SystemClock_Config(void)
 	}
 }
 
-static void config_int_line(EXTI_HandleTypeDef *h, uint32_t line, uint32_t port, uint8_t trigger)
+static void config_int_line(EXTI_HandleTypeDef *h, uint32_t port, uint8_t trigger)
 {
 	EXTI_ConfigTypeDef e;
 
-	e.Line = line;
+	e.Line = h->Line;
 	e.Mode = EXTI_MODE_INTERRUPT;
 	e.Trigger = trigger;
 	e.GPIOSel = port;
@@ -459,8 +478,14 @@ static void board_init(void)
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(GPIOB, &g);
 
-	right_btn_handle.Line = EXTI_LINE_2;
-	left_btn_handle.Line = EXTI_LINE_3;
+	buttons[BTN_RIGHT].handle.Line = EXTI_LINE_2;
+	buttons[BTN_RIGHT].exti_port = EXTI_GPIOB;
+	buttons[BTN_RIGHT].port = GPIOB;
+	buttons[BTN_RIGHT].pin = GPIO_PIN_2;
+	buttons[BTN_LEFT].handle.Line = EXTI_LINE_3;
+	buttons[BTN_LEFT].exti_port = EXTI_GPIOB;
+	buttons[BTN_LEFT].port = GPIOB;
+	buttons[BTN_LEFT].pin = GPIO_PIN_3;
 
 	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
 	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
@@ -472,7 +497,10 @@ static void board_init(void)
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(GPIOA, &g);
 
-	middle_btn_handle.Line = EXTI_LINE_0;
+	buttons[BTN_MIDDLE].handle.Line = EXTI_LINE_0;
+	buttons[BTN_MIDDLE].exti_port = EXTI_GPIOA;
+	buttons[BTN_MIDDLE].port = GPIOA;
+	buttons[BTN_MIDDLE].pin = GPIO_PIN_0;
 
 	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
 	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
@@ -521,77 +549,93 @@ int main(void)
 	tamalib_release();
 }
 
-void EXTI0_1_IRQHandler(void)
+static void btn_handler(button_t btn, btn_state_t state)
 {
-	if (HAL_EXTI_GetPending(&middle_btn_handle, EXTI_TRIGGER_RISING_FALLING)) {
-		/* Middle button */
-		HAL_EXTI_ClearPending(&middle_btn_handle, EXTI_TRIGGER_RISING_FALLING);
-
-		if (middle_state == BTN_STATE_RELEASED) {
-			middle_state = BTN_STATE_PRESSED;
-			config_int_line(&middle_btn_handle, EXTI_LINE_0, EXTI_GPIOA, EXTI_TRIGGER_FALLING);
-
-			if (menu_is_visible()) {
-				menu_enter();
-			}
-		} else {
-			middle_state = BTN_STATE_RELEASED;
-			config_int_line(&middle_btn_handle, EXTI_LINE_0, EXTI_GPIOA, EXTI_TRIGGER_RISING);
+	if (state == BTN_STATE_PRESSED) {
+		if (btn == BTN_RIGHT) {
+			right_ts = time_get();
 		}
 
-		if (!menu_is_visible()) {
-			tamalib_set_button(BTN_MIDDLE, middle_state);
+		if (menu_is_visible()) {
+			switch (btn) {
+				case BTN_LEFT:
+					menu_next();
+					break;
+
+				case BTN_MIDDLE:
+					menu_enter();
+					break;
+
+				case BTN_RIGHT:
+					menu_back();
+					break;
+
+			}
+		}
+	} else {
+		if (btn == BTN_RIGHT) {
+			if (!menu_is_visible()) {
+				if (time_get() - right_ts >= 1000000) {
+					menu_open();
+				}
+			}
 		}
 	}
+
+	if (!menu_is_visible()) {
+		tamalib_set_button(btn, buttons[btn].state);
+	}
+}
+
+static btn_state_t get_btn_hw_state(button_t btn)
+{
+	return (HAL_GPIO_ReadPin(buttons[btn].port, buttons[btn].pin) == GPIO_PIN_SET) ? BTN_STATE_PRESSED : BTN_STATE_RELEASED;
+}
+
+static void btn_debounce_job_fn(job_t *job)
+{
+	button_t btn;
+
+	/* Lookup the button */
+	if (job == &(buttons[BTN_LEFT].debounce_job)) {
+		btn = BTN_LEFT;
+	} else if (job == &(buttons[BTN_MIDDLE].debounce_job)) {
+		btn = BTN_MIDDLE;
+	} else if (job == &(buttons[BTN_RIGHT].debounce_job)) {
+		btn = BTN_RIGHT;
+	} else {
+		return;
+	}
+
+	if (buttons[btn].state == BTN_STATE_RELEASED && get_btn_hw_state(btn) == BTN_STATE_PRESSED) {
+		config_int_line(&(buttons[btn].handle), buttons[btn].exti_port, EXTI_TRIGGER_FALLING);
+	} else if (buttons[btn].state == BTN_STATE_PRESSED && get_btn_hw_state(btn) == BTN_STATE_RELEASED) {
+		config_int_line(&(buttons[btn].handle), buttons[btn].exti_port, EXTI_TRIGGER_RISING);
+	} else {
+		/* The button has been pressed or released during debounce, make sure we handle it properly */
+		job_schedule(&(buttons[btn].debounce_job), &btn_debounce_job_fn, JOB_ASAP);
+	}
+
+	buttons[btn].state = !buttons[btn].state;
+	btn_handler(btn, buttons[btn].state);
+}
+
+static void btn_irq_handler(button_t btn)
+{
+	if (HAL_EXTI_GetPending(&(buttons[btn].handle), EXTI_TRIGGER_RISING_FALLING)) {
+		HAL_EXTI_ClearPending(&(buttons[btn].handle), EXTI_TRIGGER_RISING_FALLING);
+
+		job_schedule(&(buttons[btn].debounce_job), &btn_debounce_job_fn, time_get() + DEBOUNCE_DURATION);
+	}
+}
+
+void EXTI0_1_IRQHandler(void)
+{
+	btn_irq_handler(BTN_MIDDLE);
 }
 
 void EXTI2_3_IRQHandler(void)
 {
-	if (HAL_EXTI_GetPending(&left_btn_handle, EXTI_TRIGGER_RISING_FALLING)) {
-		/* Left button */
-		HAL_EXTI_ClearPending(&left_btn_handle, EXTI_TRIGGER_RISING_FALLING);
-
-		if (left_state == BTN_STATE_RELEASED) {
-			left_state = BTN_STATE_PRESSED;
-			config_int_line(&left_btn_handle, EXTI_LINE_3, EXTI_GPIOB, EXTI_TRIGGER_FALLING);
-
-			if (menu_is_visible()) {
-				menu_next();
-			}
-		} else {
-			left_state = BTN_STATE_RELEASED;
-			config_int_line(&left_btn_handle, EXTI_LINE_3, EXTI_GPIOB, EXTI_TRIGGER_RISING);
-		}
-
-		if (!menu_is_visible()) {
-			tamalib_set_button(BTN_LEFT, left_state);
-		}
-	}
-
-	if (HAL_EXTI_GetPending(&right_btn_handle, EXTI_TRIGGER_RISING_FALLING)) {
-		/* Right button */
-		HAL_EXTI_ClearPending(&right_btn_handle, EXTI_TRIGGER_RISING_FALLING);
-
-		if (right_state == BTN_STATE_RELEASED) {
-			right_ts = time_get();
-			right_state = BTN_STATE_PRESSED;
-			config_int_line(&right_btn_handle, EXTI_LINE_2, EXTI_GPIOB, EXTI_TRIGGER_FALLING);
-
-			if (menu_is_visible()) {
-				menu_back();
-			}
-		} else {
-			right_ts = time_get() - right_ts;
-			right_state = BTN_STATE_RELEASED;
-			config_int_line(&right_btn_handle, EXTI_LINE_2, EXTI_GPIOB, EXTI_TRIGGER_RISING);
-		}
-
-		if (!menu_is_visible()) {
-			tamalib_set_button(BTN_RIGHT, right_state);
-
-			if (right_state == BTN_STATE_RELEASED && right_ts >= 1000000) {
-				menu_open();
-			}
-		}
-	}
+	btn_irq_handler(BTN_LEFT);
+	btn_irq_handler(BTN_RIGHT);
 }
