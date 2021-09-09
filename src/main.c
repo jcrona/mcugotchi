@@ -59,10 +59,12 @@
 #define BTN_NUM						3
 
 #define DEBOUNCE_DURATION				100000 //us
+#define LONG_PRESS_DURATION				1000000 //us
 
 typedef struct {
 	btn_state_t state;
 	job_t debounce_job;
+	job_t long_press_job;
 	EXTI_HandleTypeDef handle;
 	uint32_t exti_port;
 	GPIO_TypeDef* port;
@@ -85,8 +87,6 @@ static btn_data_t buttons[BTN_NUM] = {
 		.state = BTN_STATE_RELEASED,
 	},
 };
-
-static time_t right_ts = 0;
 
 static job_t cpu_job;
 static job_t render_job;
@@ -549,13 +549,13 @@ int main(void)
 	tamalib_release();
 }
 
-static void btn_handler(button_t btn, btn_state_t state)
+static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 {
-	if (state == BTN_STATE_PRESSED) {
-		if (btn == BTN_RIGHT) {
-			right_ts = time_get();
+	if (long_press) {
+		if (btn == BTN_RIGHT && !menu_is_visible()) {
+			menu_open();
 		}
-
+	} else if (state == BTN_STATE_PRESSED) {
 		if (menu_is_visible()) {
 			switch (btn) {
 				case BTN_LEFT:
@@ -572,14 +572,6 @@ static void btn_handler(button_t btn, btn_state_t state)
 
 			}
 		}
-	} else {
-		if (btn == BTN_RIGHT) {
-			if (!menu_is_visible()) {
-				if (time_get() - right_ts >= 1000000) {
-					menu_open();
-				}
-			}
-		}
 	}
 
 	if (!menu_is_visible()) {
@@ -590,6 +582,24 @@ static void btn_handler(button_t btn, btn_state_t state)
 static btn_state_t get_btn_hw_state(button_t btn)
 {
 	return (HAL_GPIO_ReadPin(buttons[btn].port, buttons[btn].pin) == GPIO_PIN_SET) ? BTN_STATE_PRESSED : BTN_STATE_RELEASED;
+}
+
+static void btn_long_press_job_fn(job_t *job)
+{
+	button_t btn;
+
+	/* Lookup the button */
+	if (job == &(buttons[BTN_LEFT].long_press_job)) {
+		btn = BTN_LEFT;
+	} else if (job == &(buttons[BTN_MIDDLE].long_press_job)) {
+		btn = BTN_MIDDLE;
+	} else if (job == &(buttons[BTN_RIGHT].long_press_job)) {
+		btn = BTN_RIGHT;
+	} else {
+		return;
+	}
+
+	btn_handler(btn, buttons[btn].state, 1);
 }
 
 static void btn_debounce_job_fn(job_t *job)
@@ -608,8 +618,10 @@ static void btn_debounce_job_fn(job_t *job)
 	}
 
 	if (buttons[btn].state == BTN_STATE_RELEASED && get_btn_hw_state(btn) == BTN_STATE_PRESSED) {
+		job_schedule(&(buttons[btn].long_press_job), &btn_long_press_job_fn, time_get() + LONG_PRESS_DURATION);
 		config_int_line(&(buttons[btn].handle), buttons[btn].exti_port, EXTI_TRIGGER_FALLING);
 	} else if (buttons[btn].state == BTN_STATE_PRESSED && get_btn_hw_state(btn) == BTN_STATE_RELEASED) {
+		job_cancel(&(buttons[btn].long_press_job));
 		config_int_line(&(buttons[btn].handle), buttons[btn].exti_port, EXTI_TRIGGER_RISING);
 	} else {
 		/* The button has been pressed or released during debounce, make sure we handle it properly */
@@ -617,7 +629,7 @@ static void btn_debounce_job_fn(job_t *job)
 	}
 
 	buttons[btn].state = !buttons[btn].state;
-	btn_handler(btn, buttons[btn].state);
+	btn_handler(btn, buttons[btn].state, 0);
 }
 
 static void btn_irq_handler(button_t btn)
