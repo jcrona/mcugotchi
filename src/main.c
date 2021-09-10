@@ -526,6 +526,8 @@ static void render_job_fn(job_t *job)
 
 static void cpu_job_fn(job_t *job)
 {
+	job_t *next_job;
+
 	job_schedule(&cpu_job, &cpu_job_fn, time_get() + MAIN_JOB_PERIOD);
 
 	tamalib_is_late = 1;
@@ -533,6 +535,13 @@ static void cpu_job_fn(job_t *job)
 	/* Execute all the missed steps at once */
 	while (tamalib_is_late) {
 		tamalib_step();
+
+		next_job = job_get_next();
+		if (next_job != NULL && next_job->time <= time_get()) {
+			/* No more time to execute instructions */
+			job_schedule(&cpu_job, &cpu_job_fn, next_job->time);
+			break;
+		}
 	}
 }
 

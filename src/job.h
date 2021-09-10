@@ -34,6 +34,8 @@ typedef struct job {
 void job_schedule(job_t *job, void (*cb)(job_t *), time_t time);
 void job_cancel(job_t *job);
 
+job_t * job_get_next(void);
+
 void job_mainloop(void);
 
 #endif /* _JOB_H_ */

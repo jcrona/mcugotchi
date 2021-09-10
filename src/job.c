@@ -70,6 +70,11 @@ void job_cancel(job_t *job)
 	__enable_irq();
 }
 
+job_t * job_get_next(void)
+{
+	return jobs;
+}
+
 void job_mainloop(void)
 {
 	job_t *j = NULL;
