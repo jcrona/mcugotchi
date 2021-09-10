@@ -336,13 +336,13 @@ static hal_t hal = {
 	.handler = &hal_handler,
 };
 
-static void menu_screen_mode(void)
+static void menu_screen_mode(uint8_t pos)
 {
 	lcd_inverted = !lcd_inverted;
 	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
 }
 
-static char * menu_screen_mode_arg(void)
+static char * menu_screen_mode_arg(uint8_t pos)
 {
 	switch (lcd_inverted) {
 		case 0:
@@ -354,13 +354,13 @@ static char * menu_screen_mode_arg(void)
 	}
 }
 
-static void menu_toggle_speed(void)
+static void menu_toggle_speed(uint8_t pos)
 {
 	speed_ratio = !speed_ratio;
 	tamalib_set_speed(speed_ratio);
 }
 
-static char * menu_toggle_speed_arg(void)
+static char * menu_toggle_speed_arg(uint8_t pos)
 {
 	switch (speed_ratio) {
 		case 0:
@@ -372,13 +372,13 @@ static char * menu_toggle_speed_arg(void)
 	}
 }
 
-static void menu_pause(void)
+static void menu_pause(uint8_t pos)
 {
 	emulation_paused = !emulation_paused;
 	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 }
 
-static char * menu_pause_arg(void)
+static char * menu_pause_arg(uint8_t pos)
 {
 	switch (emulation_paused) {
 		case 0:
@@ -390,7 +390,7 @@ static char * menu_pause_arg(void)
 	}
 }
 
-static void menu_reset(void)
+static void menu_reset(uint8_t pos)
 {
 	cpu_reset();
 	menu_close();

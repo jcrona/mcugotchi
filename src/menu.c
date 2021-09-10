@@ -55,7 +55,7 @@ static void draw_menu(void)
 		x = PStr(current_menu->items[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 
 		if (current_menu->items[top_item + i].arg_cb != NULL) {
-			PStr(current_menu->items[top_item + i].arg_cb(), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+			PStr(current_menu->items[top_item + i].arg_cb(top_item + i), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 		}
 
 		y += MENU_ITEM_STRIDE_Y;
@@ -110,7 +110,7 @@ void menu_enter(void)
 {
 	if (current_menu->items[current_item].cb != NULL) {
 		/* Regular item */
-		current_menu->items[current_item].cb();
+		current_menu->items[current_item].cb(current_item);
 	} else if (current_menu->items[current_item].sub_menu != NULL) {
 		/* Sub menu */
 		current_menu = current_menu->items[current_item].sub_menu;

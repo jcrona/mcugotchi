@@ -20,13 +20,15 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
+#include "stm32f0xx_hal.h"
+
 typedef struct menu menu_t;
 typedef struct menu_item menu_item_t;
 
 struct menu_item {
 	char *name;
-	char * (*arg_cb)(void);
-	void (*cb)(void);
+	char * (*arg_cb)(uint8_t pos);
+	void (*cb)(uint8_t pos);
 	menu_t *sub_menu;
 };
 
