@@ -390,10 +390,17 @@ static char * menu_pause_arg(void)
 	}
 }
 
+static void menu_reset(void)
+{
+	cpu_reset();
+	menu_close();
+}
+
 static menu_item_t menu_items[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, NULL},
 	{"", &menu_pause_arg, &menu_pause, NULL},
+	{"Reset", NULL, &menu_reset, NULL},
 
 	{NULL, NULL, NULL},
 };
