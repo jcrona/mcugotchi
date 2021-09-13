@@ -38,6 +38,7 @@
 #include "menu.h"
 #include "job.h"
 #include "time.h"
+#include "storage.h"
 
 #include "lib/tamalib.h"
 
@@ -60,6 +61,13 @@
 
 #define DEBOUNCE_DURATION				100000 //us
 #define LONG_PRESS_DURATION				1000000 //us
+
+#define STORAGE_VERSION					0
+#define STORAGE_MAGIC_OFFSET				0 // in words (sizeof(uint32_t))
+#define STORAGE_VERSION_OFFSET				1 // in words (sizeof(uint32_t))
+#define STORAGE_SLOTS_OFFSET				64 // in words (sizeof(uint32_t))
+
+#define STORAGE_MAGIC					0x1A3A60C1
 
 typedef struct {
 	btn_state_t state;
@@ -336,6 +344,41 @@ static hal_t hal = {
 	.handler = &hal_handler,
 };
 
+static void storage_init(void)
+{
+	uint32_t tmp;
+
+	storage_erase();
+
+	/* Write magic */
+	tmp = STORAGE_MAGIC;
+	storage_write(STORAGE_MAGIC_OFFSET, &tmp, 1);
+
+	/* Write version */
+	tmp = STORAGE_VERSION;
+	storage_write(STORAGE_VERSION_OFFSET, &tmp, 1);
+}
+
+static void storage_sanity_check(void)
+{
+	uint32_t tmp;
+
+	/* Check the magic of the storage */
+	storage_read(STORAGE_MAGIC_OFFSET, &tmp, 1);
+	if (tmp != STORAGE_MAGIC) {
+		/* Re-init storage */
+		storage_init();
+		return;
+	}
+
+	/* Check the version of the storage */
+	storage_read(STORAGE_VERSION_OFFSET, &tmp, 1);
+	if (tmp != STORAGE_VERSION) {
+		/* Re-init storage (TODO: Migration instead) */
+		storage_init();
+	}
+}
+
 static void menu_screen_mode(uint8_t pos)
 {
 	lcd_inverted = !lcd_inverted;
@@ -522,6 +565,8 @@ static void board_init(void)
 	SSD1306_InitSetup();
 	LCDSleepMode(LCDWake);
 	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
+
+	storage_sanity_check();
 }
 
 static void render_job_fn(job_t *job)
