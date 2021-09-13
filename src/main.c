@@ -39,6 +39,7 @@
 #include "job.h"
 #include "time.h"
 #include "storage.h"
+#include "state.h"
 
 #include "lib/tamalib.h"
 
@@ -62,12 +63,11 @@
 #define DEBOUNCE_DURATION				100000 //us
 #define LONG_PRESS_DURATION				1000000 //us
 
+#define STORAGE_MAGIC					0x1A3A60C1
 #define STORAGE_VERSION					0
+
 #define STORAGE_MAGIC_OFFSET				0 // in words (sizeof(uint32_t))
 #define STORAGE_VERSION_OFFSET				1 // in words (sizeof(uint32_t))
-#define STORAGE_SLOTS_OFFSET				64 // in words (sizeof(uint32_t))
-
-#define STORAGE_MAGIC					0x1A3A60C1
 
 typedef struct {
 	btn_state_t state;
@@ -185,6 +185,12 @@ static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 		{0, 0, 0, 0, 1, 1, 1, 0},
 	},
 };
+
+static menu_t options_menu;
+static menu_t load_state_menu;
+static menu_t save_state_menu;
+static menu_t states_menu;
+static menu_t main_menu;
 
 
 /* No need to support breakpoints */
@@ -439,7 +445,52 @@ static void menu_reset(uint8_t pos)
 	menu_close();
 }
 
-static menu_item_t menu_items[] = {
+static void menu_load_state(uint8_t pos)
+{
+	state_load(pos + 1);
+	menu_close();
+}
+
+static char * menu_load_state_arg(uint8_t pos)
+{
+	switch (state_check_if_used(pos + 1)) {
+		default:
+		case 0:
+			return "";
+
+		case 1:
+			return " *";
+	}
+}
+
+static void menu_save_state(uint8_t pos)
+{
+	state_save(pos + 1);
+	menu_close();
+}
+
+static char * menu_save_state_arg(uint8_t pos)
+{
+	switch (state_check_if_used(pos + 1)) {
+		default:
+		case 0:
+			return "";
+
+		case 1:
+			return " *";
+	}
+}
+
+static void menu_clear_states(uint8_t pos)
+{
+	uint8_t i;
+
+	for (i = 0; i < STATE_SLOTS_NUM; i++) {
+		state_erase(i + 1);
+	}
+}
+
+static menu_item_t options_menu_items[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, NULL},
 	{"", &menu_pause_arg, &menu_pause, NULL},
@@ -448,8 +499,73 @@ static menu_item_t menu_items[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_t menu = {
-	.items = menu_items,
+static menu_item_t load_state_menu_items[] = {
+	{"Slot 1", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 2", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 3", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 4", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 5", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 6", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 7", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 8", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 9", &menu_load_state_arg, &menu_load_state, NULL},
+	{"Slot 10", &menu_load_state_arg, &menu_load_state, NULL},
+
+	{NULL, NULL, NULL},
+};
+
+static menu_item_t save_state_menu_items[] = {
+	{"Slot 1", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 2", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 3", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 4", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 5", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 6", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 7", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 8", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 9", &menu_save_state_arg, &menu_save_state, NULL},
+	{"Slot 10", &menu_save_state_arg, &menu_save_state, NULL},
+
+	{NULL, NULL, NULL},
+};
+
+static menu_item_t states_menu_items[] = {
+	{"Load", NULL, NULL, &load_state_menu},
+	{"Save", NULL, NULL, &save_state_menu},
+	{"Clear All", NULL, &menu_clear_states, NULL},
+
+	{NULL, NULL, NULL},
+};
+
+static menu_item_t main_menu_items[] = {
+	{"Options", NULL, NULL, &options_menu},
+	{"States", NULL, NULL, &states_menu},
+
+	{NULL, NULL, NULL},
+};
+
+static menu_t options_menu = {
+	.items = options_menu_items,
+	.parent = &main_menu,
+};
+
+static menu_t load_state_menu = {
+	.items = load_state_menu_items,
+	.parent = &states_menu,
+};
+
+static menu_t save_state_menu = {
+	.items = save_state_menu_items,
+	.parent = &states_menu,
+};
+
+static menu_t states_menu = {
+	.items = states_menu_items,
+	.parent = &main_menu,
+};
+
+static menu_t main_menu = {
+	.items = main_menu_items,
 	.parent = NULL,
 };
 
@@ -601,7 +717,7 @@ int main(void)
 {
 	board_init();
 
-	menu_register(&menu);
+	menu_register(&main_menu);
 
 	tamalib_register_hal(&hal);
 
