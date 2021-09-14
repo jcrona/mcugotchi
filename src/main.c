@@ -186,12 +186,6 @@ static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	},
 };
 
-static menu_t options_menu;
-static menu_t load_state_menu;
-static menu_t save_state_menu;
-static menu_t states_menu;
-static menu_t main_menu;
-
 
 /* No need to support breakpoints */
 static void * hal_malloc(u32_t size)
@@ -490,7 +484,7 @@ static void menu_clear_states(uint8_t pos, menu_t *parent)
 	}
 }
 
-static menu_item_t options_menu_items[] = {
+static menu_t options_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, NULL},
 	{"", &menu_pause_arg, &menu_pause, NULL},
@@ -499,7 +493,7 @@ static menu_item_t options_menu_items[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_item_t load_state_menu_items[] = {
+static menu_t load_state_menu[] = {
 	{"Slot 1", &menu_load_state_arg, &menu_load_state, NULL},
 	{"Slot 2", &menu_load_state_arg, &menu_load_state, NULL},
 	{"Slot 3", &menu_load_state_arg, &menu_load_state, NULL},
@@ -514,7 +508,7 @@ static menu_item_t load_state_menu_items[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_item_t save_state_menu_items[] = {
+static menu_t save_state_menu[] = {
 	{"Slot 1", &menu_save_state_arg, &menu_save_state, NULL},
 	{"Slot 2", &menu_save_state_arg, &menu_save_state, NULL},
 	{"Slot 3", &menu_save_state_arg, &menu_save_state, NULL},
@@ -529,40 +523,19 @@ static menu_item_t save_state_menu_items[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_item_t states_menu_items[] = {
-	{"Load", NULL, NULL, &load_state_menu},
-	{"Save", NULL, NULL, &save_state_menu},
+static menu_t states_menu[] = {
+	{"Load", NULL, NULL, load_state_menu},
+	{"Save", NULL, NULL, save_state_menu},
 	{"Clear All", NULL, &menu_clear_states, NULL},
 
 	{NULL, NULL, NULL},
 };
 
-static menu_item_t main_menu_items[] = {
-	{"Options", NULL, NULL, &options_menu},
-	{"States", NULL, NULL, &states_menu},
+static menu_t main_menu[] = {
+	{"Options", NULL, NULL, options_menu},
+	{"States", NULL, NULL, states_menu},
 
 	{NULL, NULL, NULL},
-};
-
-static menu_t options_menu = {
-	.items = options_menu_items,
-};
-
-static menu_t load_state_menu = {
-	.items = load_state_menu_items,
-};
-
-static menu_t save_state_menu = {
-	.items = save_state_menu_items,
-};
-
-static menu_t states_menu = {
-	.items = states_menu_items,
-};
-};
-
-static menu_t main_menu = {
-	.items = main_menu_items,
 };
 
 void fatal_error(void)
@@ -713,7 +686,7 @@ int main(void)
 {
 	board_init();
 
-	menu_register(&main_menu);
+	menu_register(main_menu);
 
 	tamalib_register_hal(&hal);
 

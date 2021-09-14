@@ -53,14 +53,14 @@ static void draw_menu(void)
 	ClrBuf();
 
 	for (i = 0; i < ITEMS_ON_SCREEN; i++) {
-		if (current_menu->items[top_item + i].name == NULL) {
+		if (current_menu[top_item + i].name == NULL) {
 			break;
 		}
 
-		x = PStr(current_menu->items[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+		x = PStr(current_menu[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 
-		if (current_menu->items[top_item + i].arg_cb != NULL) {
-			PStr(current_menu->items[top_item + i].arg_cb(top_item + i, parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+		if (current_menu[top_item + i].arg_cb != NULL) {
+			PStr(current_menu[top_item + i].arg_cb(top_item + i, parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 		}
 
 		y += MENU_ITEM_STRIDE_Y;
@@ -104,7 +104,7 @@ void menu_next(void)
 {
 	current_item++;
 
-	if (current_menu->items[current_item].name == NULL) {
+	if (current_menu[current_item].name == NULL) {
 		current_item = 0;
 	}
 
@@ -113,14 +113,14 @@ void menu_next(void)
 
 void menu_enter(void)
 {
-	if (current_menu->items[current_item].cb != NULL) {
+	if (current_menu[current_item].cb != NULL) {
 		/* Regular item */
-		current_menu->items[current_item].cb(current_item, parents[current_depth]);
-	} else if (current_menu->items[current_item].sub_menu != NULL && current_depth < MAX_DEPTH) {
+		current_menu[current_item].cb(current_item, parents[current_depth]);
+	} else if (current_menu[current_item].sub_menu != NULL && current_depth < MAX_DEPTH) {
 		/* Sub menu */
 		current_depth++;
 		parents[current_depth] = current_menu;
-		current_menu = current_menu->items[current_item].sub_menu;
+		current_menu = current_menu[current_item].sub_menu;
 		current_item = 0;
 	}
 
