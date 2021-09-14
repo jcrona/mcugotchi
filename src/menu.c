@@ -29,10 +29,15 @@
 #define MENU_ITEM_SIZE				1
 #define ITEMS_ON_SCREEN				((64 - MENU_OFFSET_Y)/MENU_ITEM_STRIDE_Y)
 
+#define MAX_DEPTH				9
+
 static uint8_t is_visible = 0;
-static menu_t *menu = NULL;
+static menu_t *g_menu = NULL;
 static menu_t *current_menu = NULL;
 static uint8_t current_item = 0;
+static uint8_t current_depth = 0;
+
+static menu_t *parents[MAX_DEPTH + 1] = { 0 }; // parents[0] will always be NULL
 
 
 static void draw_menu(void)
@@ -55,7 +60,7 @@ static void draw_menu(void)
 		x = PStr(current_menu->items[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 
 		if (current_menu->items[top_item + i].arg_cb != NULL) {
-			PStr(current_menu->items[top_item + i].arg_cb(top_item + i), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+			PStr(current_menu->items[top_item + i].arg_cb(top_item + i, parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 		}
 
 		y += MENU_ITEM_STRIDE_Y;
@@ -64,20 +69,20 @@ static void draw_menu(void)
 	PScrn();
 }
 
-void menu_register(menu_t *items)
+void menu_register(menu_t *menu)
 {
-	menu = items;
+	g_menu = menu;
 }
 
 void menu_open(void)
 {
-	if (menu == NULL) {
+	if (g_menu == NULL) {
 		return;
 	}
 
 	is_visible = 1;
 
-	current_menu = menu;
+	current_menu = g_menu;
 	current_item = 0;
 	draw_menu();
 }
@@ -110,9 +115,11 @@ void menu_enter(void)
 {
 	if (current_menu->items[current_item].cb != NULL) {
 		/* Regular item */
-		current_menu->items[current_item].cb(current_item);
-	} else if (current_menu->items[current_item].sub_menu != NULL) {
+		current_menu->items[current_item].cb(current_item, parents[current_depth]);
+	} else if (current_menu->items[current_item].sub_menu != NULL && current_depth < MAX_DEPTH) {
 		/* Sub menu */
+		current_depth++;
+		parents[current_depth] = current_menu;
 		current_menu = current_menu->items[current_item].sub_menu;
 		current_item = 0;
 	}
@@ -122,8 +129,9 @@ void menu_enter(void)
 
 void menu_back(void)
 {
-	if (current_menu->parent != NULL) {
-		current_menu = current_menu->parent;
+	if (current_depth > 0) {
+		current_menu = parents[current_depth];
+		current_depth--;
 		current_item = 0;
 
 		draw_menu();

@@ -27,14 +27,13 @@ typedef struct menu_item menu_item_t;
 
 struct menu_item {
 	char *name;
-	char * (*arg_cb)(uint8_t pos);
-	void (*cb)(uint8_t pos);
+	char * (*arg_cb)(uint8_t pos, menu_t *parent);
+	void (*cb)(uint8_t pos, menu_t *parent);
 	menu_t *sub_menu;
 };
 
 struct menu {
 	menu_item_t *items;
-	menu_t *parent;
 };
 
 void menu_register(menu_t *items);
