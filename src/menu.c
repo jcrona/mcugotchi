@@ -37,7 +37,7 @@ static menu_t *current_menu = NULL;
 static uint8_t current_item = 0;
 static uint8_t current_depth = 0;
 
-static menu_t *parents[MAX_DEPTH + 1] = { 0 }; // parents[0] will always be NULL
+static menu_parent_t parents[MAX_DEPTH + 1] = { 0 }; // parents[0] will always be NULL
 
 
 static void draw_menu(void)
@@ -60,7 +60,7 @@ static void draw_menu(void)
 		x = PStr(current_menu[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 
 		if (current_menu[top_item + i].arg_cb != NULL) {
-			PStr(current_menu[top_item + i].arg_cb(top_item + i, parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+			PStr(current_menu[top_item + i].arg_cb(top_item + i, &parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
 		}
 
 		y += MENU_ITEM_STRIDE_Y;
@@ -115,11 +115,12 @@ void menu_enter(void)
 {
 	if (current_menu[current_item].cb != NULL) {
 		/* Regular item */
-		current_menu[current_item].cb(current_item, parents[current_depth]);
+		current_menu[current_item].cb(current_item, &parents[current_depth]);
 	} else if (current_menu[current_item].sub_menu != NULL && current_depth < MAX_DEPTH) {
 		/* Sub menu */
 		current_depth++;
-		parents[current_depth] = current_menu;
+		parents[current_depth].menu = current_menu;
+		parents[current_depth].pos = current_item;
 		current_menu = current_menu[current_item].sub_menu;
 		current_item = 0;
 	}
@@ -130,9 +131,9 @@ void menu_enter(void)
 void menu_back(void)
 {
 	if (current_depth > 0) {
-		current_menu = parents[current_depth];
+		current_menu = parents[current_depth].menu;
+		current_item = parents[current_depth].pos;
 		current_depth--;
-		current_item = 0;
 
 		draw_menu();
 	} else {

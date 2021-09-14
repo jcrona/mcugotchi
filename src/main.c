@@ -379,13 +379,13 @@ static void storage_sanity_check(void)
 	}
 }
 
-static void menu_screen_mode(uint8_t pos, menu_t *parent)
+static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
 	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
 }
 
-static char * menu_screen_mode_arg(uint8_t pos, menu_t *parent)
+static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (lcd_inverted) {
 		case 0:
@@ -397,13 +397,13 @@ static char * menu_screen_mode_arg(uint8_t pos, menu_t *parent)
 	}
 }
 
-static void menu_toggle_speed(uint8_t pos, menu_t *parent)
+static void menu_toggle_speed(uint8_t pos, menu_parent_t *parent)
 {
 	speed_ratio = !speed_ratio;
 	tamalib_set_speed(speed_ratio);
 }
 
-static char * menu_toggle_speed_arg(uint8_t pos, menu_t *parent)
+static char * menu_toggle_speed_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (speed_ratio) {
 		case 0:
@@ -415,13 +415,13 @@ static char * menu_toggle_speed_arg(uint8_t pos, menu_t *parent)
 	}
 }
 
-static void menu_pause(uint8_t pos, menu_t *parent)
+static void menu_pause(uint8_t pos, menu_parent_t *parent)
 {
 	emulation_paused = !emulation_paused;
 	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 }
 
-static char * menu_pause_arg(uint8_t pos, menu_t *parent)
+static char * menu_pause_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (emulation_paused) {
 		case 0:
@@ -433,19 +433,19 @@ static char * menu_pause_arg(uint8_t pos, menu_t *parent)
 	}
 }
 
-static void menu_reset(uint8_t pos, menu_t *parent)
+static void menu_reset(uint8_t pos, menu_parent_t *parent)
 {
 	cpu_reset();
 	menu_close();
 }
 
-static void menu_load_state(uint8_t pos, menu_t *parent)
+static void menu_load_state(uint8_t pos, menu_parent_t *parent)
 {
 	state_load(pos + 1);
 	menu_close();
 }
 
-static char * menu_load_state_arg(uint8_t pos, menu_t *parent)
+static char * menu_load_state_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (state_check_if_used(pos + 1)) {
 		default:
@@ -457,13 +457,13 @@ static char * menu_load_state_arg(uint8_t pos, menu_t *parent)
 	}
 }
 
-static void menu_save_state(uint8_t pos, menu_t *parent)
+static void menu_save_state(uint8_t pos, menu_parent_t *parent)
 {
 	state_save(pos + 1);
 	menu_close();
 }
 
-static char * menu_save_state_arg(uint8_t pos, menu_t *parent)
+static char * menu_save_state_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (state_check_if_used(pos + 1)) {
 		default:
@@ -475,7 +475,7 @@ static char * menu_save_state_arg(uint8_t pos, menu_t *parent)
 	}
 }
 
-static void menu_clear_states(uint8_t pos, menu_t *parent)
+static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 {
 	uint8_t i;
 
