@@ -439,31 +439,20 @@ static void menu_reset(uint8_t pos, menu_parent_t *parent)
 	menu_close();
 }
 
-static void menu_load_state(uint8_t pos, menu_parent_t *parent)
+static void menu_slots(uint8_t pos, menu_parent_t *parent)
 {
-	state_load(pos + 1);
-	menu_close();
-}
-
-static char * menu_load_state_arg(uint8_t pos, menu_parent_t *parent)
-{
-	switch (state_check_if_used(pos + 1)) {
-		default:
-		case 0:
-			return "";
-
-		case 1:
-			return " *";
+	if (parent->pos == 0) {
+		/* Load */
+		state_load(pos + 1);
+		menu_close();
+	} else {
+		/* Save */
+		state_save(pos + 1);
+		menu_close();
 	}
 }
 
-static void menu_save_state(uint8_t pos, menu_parent_t *parent)
-{
-	state_save(pos + 1);
-	menu_close();
-}
-
-static char * menu_save_state_arg(uint8_t pos, menu_parent_t *parent)
+static char * menu_slots_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (state_check_if_used(pos + 1)) {
 		default:
@@ -493,39 +482,24 @@ static menu_t options_menu[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_t load_state_menu[] = {
-	{"Slot 1", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 2", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 3", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 4", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 5", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 6", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 7", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 8", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 9", &menu_load_state_arg, &menu_load_state, NULL},
-	{"Slot 10", &menu_load_state_arg, &menu_load_state, NULL},
-
-	{NULL, NULL, NULL},
-};
-
-static menu_t save_state_menu[] = {
-	{"Slot 1", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 2", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 3", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 4", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 5", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 6", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 7", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 8", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 9", &menu_save_state_arg, &menu_save_state, NULL},
-	{"Slot 10", &menu_save_state_arg, &menu_save_state, NULL},
+static menu_t slots_menu[] = {
+	{"Slot 1", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 2", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 3", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 4", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 5", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 6", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 7", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 8", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 9", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 10", &menu_slots_arg, &menu_slots, NULL},
 
 	{NULL, NULL, NULL},
 };
 
 static menu_t states_menu[] = {
-	{"Load", NULL, NULL, load_state_menu},
-	{"Save", NULL, NULL, save_state_menu},
+	{"Load", NULL, NULL, slots_menu},
+	{"Save", NULL, NULL, slots_menu},
 	{"Clear All", NULL, &menu_clear_states, NULL},
 
 	{NULL, NULL, NULL},
