@@ -445,10 +445,13 @@ static void menu_slots(uint8_t pos, menu_parent_t *parent)
 		/* Load */
 		state_load(pos + 1);
 		menu_close();
-	} else {
+	} else if (parent->pos == 1) {
 		/* Save */
 		state_save(pos + 1);
 		menu_close();
+	} else {
+		/* Clear */
+		state_erase(pos + 1);
 	}
 }
 
@@ -500,6 +503,7 @@ static menu_t slots_menu[] = {
 static menu_t states_menu[] = {
 	{"Load", NULL, NULL, slots_menu},
 	{"Save", NULL, NULL, slots_menu},
+	{"Clear", NULL, NULL, slots_menu},
 	{"Clear All", NULL, &menu_clear_states, NULL},
 
 	{NULL, NULL, NULL},
