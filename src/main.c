@@ -608,6 +608,9 @@ static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 	} else if (long_press) {
 		if (btn == BTN_RIGHT && !menu_is_visible()) {
 			menu_open();
+
+			/* Make sure TamaLIB receives a release since it received a press */
+			tamalib_set_button(btn, BTN_STATE_RELEASED);
 		}
 	} else {
 		tamalib_set_button(btn, state);
