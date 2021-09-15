@@ -27,8 +27,8 @@ typedef struct menu_parent menu_parent_t;
 
 struct menu {
 	char *name;
-	char * (*arg_cb)(uint8_t pos, menu_parent_t *parent);
-	void (*cb)(uint8_t pos, menu_parent_t *parent);
+	char * (*arg_cb)(uint8_t, menu_parent_t *);
+	void (*cb)(uint8_t, menu_parent_t *);
 	struct menu *sub_menu;
 };
 
