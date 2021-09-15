@@ -22,8 +22,6 @@
 #include "storage.h"
 
 #define STORAGE_BASE_ADDRESS				0x8010000
-#define STORAGE_SIZE					0x10000
-
 #define PAGE_SIZE					512 // in words (sizeof(uint32_t))
 
 

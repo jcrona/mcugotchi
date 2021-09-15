@@ -20,6 +20,9 @@
 #ifndef _STORAGE_H_
 #define _STORAGE_H_
 
+#define STORAGE_SIZE					0x10000
+
+
 int8_t storage_read(uint32_t offset, uint32_t *data, uint32_t length);
 int8_t storage_write(uint32_t offset, uint32_t *data, uint32_t length);
 int8_t storage_erase(void);
