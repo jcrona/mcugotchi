@@ -22,7 +22,7 @@
 #include "storage.h"
 
 #define STORAGE_BASE_ADDRESS				0x8010000
-#define PAGE_SIZE					512 // in words (sizeof(uint32_t))
+#define STORAGE_PAGE_SIZE				512 // in words (sizeof(uint32_t))
 
 
 static void flash_read(uint32_t addr, uint32_t *data, uint32_t length)
@@ -80,18 +80,18 @@ int8_t storage_read(uint32_t offset, uint32_t *data, uint32_t length)
 
 static int8_t write_within_page(uint32_t addr, uint32_t *data, uint32_t length)
 {
-	uint32_t page[PAGE_SIZE];
+	uint32_t page[STORAGE_PAGE_SIZE];
 	uint32_t page_addr = addr & 0xFFFFF800;
 	uint32_t offset_in_page = (addr & 0x7FC) >> 2;
 	uint32_t i = 0;
 
-	if (length > PAGE_SIZE - offset_in_page) {
+	if (length > STORAGE_PAGE_SIZE - offset_in_page) {
 		return -1;
 	}
 
 	/* Read the page if needed */
-	if (offset_in_page != 0 ||  length < PAGE_SIZE) {
-		flash_read(page_addr, page, PAGE_SIZE);
+	if (offset_in_page != 0 ||  length < STORAGE_PAGE_SIZE) {
+		flash_read(page_addr, page, STORAGE_PAGE_SIZE);
 	}
 
 	/* Update the page */
@@ -105,7 +105,7 @@ static int8_t write_within_page(uint32_t addr, uint32_t *data, uint32_t length)
 	}
 
 	/* Write the page back */
-	if (flash_write(page_addr, page, PAGE_SIZE) < 0) {
+	if (flash_write(page_addr, page, STORAGE_PAGE_SIZE) < 0) {
 		return -1;
 	}
 
@@ -122,10 +122,10 @@ int8_t storage_write(uint32_t offset, uint32_t *data, uint32_t length)
 	while (length > 0) {
 		if (addr & 0x7FC) {
 			/* First partial page */
-			page_len = PAGE_SIZE - ((addr & 0x7FC) >> 2);
+			page_len = STORAGE_PAGE_SIZE - ((addr & 0x7FC) >> 2);
 		} else {
 			/* Full page */
-			page_len = PAGE_SIZE;
+			page_len = STORAGE_PAGE_SIZE;
 		}
 
 		if (page_len > length) {
@@ -154,8 +154,8 @@ int8_t storage_erase(void)
 
 	HAL_FLASH_Unlock();
 
-	for (i = 0; i < (STORAGE_SIZE >> 2)/PAGE_SIZE; i++) {
-		if (flash_erase_page(STORAGE_BASE_ADDRESS + i * (PAGE_SIZE << 2)) < 0) {
+	for (i = 0; i < (STORAGE_SIZE >> 2)/STORAGE_PAGE_SIZE; i++) {
+		if (flash_erase_page(STORAGE_BASE_ADDRESS + i * (STORAGE_PAGE_SIZE << 2)) < 0) {
 			HAL_FLASH_Lock();
 			return -1;
 		}
