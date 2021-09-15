@@ -22,22 +22,22 @@
 
 #include "stm32f0xx_hal.h"
 
-typedef struct menu menu_t;
+typedef struct menu_item menu_item_t;
 typedef struct menu_parent menu_parent_t;
 
-struct menu {
+struct menu_item {
 	char *name;
 	char * (*arg_cb)(uint8_t, menu_parent_t *);
 	void (*cb)(uint8_t, menu_parent_t *);
-	struct menu *sub_menu;
+	struct menu_item *sub_menu;
 };
 
 struct menu_parent {
-	menu_t *menu;
+	menu_item_t *menu;
 	uint8_t pos;
 };
 
-void menu_register(menu_t *items);
+void menu_register(menu_item_t *items);
 
 void menu_open(void);
 void menu_close(void);

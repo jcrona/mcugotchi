@@ -450,7 +450,7 @@ static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 	}
 }
 
-static menu_t options_menu[] = {
+static menu_item_t options_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, NULL},
 	{"", &menu_pause_arg, &menu_pause, NULL},
@@ -459,7 +459,7 @@ static menu_t options_menu[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_t slots_menu[] = {
+static menu_item_t slots_menu[] = {
 	{"Slot 1", &menu_slots_arg, &menu_slots, NULL},
 	{"Slot 2", &menu_slots_arg, &menu_slots, NULL},
 	{"Slot 3", &menu_slots_arg, &menu_slots, NULL},
@@ -474,7 +474,7 @@ static menu_t slots_menu[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_t states_menu[] = {
+static menu_item_t states_menu[] = {
 	{"Load", NULL, NULL, slots_menu},
 	{"Save", NULL, NULL, slots_menu},
 	{"Clear", NULL, NULL, slots_menu},
@@ -483,7 +483,7 @@ static menu_t states_menu[] = {
 	{NULL, NULL, NULL},
 };
 
-static menu_t main_menu[] = {
+static menu_item_t main_menu[] = {
 	{"Options", NULL, NULL, options_menu},
 	{"States", NULL, NULL, states_menu},
 

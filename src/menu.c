@@ -32,8 +32,8 @@
 #define MAX_DEPTH				9
 
 static uint8_t is_visible = 0;
-static menu_t *g_menu = NULL;
-static menu_t *current_menu = NULL;
+static menu_item_t *g_menu = NULL;
+static menu_item_t *current_menu = NULL;
 static uint8_t current_item = 0;
 static uint8_t current_depth = 0;
 
@@ -69,7 +69,7 @@ static void draw_menu(void)
 	PScrn();
 }
 
-void menu_register(menu_t *menu)
+void menu_register(menu_item_t *menu)
 {
 	g_menu = menu;
 }
