@@ -25,13 +25,13 @@
 #define JOB_ASAP				0
 
 typedef struct job {
-	time_t time;
+	us_time_t time;
 	void (*cb)(struct job *);
 	struct job *next;
 } job_t;
 
 
-void job_schedule(job_t *job, void (*cb)(job_t *), time_t time);
+void job_schedule(job_t *job, void (*cb)(job_t *), us_time_t time);
 void job_cancel(job_t *job);
 
 job_t * job_get_next(void);

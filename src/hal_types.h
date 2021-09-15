@@ -31,6 +31,6 @@ typedef uint8_t u8_t;
 typedef uint16_t u12_t;
 typedef uint16_t u13_t;
 typedef uint32_t u32_t;
-typedef time_t timestamp_t; // WARNING: Must be an unsigned type to properly handle wrapping (u32 wraps in around 1h11m)
+typedef us_time_t timestamp_t; // WARNING: Must be an unsigned type to properly handle wrapping (u32 wraps in around 1h11m)
 
 #endif /* _HAL_TYPES_H_ */

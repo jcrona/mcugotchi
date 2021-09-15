@@ -26,7 +26,7 @@
 static job_t *jobs = NULL;
 
 
-void job_schedule(job_t *job, void (*cb)(job_t *), time_t time)
+void job_schedule(job_t *job, void (*cb)(job_t *), us_time_t time)
 {
 	job_t **j = &jobs;
 
