@@ -588,12 +588,8 @@ static void cpu_job_fn(job_t *job)
 
 static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 {
-	if (long_press) {
-		if (btn == BTN_RIGHT && !menu_is_visible()) {
-			menu_open();
-		}
-	} else if (state == BTN_STATE_PRESSED) {
-		if (menu_is_visible()) {
+	if (menu_is_visible()) {
+		if (state == BTN_STATE_PRESSED) {
 			switch (btn) {
 				case BTN_LEFT:
 					menu_next();
@@ -609,9 +605,11 @@ static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 
 			}
 		}
-	}
-
-	if (!menu_is_visible()) {
+	} else if (long_press) {
+		if (btn == BTN_RIGHT && !menu_is_visible()) {
+			menu_open();
+		}
+	} else {
 		tamalib_set_button(btn, state);
 	}
 }
