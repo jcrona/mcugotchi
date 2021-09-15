@@ -29,11 +29,15 @@ STLIBROOT = libs/STM32CubeF0
 INC       = -I$(STLIBROOT)/Drivers/CMSIS/Include
 INC      += -I$(STLIBROOT)/Drivers/CMSIS/Device/ST/STM32F0xx/Include/
 INC      += -I$(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Inc/
+INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/
+INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/
 STLIBDIR  = $(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Src/
+USBCORELIB = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/
+USBMSCLIB  = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/
 endif
 
 SRCS = $(wildcard $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
-INC += -I$(HALDIR)
+INC += -I$(HALDIR) -I$(SRCDIR)
 
 TARGET = mcugotchi
 
@@ -52,13 +56,15 @@ ASOPTS   = -mcpu=$(MCU) -mthumb -g$(DEBUG)
 LNLIBS   =
 LNOPTS   = -mcpu=$(MCU) -mthumb -Wl,--gc-sections -Wl,-L$(HALDIR) -Wl,-Map=$(BUILDDIR)/$(TARGET).map -Wl,-T$(LD_FILE)
 
-vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(HALDIR)
+vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(USBCORELIB) $(USBMSCLIB) $(HALDIR)
 vpath %.s $(SRCDIR) $(STLIBDIR) $(HALDIR)
 
 
 # Source files from ST Library if any
 ifneq ($(STLIBDIR), "")
 SRCS += $(filter-out $(wildcard $(STLIBDIR)/*_template.c), $(wildcard $(STLIBDIR)/*.c))
+SRCS += $(filter-out $(wildcard $(USBCORELIB)/*_template.c), $(wildcard $(USBCORELIB)/*.c))
+SRCS += $(filter-out $(wildcard $(USBMSCLIB)/*_template.c), $(wildcard $(USBMSCLIB)/*.c))
 endif
 
 OBJS = $(patsubst %, $(BUILDDIR)/%.o, $(notdir $(basename $(SRCS))))

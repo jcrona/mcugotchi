@@ -41,6 +41,7 @@
 #include "storage.h"
 #include "state.h"
 #include "button.h"
+#include "usb.h"
 
 #include "lib/tamalib.h"
 
@@ -526,6 +527,7 @@ static void SystemClock_Config(void)
 {
 	RCC_ClkInitTypeDef RCC_ClkInitStruct;
 	RCC_OscInitTypeDef RCC_OscInitStruct;
+	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
 	/* Select HSI48 Oscillator as PLL source */
 	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
@@ -535,6 +537,13 @@ static void SystemClock_Config(void)
 	RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV2;
 	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
 	if (HAL_RCC_OscConfig(&RCC_OscInitStruct)!= HAL_OK) {
+		fatal_error();
+	}
+
+	/* Select HSI48 as USB clock source */
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
+	PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct)!= HAL_OK) {
 		fatal_error();
 	}
 
@@ -627,6 +636,8 @@ static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 int main(void)
 {
 	board_init();
+
+	usb_init();
 
 	button_register_handler(&btn_handler);
 
