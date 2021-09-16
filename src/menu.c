@@ -46,6 +46,10 @@ static void draw_menu(void)
 	uint8_t top_item = 0;
 	uint8_t y = MENU_OFFSET_Y, x;
 
+	if (!is_visible) {
+		return;
+	}
+
 	if (current_item >= ITEMS_ON_SCREEN) {
 		top_item = current_item - ITEMS_ON_SCREEN + 1;
 	}
