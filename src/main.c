@@ -54,6 +54,9 @@
 #define ICON_OFFSET_Y					0
 #define LCD_OFFET_X					16
 #define LCD_OFFET_Y					8
+#define PAUSED_X					34
+#define PAUSED_Y					24
+#define PAUSED_STR					"Paused"
 
 #define FRAMERATE 					30
 
@@ -266,6 +269,10 @@ static void hal_update_screen(void)
 		if (icon_buffer[i]) {
 			draw_icon((i % 4) * ICON_STRIDE_X + ICON_OFFSET_X, (i / 4) * ICON_STRIDE_Y + ICON_OFFSET_Y, i, 1);
 		}
+	}
+
+	if (emulation_paused) {
+		PStr(PAUSED_STR, PAUSED_X, PAUSED_Y, 1, PixNorm);
 	}
 
 	PScrn();
