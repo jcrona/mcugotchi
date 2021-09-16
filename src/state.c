@@ -37,7 +37,7 @@ void state_save(uint8_t slot)
 	uint32_t pos = 0;
 	uint32_t i;
 
-	if (slot > STATE_SLOTS_NUM) {
+	if (slot >= STATE_SLOTS_NUM) {
 		return;
 	}
 
@@ -94,7 +94,7 @@ void state_load(uint8_t slot)
 	uint32_t pos = 0;
 	uint32_t i;
 
-	if (slot > STATE_SLOTS_NUM) {
+	if (slot >= STATE_SLOTS_NUM) {
 		return;
 	}
 
@@ -153,7 +153,7 @@ void state_erase(uint8_t slot)
 	uint32_t slot_offset;
 	uint32_t i;
 
-	if (slot > STATE_SLOTS_NUM) {
+	if (slot >= STATE_SLOTS_NUM) {
 		return;
 	}
 

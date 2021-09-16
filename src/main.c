@@ -424,21 +424,21 @@ static void menu_slots(uint8_t pos, menu_parent_t *parent)
 {
 	if (parent->pos == 0) {
 		/* Load */
-		state_load(pos + 1);
+		state_load(pos);
 		menu_close();
 	} else if (parent->pos == 1) {
 		/* Save */
-		state_save(pos + 1);
+		state_save(pos);
 		menu_close();
 	} else {
 		/* Clear */
-		state_erase(pos + 1);
+		state_erase(pos);
 	}
 }
 
 static char * menu_slots_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (state_check_if_used(pos + 1)) {
+	switch (state_check_if_used(pos)) {
 		default:
 		case 0:
 			return "";
@@ -453,7 +453,7 @@ static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 	uint8_t i;
 
 	for (i = 0; i < STATE_SLOTS_NUM; i++) {
-		state_erase(i + 1);
+		state_erase(i);
 	}
 }
 
@@ -467,6 +467,7 @@ static menu_item_t options_menu[] = {
 };
 
 static menu_item_t slots_menu[] = {
+	{"Slot 0", &menu_slots_arg, &menu_slots, 0, NULL},
 	{"Slot 1", &menu_slots_arg, &menu_slots, 0, NULL},
 	{"Slot 2", &menu_slots_arg, &menu_slots, 0, NULL},
 	{"Slot 3", &menu_slots_arg, &menu_slots, 0, NULL},
@@ -476,7 +477,6 @@ static menu_item_t slots_menu[] = {
 	{"Slot 7", &menu_slots_arg, &menu_slots, 0, NULL},
 	{"Slot 8", &menu_slots_arg, &menu_slots, 0, NULL},
 	{"Slot 9", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 10", &menu_slots_arg, &menu_slots, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
