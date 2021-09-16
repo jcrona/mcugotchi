@@ -18,171 +18,282 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include "stm32f0xx_hal.h"
+#include "ff_gen_drv.h"
 
 #include "lib/tamalib.h"
-#include "storage.h"
 #include "state.h"
 
-#define STORAGE_SLOTS_OFFSET				64 // in words (sizeof(uint32_t))
+#define STATE_SLOT_SIZE					821 // in bytes
 
-#define STATE_SLOT_SIZE					256 // in words (sizeof(uint32_t))
+#define STATE_FILE_MAGIC				"TLST"
+#define STATE_FILE_VERSION				2
 
-static uint32_t state_buf[STATE_SLOT_SIZE];
+static uint8_t state_buf[STATE_SLOT_SIZE];
+
+static char state_file_name[] = "saveX.bin";
 
 
 void state_save(uint8_t slot)
 {
+	FIL f;
+	UINT num;
 	state_t *state;
-	uint32_t slot_offset;
-	uint32_t pos = 0;
+	uint8_t *ptr = state_buf;
 	uint32_t i;
 
 	if (slot >= STATE_SLOTS_NUM) {
 		return;
 	}
 
-	/* Find the right offset for that slot */
-	slot_offset = STORAGE_SLOTS_OFFSET + (slot - 1) * STATE_SLOT_SIZE;
-
 	state = tamalib_get_state();
 
-	/* Set the slot as used */
-	state_buf[pos++] = 1;
+	/* First the magic, then the version, and finally the fields of
+	 * the state_t struct written as u8, u16 little-endian or u32
+	 * little-endian following the struct order
+	 */
+	ptr[0] = (uint8_t) STATE_FILE_MAGIC[0];
+	ptr[1] = (uint8_t) STATE_FILE_MAGIC[1];
+	ptr[2] = (uint8_t) STATE_FILE_MAGIC[2];
+	ptr[3] = (uint8_t) STATE_FILE_MAGIC[3];
+	ptr += 4;
 
-	/* All fields are written following the struct order */
-	state_buf[pos++] = *(state->pc) & 0x1FFF;
-	state_buf[pos++] = *(state->x) & 0xFFF;
-	state_buf[pos++] = *(state->y) & 0xFFF;
-	state_buf[pos++] = *(state->a) & 0xF;
-	state_buf[pos++] = *(state->b) & 0xF;
-	state_buf[pos++] = *(state->np) & 0x1F;
-	state_buf[pos++] = *(state->sp) & 0xFF;
-	state_buf[pos++] = *(state->flags) & 0xF;
-	state_buf[pos++] = *(state->tick_counter);
-	state_buf[pos++] = *(state->clk_timer_timestamp);
-	state_buf[pos++] = *(state->prog_timer_timestamp);
-	state_buf[pos++] = *(state->prog_timer_enabled) & 0x1;
-	state_buf[pos++] = *(state->prog_timer_data) & 0xFF;
-	state_buf[pos++] = *(state->prog_timer_rld) & 0xFF;
-	state_buf[pos++] = *(state->call_depth);
+	ptr[0] = STATE_FILE_VERSION & 0xFF;
+	ptr += 1;
+
+	ptr[0] = *(state->pc) & 0xFF;
+	ptr[1] = (*(state->pc) >> 8) & 0x1F;
+	ptr += 2;
+
+	ptr[0] = *(state->x) & 0xFF;
+	ptr[1] = (*(state->x) >> 8) & 0xF;
+	ptr += 2;
+
+	ptr[0] = *(state->y) & 0xFF;
+	ptr[1] = (*(state->y) >> 8) & 0xF;
+	ptr += 2;
+
+	ptr[0] = *(state->a) & 0xF;
+	ptr += 1;
+
+	ptr[0] = *(state->b) & 0xF;
+	ptr += 1;
+
+	ptr[0] = *(state->np) & 0x1F;
+	ptr += 1;
+
+	ptr[0] = *(state->sp) & 0xFF;
+	ptr += 1;
+
+	ptr[0] = *(state->flags) & 0xF;
+	ptr += 1;
+
+	ptr[0] = *(state->tick_counter) & 0xFF;
+	ptr[1] = (*(state->tick_counter) >> 8) & 0xFF;
+	ptr[2] = (*(state->tick_counter) >> 16) & 0xFF;
+	ptr[3] = (*(state->tick_counter) >> 24) & 0xFF;
+	ptr += 4;
+
+	ptr[0] = *(state->clk_timer_timestamp) & 0xFF;
+	ptr[1] = (*(state->clk_timer_timestamp) >> 8) & 0xFF;
+	ptr[2] = (*(state->clk_timer_timestamp) >> 16) & 0xFF;
+	ptr[3] = (*(state->clk_timer_timestamp) >> 24) & 0xFF;
+	ptr += 4;
+
+	ptr[0] = *(state->prog_timer_timestamp) & 0xFF;
+	ptr[1] = (*(state->prog_timer_timestamp) >> 8) & 0xFF;
+	ptr[2] = (*(state->prog_timer_timestamp) >> 16) & 0xFF;
+	ptr[3] = (*(state->prog_timer_timestamp) >> 24) & 0xFF;
+	ptr += 4;
+
+	ptr[0] = *(state->prog_timer_enabled) & 0x1;
+	ptr += 1;
+
+	ptr[0] = *(state->prog_timer_data) & 0xFF;
+	ptr += 1;
+
+	ptr[0] = *(state->prog_timer_rld) & 0xFF;
+	ptr += 1;
+
+	ptr[0] = *(state->call_depth) & 0xFF;
+	ptr[1] = (*(state->call_depth) >> 8) & 0xFF;
+	ptr[2] = (*(state->call_depth) >> 16) & 0xFF;
+	ptr[3] = (*(state->call_depth) >> 24) & 0xFF;
+	ptr += 4;
 
 	for (i = 0; i < INT_SLOT_NUM; i++) {
-		state_buf[pos++] = state->interrupts[i].factor_flag_reg & 0xF;
-		state_buf[pos++] = state->interrupts[i].mask_reg & 0xF;
-		state_buf[pos++] = state->interrupts[i].triggered & 0x1;
+		ptr[0] = state->interrupts[i].factor_flag_reg & 0xF;
+		ptr += 1;
+
+		ptr[0] = state->interrupts[i].mask_reg & 0xF;
+		ptr += 1;
+
+		ptr[0] = state->interrupts[i].triggered & 0x1;
+		ptr += 1;
 	}
 
 	/* First 640 half bytes correspond to the RAM */
-	for (i = 0; i < 640; i++) {
-		((uint8_t *) &state_buf[pos])[i] = state->memory[i];
+	for (i = 0; i < MEM_RAM_SIZE; i++) {
+		ptr[i] = state->memory[i + MEM_RAM_ADDR] & 0xF;
 	}
-	pos += (640 + sizeof(uint32_t) - 1)/sizeof(uint32_t);
+	ptr += MEM_RAM_SIZE;
 
 	/* I/Os are from 0xF00 to 0xF7F */
-	for (i = 0; i < 160; i++) {
-		((uint8_t *) &state_buf[pos])[i] = state->memory[i + 0xF00];
+	for (i = 0; i < MEM_IO_SIZE; i++) {
+		ptr[i] = state->memory[i + MEM_IO_ADDR] & 0xF;
 	}
-	pos += (160 + sizeof(uint32_t) - 1)/sizeof(uint32_t);
+	ptr += MEM_IO_SIZE;
 
-	storage_write(slot_offset, state_buf, STATE_SLOT_SIZE);
+	state_file_name[4] = slot + '0';
+
+	if (f_open(&f, state_file_name, FA_CREATE_ALWAYS | FA_WRITE)) {
+		/* Error */
+		return;
+	}
+
+        if (f_write(&f, state_buf, sizeof(state_buf), &num) || (num < sizeof(state_buf))) {
+		/* Error */
+		f_close(&f);
+		return;
+	}
+
+	f_close(&f);
 }
 
 void state_load(uint8_t slot)
 {
+	FIL f;
+	UINT num;
 	state_t *state;
-	uint32_t slot_offset;
-	uint32_t pos = 0;
+	uint8_t *ptr = state_buf;
 	uint32_t i;
 
 	if (slot >= STATE_SLOTS_NUM) {
 		return;
 	}
 
-	/* Find the right offset for that slot */
-	slot_offset = STORAGE_SLOTS_OFFSET + (slot - 1) * STATE_SLOT_SIZE;
-
-	storage_read(slot_offset, state_buf, STATE_SLOT_SIZE);
-
 	state = tamalib_get_state();
 
-	/* Check is the slot is used */
-	if (!state_buf[pos++]) {
+	state_file_name[4] = slot + '0';
+
+	if (f_open(&f, state_file_name, FA_OPEN_EXISTING | FA_READ)) {
+		/* Error */
 		return;
 	}
 
-	/* All fields are written following the struct order */
-	*(state->pc) = state_buf[pos++] & 0x1FFF;
-	*(state->x) = state_buf[pos++] & 0xFFF;
-	*(state->y) = state_buf[pos++] & 0xFFF;
-	*(state->a) = state_buf[pos++] & 0xF;
-	*(state->b) = state_buf[pos++] & 0xF;
-	*(state->np) = state_buf[pos++] & 0x1F;
-	*(state->sp) = state_buf[pos++] & 0xFF;
-	*(state->flags) = state_buf[pos++] & 0xF;
-	*(state->tick_counter) = state_buf[pos++];
-	*(state->clk_timer_timestamp) = state_buf[pos++];
-	*(state->prog_timer_timestamp) = state_buf[pos++];
-	*(state->prog_timer_enabled) = state_buf[pos++] & 0x1;
-	*(state->prog_timer_data) = state_buf[pos++] & 0xFF;
-	*(state->prog_timer_rld) = state_buf[pos++] & 0xFF;
-	*(state->call_depth) = state_buf[pos++];
+        if (f_read(&f, state_buf, sizeof(state_buf), &num) || (num < sizeof(state_buf))) {
+		/* Error */
+		f_close(&f);
+		return;
+	}
+
+	f_close(&f);
+
+	/* First the magic, then the version, and finally the fields of
+	 * the state_t struct written as u8, u16 little-endian or u32
+	 * little-endian following the struct order
+	 */
+	if (ptr[0] != (uint8_t) STATE_FILE_MAGIC[0] || ptr[1] != (uint8_t) STATE_FILE_MAGIC[1] ||
+		ptr[2] != (uint8_t) STATE_FILE_MAGIC[2] || ptr[3] != (uint8_t) STATE_FILE_MAGIC[3]) {
+		return;
+	}
+	ptr += 4;
+
+	if (ptr[0] != STATE_FILE_VERSION) {
+		/* TODO: Handle migration at a point */
+		return;
+	}
+	ptr += 1;
+
+	*(state->pc) = ptr[0] | ((ptr[1] & 0x1F) << 8);
+	ptr += 2;
+
+	*(state->x) = ptr[0] | ((ptr[1] & 0xF) << 8);
+	ptr += 2;
+
+	*(state->y) = ptr[0] | ((ptr[1] & 0xF) << 8);
+	ptr += 2;
+
+	*(state->a) = ptr[0] & 0xF;
+	ptr += 1;
+
+	*(state->b) = ptr[0] & 0xF;
+	ptr += 1;
+
+	*(state->np) = ptr[0] & 0x1F;
+	ptr += 1;
+
+	*(state->sp) = ptr[0];
+	ptr += 1;
+
+	*(state->flags) = ptr[0] & 0xF;
+	ptr += 1;
+
+	*(state->tick_counter) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
+	ptr += 4;
+
+	*(state->clk_timer_timestamp) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
+	ptr += 4;
+
+	*(state->prog_timer_timestamp) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
+	ptr += 4;
+
+	*(state->prog_timer_enabled) = ptr[0] & 0x1;
+	ptr += 1;
+
+	*(state->prog_timer_data) = ptr[0];
+	ptr += 1;
+
+	*(state->prog_timer_rld) = ptr[0];
+	ptr += 1;
+
+	*(state->call_depth) = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
+	ptr += 4;
 
 	for (i = 0; i < INT_SLOT_NUM; i++) {
-		state->interrupts[i].factor_flag_reg = state_buf[pos++] & 0xF;
-		state->interrupts[i].mask_reg = state_buf[pos++] & 0xF;
-		state->interrupts[i].triggered = state_buf[pos++] & 0x1;
+		state->interrupts[i].factor_flag_reg = ptr[0] & 0xF;
+		ptr += 1;
+
+		state->interrupts[i].mask_reg = ptr[0] & 0xF;
+		ptr += 1;
+
+		state->interrupts[i].triggered = ptr[0] & 0x1;
+		ptr += 1;
 	}
 
 	/* First 640 half bytes correspond to the RAM */
-	for (i = 0; i < 640; i++) {
-		state->memory[i] = ((uint8_t *) &state_buf[pos])[i];
+	for (i = 0; i < MEM_RAM_SIZE; i++) {
+		state->memory[i + MEM_RAM_ADDR] = ptr[i] & 0xF;
 	}
-	pos += (640 + sizeof(uint32_t) - 1)/sizeof(uint32_t);
+	ptr += MEM_RAM_SIZE;
 
 	/* I/Os are from 0xF00 to 0xF7F */
-	for (i = 0; i < 160; i++) {
-		state->memory[i + 0xF00] = ((uint8_t *) &state_buf[pos])[i];
+	for (i = 0; i < MEM_IO_SIZE; i++) {
+		state->memory[i + MEM_IO_ADDR] = ptr[i] & 0xF;
 	}
-	pos += (160 + sizeof(uint32_t) - 1)/sizeof(uint32_t);
+	ptr += MEM_IO_SIZE;
 
 	tamalib_refresh_hw();
 }
 
 void state_erase(uint8_t slot)
 {
-	uint32_t slot_offset;
-	uint32_t i;
-
 	if (slot >= STATE_SLOTS_NUM) {
 		return;
 	}
 
-	/* Find the right offset for that slot */
-	slot_offset = STORAGE_SLOTS_OFFSET + (slot - 1) * STATE_SLOT_SIZE;
+	state_file_name[4] = slot + '0';
 
-	storage_read(slot_offset, state_buf, STATE_SLOT_SIZE);
-
-	/* Check is the slot is used */
-	if (!state_buf[0]) {
-		return;
-	}
-
-	for (i = 0; i < STATE_SLOT_SIZE; i++) {
-		state_buf[i] = 0;
-	}
-
-	storage_write(slot_offset, state_buf, STATE_SLOT_SIZE);
+	f_unlink(state_file_name);
 }
 
 uint8_t state_check_if_used(uint8_t slot)
 {
-	uint32_t slot_offset;
+	if (slot >= STATE_SLOTS_NUM) {
+		return 0;
+	}
 
-	/* Find the right offset for that slot */
-	slot_offset = STORAGE_SLOTS_OFFSET + (slot - 1) * STATE_SLOT_SIZE;
+	state_file_name[4] = slot + '0';
 
-	storage_read(slot_offset, state_buf, STATE_SLOT_SIZE);
-
-	/* Check is the slot is used */
-	return state_buf[0];
+	/* Check if the slot is used */
+	return (f_stat(state_file_name, NULL) == FR_OK);
 }

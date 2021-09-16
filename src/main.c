@@ -42,6 +42,7 @@
 #include "state.h"
 #include "button.h"
 #include "usb.h"
+#include "fs_ll.h"
 
 #include "lib/tamalib.h"
 
@@ -594,6 +595,9 @@ int main(void)
 {
 	board_init();
 
+	fs_ll_init();
+	fs_ll_mount();
+
 	usb_init();
 
 	button_register_handler(&btn_handler);
@@ -612,4 +616,6 @@ int main(void)
 	job_mainloop();
 
 	tamalib_release();
+
+	fs_ll_umount();
 }
