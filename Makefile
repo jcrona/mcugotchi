@@ -31,9 +31,12 @@ INC      += -I$(STLIBROOT)/Drivers/CMSIS/Device/ST/STM32F0xx/Include/
 INC      += -I$(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Inc/
 INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/
 INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/
-STLIBDIR  = $(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Src/
+INC      += -I$(STLIBROOT)/Middlewares/Third_Party/FatFs/src/
+
+STLIBDIR   = $(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Src/
 USBCORELIB = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/
 USBMSCLIB  = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/
+FATFSLIB   = $(STLIBROOT)/Middlewares/Third_Party/FatFs/src/
 endif
 
 SRCS = $(wildcard $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
@@ -56,7 +59,7 @@ ASOPTS   = -mcpu=$(MCU) -mthumb -g$(DEBUG)
 LNLIBS   =
 LNOPTS   = -mcpu=$(MCU) -mthumb -Wl,--gc-sections -Wl,-L$(HALDIR) -Wl,-Map=$(BUILDDIR)/$(TARGET).map -Wl,-T$(LD_FILE)
 
-vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(USBCORELIB) $(USBMSCLIB) $(HALDIR)
+vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(USBCORELIB) $(USBMSCLIB) $(FATFSLIB) $(HALDIR)
 vpath %.s $(SRCDIR) $(STLIBDIR) $(HALDIR)
 
 
@@ -65,6 +68,7 @@ ifneq ($(STLIBDIR), "")
 SRCS += $(filter-out $(wildcard $(STLIBDIR)/*_template.c), $(wildcard $(STLIBDIR)/*.c))
 SRCS += $(filter-out $(wildcard $(USBCORELIB)/*_template.c), $(wildcard $(USBCORELIB)/*.c))
 SRCS += $(filter-out $(wildcard $(USBMSCLIB)/*_template.c), $(wildcard $(USBMSCLIB)/*.c))
+SRCS += $(wildcard $(FATFSLIB)/*.c)
 endif
 
 OBJS = $(patsubst %, $(BUILDDIR)/%.o, $(notdir $(basename $(SRCS))))
