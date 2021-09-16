@@ -63,12 +63,6 @@
 
 #define MAIN_JOB_PERIOD					1000 //us
 
-#define STORAGE_MAGIC					0x1A3A60C1
-#define STORAGE_VERSION					0
-
-#define STORAGE_MAGIC_OFFSET				0 // in words (sizeof(uint32_t))
-#define STORAGE_VERSION_OFFSET				1 // in words (sizeof(uint32_t))
-
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
 
@@ -326,41 +320,6 @@ static hal_t hal = {
 	.handler = &hal_handler,
 };
 
-static void storage_init(void)
-{
-	uint32_t tmp;
-
-	storage_erase();
-
-	/* Write magic */
-	tmp = STORAGE_MAGIC;
-	storage_write(STORAGE_MAGIC_OFFSET, &tmp, 1);
-
-	/* Write version */
-	tmp = STORAGE_VERSION;
-	storage_write(STORAGE_VERSION_OFFSET, &tmp, 1);
-}
-
-static void storage_sanity_check(void)
-{
-	uint32_t tmp;
-
-	/* Check the magic of the storage */
-	storage_read(STORAGE_MAGIC_OFFSET, &tmp, 1);
-	if (tmp != STORAGE_MAGIC) {
-		/* Re-init storage */
-		storage_init();
-		return;
-	}
-
-	/* Check the version of the storage */
-	storage_read(STORAGE_VERSION_OFFSET, &tmp, 1);
-	if (tmp != STORAGE_VERSION) {
-		/* Re-init storage (TODO: Migration instead) */
-		storage_init();
-	}
-}
-
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
@@ -570,8 +529,6 @@ static void board_init(void)
 	SSD1306_InitSetup();
 	LCDSleepMode(LCDWake);
 	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
-
-	storage_sanity_check();
 }
 
 static void render_job_fn(job_t *job)
