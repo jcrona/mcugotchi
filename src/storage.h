@@ -21,6 +21,7 @@
 #define _STORAGE_H_
 
 #define STORAGE_SIZE					0x10000
+#define STORAGE_PAGE_SIZE				512 // in words (sizeof(uint32_t))
 
 
 int8_t storage_read(uint32_t offset, uint32_t *data, uint32_t length);

@@ -22,7 +22,6 @@
 #include "storage.h"
 
 #define STORAGE_BASE_ADDRESS				0x8010000
-#define STORAGE_PAGE_SIZE				512 // in words (sizeof(uint32_t))
 
 
 static void flash_read(uint32_t addr, uint32_t *data, uint32_t length)
