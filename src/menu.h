@@ -29,6 +29,7 @@ struct menu_item {
 	char *name;
 	char * (*arg_cb)(uint8_t, menu_parent_t *);
 	void (*cb)(uint8_t, menu_parent_t *);
+	uint8_t confirm; // 0: no confirmation, 1: confirmations
 	struct menu_item *sub_menu;
 };
 

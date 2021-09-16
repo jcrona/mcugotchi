@@ -40,6 +40,26 @@ static uint8_t current_depth = 0;
 static menu_parent_t parents[MAX_DEPTH + 1] = { 0 }; // parents[0] will always be NULL
 
 
+static void menu_confirm_yes(uint8_t pos, menu_parent_t *parent)
+{
+	menu_back();
+
+	/* Execute the callback right away */
+	current_menu[current_item].cb(current_item, &parents[current_depth]);
+}
+
+static void menu_confirm_no(uint8_t pos, menu_parent_t *parent)
+{
+	menu_back();
+}
+
+static menu_item_t confirm_menu[] = {
+	{"I am sure", NULL, &menu_confirm_yes, 0, NULL},
+	{"Go back ", NULL, &menu_confirm_no, 0, NULL},
+
+	{NULL, NULL, NULL, 0, NULL},
+};
+
 static void draw_menu(void)
 {
 	uint8_t i;
@@ -117,15 +137,27 @@ void menu_next(void)
 
 void menu_enter(void)
 {
+	menu_item_t *sub_menu = NULL;
+
 	if (current_menu[current_item].cb != NULL) {
 		/* Regular item */
-		current_menu[current_item].cb(current_item, &parents[current_depth]);
+		if (current_menu[current_item].confirm) {
+			/* Confirmation sub menu */
+			sub_menu = confirm_menu;
+		} else {
+			/* Execute the callback right away */
+			current_menu[current_item].cb(current_item, &parents[current_depth]);
+		}
 	} else if (current_menu[current_item].sub_menu != NULL && current_depth < MAX_DEPTH) {
 		/* Sub menu */
+		sub_menu = current_menu[current_item].sub_menu;
+	}
+
+	if (sub_menu != NULL) {
 		current_depth++;
 		parents[current_depth].menu = current_menu;
 		parents[current_depth].pos = current_item;
-		current_menu = current_menu[current_item].sub_menu;
+		current_menu = sub_menu;
 		current_item = 0;
 	}
 

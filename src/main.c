@@ -458,43 +458,43 @@ static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 }
 
 static menu_item_t options_menu[] = {
-	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, NULL},
-	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, NULL},
-	{"", &menu_pause_arg, &menu_pause, NULL},
-	{"Reset", NULL, &menu_reset, NULL},
+	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
+	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
+	{"", &menu_pause_arg, &menu_pause, 0, NULL},
+	{"Reset", NULL, &menu_reset, 1, NULL},
 
-	{NULL, NULL, NULL},
+	{NULL, NULL, NULL, 0, NULL},
 };
 
 static menu_item_t slots_menu[] = {
-	{"Slot 1", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 2", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 3", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 4", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 5", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 6", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 7", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 8", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 9", &menu_slots_arg, &menu_slots, NULL},
-	{"Slot 10", &menu_slots_arg, &menu_slots, NULL},
+	{"Slot 1", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 2", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 3", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 4", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 5", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 6", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 7", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 8", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 9", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 10", &menu_slots_arg, &menu_slots, 0, NULL},
 
-	{NULL, NULL, NULL},
+	{NULL, NULL, NULL, 0, NULL},
 };
 
 static menu_item_t states_menu[] = {
-	{"Load", NULL, NULL, slots_menu},
-	{"Save", NULL, NULL, slots_menu},
-	{"Clear", NULL, NULL, slots_menu},
-	{"Clear All", NULL, &menu_clear_states, NULL},
+	{"Load", NULL, NULL, 0, slots_menu},
+	{"Save", NULL, NULL, 0, slots_menu},
+	{"Clear", NULL, NULL, 0, slots_menu},
+	{"Clear All", NULL, &menu_clear_states, 1, NULL},
 
-	{NULL, NULL, NULL},
+	{NULL, NULL, NULL, 0, NULL},
 };
 
 static menu_item_t main_menu[] = {
-	{"Options", NULL, NULL, options_menu},
-	{"States", NULL, NULL, states_menu},
+	{"Options", NULL, NULL, 0, options_menu},
+	{"States", NULL, NULL, 0, states_menu},
 
-	{NULL, NULL, NULL},
+	{NULL, NULL, NULL, 0, NULL},
 };
 
 void fatal_error(void)
