@@ -76,6 +76,7 @@ static job_t render_job;
 static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
+static bool_t rom_loaded = 1;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -571,7 +572,9 @@ static void cpu_job_fn(job_t *job)
 
 static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 {
-	if (menu_is_visible()) {
+	if (!rom_loaded) {
+		NVIC_SystemReset();
+	} else if (menu_is_visible()) {
 		if (state == BTN_STATE_PRESSED) {
 			switch (btn) {
 				case BTN_LEFT:
@@ -611,21 +614,32 @@ int main(void)
 
 	button_register_handler(&btn_handler);
 
-	menu_register(main_menu);
-
-	tamalib_register_hal(&hal);
-
 	/* Try to load the default ROM from the filesystem if it is not loaded */
-	if (!rom_is_loaded()) {
-		rom_load(DEFAULT_ROM_SLOT);
-	}
+	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {
+		rom_loaded = 0;
 
-	if (tamalib_init((const u12_t *) g_program, NULL, 1000000)) {
-		fatal_error();
-	}
+		PStr("No ROM found !", 0, 0, 0, PixNorm);
+		PStr("Connect me to a computer", 0, 16, 0, PixNorm);
+		PStr("and copy a Tamagotchi ROM", 0, 24, 0, PixNorm);
+		PStr("named rom0.bin.", 0, 32, 0, PixNorm);
+		PStr("Once done, press any", 0, 48, 0, PixNorm);
+		PStr("button to continue.", 0, 56, 0, PixNorm);
+		PScrn();
 
-	job_schedule(&render_job, &render_job_fn, JOB_ASAP);
-	job_schedule(&cpu_job, &cpu_job_fn, JOB_ASAP);
+		fs_ll_umount();
+		usb_start();
+	} else {
+		menu_register(main_menu);
+
+		tamalib_register_hal(&hal);
+
+		if (tamalib_init((const u12_t *) g_program, NULL, 1000000)) {
+			fatal_error();
+		}
+
+		job_schedule(&render_job, &render_job_fn, JOB_ASAP);
+		job_schedule(&cpu_job, &cpu_job_fn, JOB_ASAP);
+	}
 
 	job_mainloop();
 
