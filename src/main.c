@@ -43,10 +43,9 @@
 #include "button.h"
 #include "usb.h"
 #include "fs_ll.h"
+#include "rom.h"
 
 #include "lib/tamalib.h"
-
-#include "rom.h"
 
 #define PIXEL_SIZE					3
 #define ICON_SIZE					8
@@ -63,6 +62,8 @@
 #define FRAMERATE 					30
 
 #define MAIN_JOB_PERIOD					1000 //us
+
+static volatile u12_t *g_program = (volatile u12_t *) (STORAGE_BASE_ADDRESS + (STORAGE_ROM_OFFSET << 2));
 
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
@@ -606,7 +607,7 @@ int main(void)
 
 	tamalib_register_hal(&hal);
 
-	if (tamalib_init(g_program, NULL, 1000000)) {
+	if (tamalib_init((const u12_t *) g_program, NULL, 1000000)) {
 		fatal_error();
 	}
 

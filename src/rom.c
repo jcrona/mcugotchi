@@ -17,23 +17,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _STORAGE_H_
-#define _STORAGE_H_
+#include "rom.h"
 
-#define STORAGE_BASE_ADDRESS				0x800D000
+#include "lib/tamalib.h"
 
-#define STORAGE_SIZE					0x13000
-#define STORAGE_PAGE_SIZE				512 // 2KB in words (sizeof(uint32_t))
+/* Define this to include the ROM data at build time */
+#define ROM_BUILT_IN
 
-#define STORAGE_ROM_OFFSET				0x0
-#define STORAGE_ROM_SIZE				0xC00 // 12KB in words (sizeof(uint32_t))
-
-#define STORAGE_FS_OFFSET				0xC00
-#define STORAGE_FS_SIZE					0x4000 // 64KB in words (sizeof(uint32_t))
-
-
-int8_t storage_read(uint32_t offset, uint32_t *data, uint32_t length);
-int8_t storage_write(uint32_t offset, uint32_t *data, uint32_t length);
-int8_t storage_erase(void);
-
-#endif /* _STORAGE_H_ */
+#ifdef ROM_BUILT_IN
+static __attribute__((used, section(".rom"))) const u12_t g_program[];
+#include "rom_data.h"
+#endif

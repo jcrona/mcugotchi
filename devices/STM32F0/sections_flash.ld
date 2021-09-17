@@ -38,7 +38,15 @@ SECTIONS
 	    /* This is used by the startup in order to initialize the .data section */
         _sidata = _etext;
     } >FLASH
-    
+
+    /* The Tamagotchi ROM goes there */
+    .rom :
+    {
+	. = ALIGN(4);
+        KEEP(*(.rom))
+	. = ALIGN(4);
+    } >STORE
+
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
