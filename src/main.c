@@ -607,6 +607,11 @@ int main(void)
 
 	tamalib_register_hal(&hal);
 
+	/* Try to load the default ROM from the filesystem if it is not loaded */
+	if (!rom_is_loaded()) {
+		rom_load(DEFAULT_ROM_SLOT);
+	}
+
 	if (tamalib_init((const u12_t *) g_program, NULL, 1000000)) {
 		fatal_error();
 	}

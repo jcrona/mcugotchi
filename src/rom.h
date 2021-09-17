@@ -20,4 +20,14 @@
 #ifndef _ROM_H_
 #define _ROM_H_
 
+#include "stm32f0xx_hal.h"
+
+#define ROM_SLOTS_NUM					4
+#define DEFAULT_ROM_SLOT				0
+
+
+int8_t rom_load(uint8_t slot);
+uint8_t rom_stat(uint8_t slot);
+uint8_t rom_is_loaded(void);
+
 #endif /* _ROM_H_ */
