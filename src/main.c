@@ -376,10 +376,17 @@ static char * menu_pause_arg(uint8_t pos, menu_parent_t *parent)
 	}
 }
 
-static void menu_reset(uint8_t pos, menu_parent_t *parent)
+static void menu_reset_cpu(uint8_t pos, menu_parent_t *parent)
 {
 	cpu_reset();
 	menu_close();
+}
+
+static void menu_factory_reset(uint8_t pos, menu_parent_t *parent)
+{
+	fs_ll_umount();
+	storage_erase();
+	NVIC_SystemReset();
 }
 
 static void menu_slots(uint8_t pos, menu_parent_t *parent)
@@ -423,7 +430,8 @@ static menu_item_t options_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
 	{"", &menu_pause_arg, &menu_pause, 0, NULL},
-	{"Reset", NULL, &menu_reset, 1, NULL},
+	{"Reset CPU", NULL, &menu_reset_cpu, 1, NULL},
+	{"Fact. Reset", NULL, &menu_factory_reset, 1, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
