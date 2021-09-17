@@ -45,7 +45,7 @@ static DSTATUS storage_drv_status(BYTE lun)
 
 static DRESULT storage_drv_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
 {
-	if (storage_read(sector * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buff, count * (STORAGE_BLK_SIZE >> 2)) < 0) {
+	if (storage_read(STORAGE_FS_OFFSET + sector * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buff, count * (STORAGE_BLK_SIZE >> 2)) < 0) {
 		return RES_ERROR;
 	}
 
@@ -55,7 +55,7 @@ static DRESULT storage_drv_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
 #if _USE_WRITE == 1
 static DRESULT storage_drv_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
 {
-	if (storage_write(sector * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buff, count * (STORAGE_BLK_SIZE >> 2)) < 0) {
+	if (storage_write(STORAGE_FS_OFFSET + sector * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buff, count * (STORAGE_BLK_SIZE >> 2)) < 0) {
 		return RES_ERROR;
 	}
 
@@ -80,7 +80,7 @@ static DRESULT storage_drv_ioctl(BYTE lun, BYTE cmd, void *buff)
 
 		/* Get number of sectors on the disk (DWORD) */
 		case GET_SECTOR_COUNT :
-			*((DWORD*) buff) = STORAGE_SIZE/STORAGE_BLK_SIZE;
+			*((DWORD*) buff) = (STORAGE_FS_SIZE << 2)/STORAGE_BLK_SIZE;
 			res = RES_OK;
 			break;
 

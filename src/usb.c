@@ -56,7 +56,7 @@ static int8_t msc_init(uint8_t lun)
 
 static int8_t msc_get_capacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
-	*block_num = STORAGE_SIZE/STORAGE_BLK_SIZE;
+	*block_num = (STORAGE_FS_SIZE << 2)/STORAGE_BLK_SIZE;
 	*block_size = STORAGE_BLK_SIZE;
 
 	return 0;
@@ -74,12 +74,12 @@ static int8_t msc_is_write_protected(uint8_t lun)
 
 static int8_t msc_read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-	return storage_read(blk_addr * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buf, blk_len * (STORAGE_BLK_SIZE >> 2));
+	return storage_read(STORAGE_FS_OFFSET + blk_addr * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buf, blk_len * (STORAGE_BLK_SIZE >> 2));
 }
 
 static int8_t msc_write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-	return storage_write(blk_addr * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buf, blk_len * (STORAGE_BLK_SIZE >> 2));
+	return storage_write(STORAGE_FS_OFFSET + blk_addr * (STORAGE_BLK_SIZE >> 2), (uint32_t *) buf, blk_len * (STORAGE_BLK_SIZE >> 2));
 }
 
 static int8_t msc_get_max_lun(void)

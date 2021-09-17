@@ -21,7 +21,7 @@
 
 #include "storage.h"
 
-#define STORAGE_BASE_ADDRESS				0x8010000
+#define STORAGE_BASE_ADDRESS				0x800D000
 
 
 static void flash_read(uint32_t addr, uint32_t *data, uint32_t length)
