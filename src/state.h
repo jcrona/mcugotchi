@@ -28,6 +28,6 @@
 void state_save(uint8_t slot);
 void state_load(uint8_t slot);
 void state_erase(uint8_t slot);
-uint8_t state_check_if_used(uint8_t slot);
+uint8_t state_stat(uint8_t slot);
 
 #endif /* _STATE_H_ */

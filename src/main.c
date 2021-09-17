@@ -400,7 +400,7 @@ static void menu_slots(uint8_t pos, menu_parent_t *parent)
 
 static char * menu_slots_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (state_check_if_used(pos)) {
+	switch (state_stat(pos)) {
 		default:
 		case 0:
 			return "";
