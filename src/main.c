@@ -55,9 +55,14 @@
 #define ICON_OFFSET_Y					0
 #define LCD_OFFET_X					16
 #define LCD_OFFET_Y					8
+
 #define PAUSED_X					34
 #define PAUSED_Y					24
 #define PAUSED_STR					"Paused"
+
+#define USBON_X						24
+#define USBON_Y						24
+#define USBON_STR					"USB Mode"
 
 #define FRAMERATE 					30
 
@@ -76,6 +81,7 @@ static job_t render_job;
 static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
+static bool_t usb_enabled = 0;
 static bool_t rom_loaded = 1;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
@@ -269,7 +275,9 @@ static void hal_update_screen(void)
 		}
 	}
 
-	if (emulation_paused) {
+	if (usb_enabled) {
+		PStr(USBON_STR, USBON_X, USBON_Y, 1, PixNorm);
+	} else if (emulation_paused) {
 		PStr(PAUSED_STR, PAUSED_X, PAUSED_Y, 1, PixNorm);
 	}
 
@@ -449,6 +457,15 @@ static char * menu_roms_arg(uint8_t pos, menu_parent_t *parent)
 	}
 }
 
+static void menu_usb(uint8_t pos, menu_parent_t *parent)
+{
+	menu_pause(0, NULL);
+	fs_ll_umount();
+	usb_start();
+	menu_close();
+	usb_enabled = 1;
+}
+
 static menu_item_t options_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
@@ -496,6 +513,7 @@ static menu_item_t main_menu[] = {
 	{"Options", NULL, NULL, 0, options_menu},
 	{"States", NULL, NULL, 0, states_menu},
 	{"ROMs", NULL, NULL, 0, roms_menu},
+	{"USB Mode", NULL, &menu_usb, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
@@ -606,6 +624,16 @@ static void no_rom_btn_handler(button_t btn, btn_state_t state, bool_t long_pres
 	NVIC_SystemReset();
 }
 
+static void usb_mode_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+{
+	if (state == BTN_STATE_PRESSED && !long_press) {
+		usb_enabled = 0;
+		usb_stop();
+		fs_ll_mount();
+		menu_pause(0, NULL);
+	}
+}
+
 static void menu_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 {
 	if (state == BTN_STATE_PRESSED) {
@@ -645,6 +673,8 @@ static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 	/* Dispatch the event */
 	if (!rom_loaded) {
 		no_rom_btn_handler(btn, state, long_press);
+	} else if (usb_enabled) {
+		usb_mode_btn_handler(btn, state, long_press);
 	} else if (menu_is_visible()) {
 		menu_btn_handler(btn, state, long_press);
 	} else {
