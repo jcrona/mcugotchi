@@ -601,30 +601,35 @@ static void cpu_job_fn(job_t *job)
 		}
 	}
 }
-
-static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+static void no_rom_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 {
-	if (!rom_loaded) {
-		NVIC_SystemReset();
-	} else if (menu_is_visible()) {
-		if (state == BTN_STATE_PRESSED) {
-			switch (btn) {
-				case BTN_LEFT:
-					menu_next();
-					break;
+	NVIC_SystemReset();
+}
 
-				case BTN_MIDDLE:
-					menu_enter();
-					break;
+static void menu_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+{
+	if (state == BTN_STATE_PRESSED) {
+		switch (btn) {
+			case BTN_LEFT:
+				menu_next();
+				break;
 
-				case BTN_RIGHT:
-					menu_back();
-					break;
+			case BTN_MIDDLE:
+				menu_enter();
+				break;
 
-			}
+			case BTN_RIGHT:
+				menu_back();
+				break;
+
 		}
-	} else if (long_press) {
-		if (btn == BTN_RIGHT && !menu_is_visible()) {
+	}
+}
+
+static void default_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+{
+	if (long_press) {
+		if (btn == BTN_RIGHT) {
 			menu_open();
 
 			/* Make sure TamaLIB receives a release since it received a press */
@@ -632,6 +637,18 @@ static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 		}
 	} else {
 		tamalib_set_button(btn, state);
+	}
+}
+
+static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+{
+	/* Dispatch the event */
+	if (!rom_loaded) {
+		no_rom_btn_handler(btn, state, long_press);
+	} else if (menu_is_visible()) {
+		menu_btn_handler(btn, state, long_press);
+	} else {
+		default_btn_handler(btn, state, long_press);
 	}
 }
 
