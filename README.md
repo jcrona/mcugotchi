@@ -33,7 +33,7 @@ MCUGotchi depends on several components:
 * the __STM32Cube Library__, which is provided as submodule
 * __TamaLIB__, which is also provided as submodule
 * a __Tamagotchi P1 ROM__, which can be downloaded from [there](https://www.planetemu.net/rom/mame-roms/tama) for instance
-* __TamaTool__ to convert the binary ROM into a __.h__ file, which can be downloaded or built from [there](https://github.com/jcrona/tamatool)
+* __Optional:__ __TamaTool__ to convert the binary ROM into a __.h__ file, which can be downloaded or built from [there](https://github.com/jcrona/tamatool)
 
 
 1. Clone __MCUGotchi__ and its submodules:
@@ -41,7 +41,7 @@ MCUGotchi depends on several components:
 $ git clone --recursive https://github.com/jcrona/mcugotchi.git
 ```
 2. Download/build/install the __toolchain__, __OpenOCD__ and __TamaTool__. OpenOCD and the toolchain are expected to be in the parent folder of MCUGotchi, but you can place them wherever you want and adjust the first lines of __mcugotchi/Makefile__ accordingly.
-3. Convert the ROM to __rom.h__ and place it in __mcugotchi/src__:
+3. __Optional:__ Convert the ROM to __rom_data.h__ and place it in __mcugotchi/src__ (__ROM_BUILT_IN__ should be enabled in __mcugotchi/src/rom.c__):
 ```
 $ tamatool -r rom.bin -H > mcugotchi/src/rom.h
 ```
@@ -50,11 +50,12 @@ $ tamatool -r rom.bin -H > mcugotchi/src/rom.h
 $ cd mcugotchi
 $ make
 ```
-5. Connect you board and program it:
+5. Connect your board and program it:
 ```
 $ make flash
 ```
-6. Try to keep your Tamagotchi alive !
+6. Enable the USB Mode of MCUGotchi and transfer the ROM (it should be called __rom0.bin__).
+7. Try to keep your Tamagotchi alive !
 
 
 ## License
