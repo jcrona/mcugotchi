@@ -427,6 +427,28 @@ static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 	}
 }
 
+static void menu_roms(uint8_t pos, menu_parent_t *parent)
+{
+	if (rom_load(pos) < 0) {
+		return;
+	}
+
+	cpu_reset();
+	menu_close();
+}
+
+static char * menu_roms_arg(uint8_t pos, menu_parent_t *parent)
+{
+	switch (rom_stat(pos)) {
+		default:
+		case 0:
+			return "";
+
+		case 1:
+			return " *";
+	}
+}
+
 static menu_item_t options_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
@@ -461,9 +483,19 @@ static menu_item_t states_menu[] = {
 	{NULL, NULL, NULL, 0, NULL},
 };
 
+static menu_item_t roms_menu[] = {
+	{"ROM 0", &menu_roms_arg, &menu_roms, 1, NULL},
+	{"ROM 1", &menu_roms_arg, &menu_roms, 1, NULL},
+	{"ROM 2", &menu_roms_arg, &menu_roms, 1, NULL},
+	{"ROM 3", &menu_roms_arg, &menu_roms, 1, NULL},
+
+	{NULL, NULL, NULL, 0, NULL},
+};
+
 static menu_item_t main_menu[] = {
 	{"Options", NULL, NULL, 0, options_menu},
 	{"States", NULL, NULL, 0, states_menu},
+	{"ROMs", NULL, NULL, 0, roms_menu},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
