@@ -148,12 +148,12 @@ void menu_enter(void)
 			/* Execute the callback right away */
 			current_menu[current_item].cb(current_item, &parents[current_depth]);
 		}
-	} else if (current_menu[current_item].sub_menu != NULL && current_depth < MAX_DEPTH) {
+	} else if (current_menu[current_item].sub_menu != NULL) {
 		/* Sub menu */
 		sub_menu = current_menu[current_item].sub_menu;
 	}
 
-	if (sub_menu != NULL) {
+	if (sub_menu != NULL && current_depth < MAX_DEPTH) {
 		current_depth++;
 		parents[current_depth].menu = current_menu;
 		parents[current_depth].pos = current_item;
