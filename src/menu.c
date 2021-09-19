@@ -108,6 +108,7 @@ void menu_open(void)
 
 	current_menu = g_menu;
 	current_item = 0;
+	current_depth = 0;
 	draw_menu();
 }
 
