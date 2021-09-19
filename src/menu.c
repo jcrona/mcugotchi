@@ -44,7 +44,7 @@ static void menu_confirm_yes(uint8_t pos, menu_parent_t *parent)
 {
 	menu_back();
 
-	/* Execute the callback right away */
+	/* Execute the callback */
 	current_menu[current_item].cb(current_item, &parents[current_depth]);
 }
 
