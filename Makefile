@@ -16,6 +16,10 @@ ifeq ($(BOARD), discovery_stm32f0)
 	HALTYPE = STM32F0
 	LD_FILE ?= stm32f072xb.ld
 	OPENOCD_CFG_FILE = board/stm32f0discovery.cfg
+else ifeq ($(BOARD), opentama)
+	FWCFG  += -DSTM32L072xx
+	HALTYPE = STM32L0
+	LD_FILE ?= stm32l072xb.ld
 endif
 
 BUILDDIR  = build/$(BOARD)
