@@ -77,6 +77,11 @@ void system_clock_config(void)
 	}
 }
 
+void system_init(void)
+{
+	HAL_Init();
+}
+
 void system_enter_state(exec_state_t state)
 {
 	switch (state) {

@@ -522,7 +522,7 @@ static menu_item_t main_menu[] = {
 
 static void board_init(void)
 {
-	HAL_Init();
+	system_init();
 
 	system_clock_config();
 
