@@ -35,12 +35,10 @@ INC      += -I$(STLIBROOT)/Drivers/CMSIS/Device/ST/STM32F0xx/Include/
 INC      += -I$(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Inc/
 INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/
 INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/
-INC      += -I$(STLIBROOT)/Middlewares/Third_Party/FatFs/src/
 
 STLIBDIR   = $(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Src/
 USBCORELIB = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/
 USBMSCLIB  = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/
-FATFSLIB   = $(STLIBROOT)/Middlewares/Third_Party/FatFs/src/
 else ifeq ($(HALTYPE), STM32L0)
 MCU       = cortex-m0
 STLIBROOT = libs/STM32CubeL0
@@ -50,13 +48,14 @@ INC      += -I$(STLIBROOT)/Drivers/CMSIS/Device/ST/STM32L0xx/Include/
 INC      += -I$(STLIBROOT)/Drivers/STM32L0xx_HAL_Driver/Inc/
 INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/
 INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/
-INC      += -I$(STLIBROOT)/Middlewares/Third_Party/FatFs/src/
 
 STLIBDIR   = $(STLIBROOT)/Drivers/STM32L0xx_HAL_Driver/Src/
 USBCORELIB = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/
 USBMSCLIB  = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/
-FATFSLIB   = $(STLIBROOT)/Middlewares/Third_Party/FatFs/src/
 endif
+
+INC       += -Ilibs/FatFs/src/
+FATFSLIB   = libs/FatFs/src/
 
 SRCS = $(wildcard $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
 INC += -I$(HALDIR) -I$(SRCDIR)
