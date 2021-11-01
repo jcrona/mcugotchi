@@ -21,6 +21,17 @@
 
 #include "system.h"
 
+
+void system_disable_irq(void)
+{
+	__disable_irq();
+}
+
+void system_enable_irq(void)
+{
+	__enable_irq();
+}
+
 void system_enter_state(exec_state_t state)
 {
 	switch (state) {

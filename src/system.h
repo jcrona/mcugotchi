@@ -42,6 +42,9 @@ typedef enum {
 #define SLEEP_S3_THRESHOLD		(ENTER_SLEEP_S3_LATENCY + EXIT_SLEEP_S3_LATENCY)
 
 
+void system_disable_irq(void);
+void system_enable_irq(void);
+
 void system_enter_state(exec_state_t state);
 
 #endif /* _SYSTEM_H_ */

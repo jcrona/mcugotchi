@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "stm32f0xx_hal.h"
+#include <stddef.h>
 
 #include "time.h"
 #include "system.h"
@@ -31,7 +31,7 @@ void job_schedule(job_t *job, void (*cb)(job_t *), us_time_t time)
 	job_t **j = &jobs;
 
 	/* Disable IRQs handling */
-	__disable_irq();
+	system_disable_irq();
 
 	/* Remove the job if it is already in the queue */
 	job_cancel(job);
@@ -47,7 +47,7 @@ void job_schedule(job_t *job, void (*cb)(job_t *), us_time_t time)
 	*j = job;
 
 	/* Enable IRQs handling */
-	__enable_irq();
+	system_enable_irq();
 }
 
 void job_cancel(job_t *job)
@@ -55,7 +55,7 @@ void job_cancel(job_t *job)
 	job_t **j = &jobs;
 
 	/* Disable IRQs handling */
-	__disable_irq();
+	system_disable_irq();
 
 	while (*j != NULL) {
 		if (*j == job) {
@@ -67,7 +67,7 @@ void job_cancel(job_t *job)
 	}
 
 	/* Enable IRQs handling */
-	__enable_irq();
+	system_enable_irq();
 }
 
 job_t * job_get_next(void)
@@ -82,7 +82,7 @@ void job_mainloop(void)
 
 	while (1) {
 		/* Disable IRQs handling */
-		__disable_irq();
+		system_disable_irq();
 
 		if (jobs != NULL) {
 			if (jobs->time == JOB_ASAP) {
@@ -102,7 +102,7 @@ void job_mainloop(void)
 		}
 
 		/* Enable IRQs handling */
-		__enable_irq();
+		system_enable_irq();
 
 		if (j != NULL) {
 			time_wait_until(j->time);
