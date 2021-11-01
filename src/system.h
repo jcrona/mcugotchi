@@ -50,5 +50,6 @@ void system_clock_config(void);
 void system_enter_state(exec_state_t state);
 
 void system_fatal_error(void);
+void system_reset(void);
 
 #endif /* _SYSTEM_H_ */

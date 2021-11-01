@@ -92,6 +92,11 @@ void system_enter_state(exec_state_t state)
 	}
 }
 
+void system_reset(void)
+{
+	NVIC_SystemReset();
+}
+
 void system_fatal_error(void)
 {
 	while(1) __asm__ __volatile__ ("nop");

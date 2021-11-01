@@ -397,7 +397,7 @@ static void menu_factory_reset(uint8_t pos, menu_parent_t *parent)
 {
 	fs_ll_umount();
 	storage_erase();
-	NVIC_SystemReset();
+	system_reset();
 }
 
 static void menu_slots(uint8_t pos, menu_parent_t *parent)
@@ -569,7 +569,7 @@ static void cpu_job_fn(job_t *job)
 }
 static void no_rom_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 {
-	NVIC_SystemReset();
+	system_reset();
 }
 
 static void usb_mode_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
