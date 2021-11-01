@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "stm32f0xx_hal.h"
+#include <stdint.h>
 
 #include "ssd1306.h"
 #include "gfx.h"

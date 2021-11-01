@@ -20,6 +20,8 @@
 #ifndef _STORAGE_H_
 #define _STORAGE_H_
 
+#include <stdint.h>
+
 #define STORAGE_BASE_ADDRESS				0x800D000
 
 #define STORAGE_SIZE					0x13000

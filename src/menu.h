@@ -20,7 +20,7 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
-#include "stm32f0xx_hal.h"
+#include <stdint.h>
 
 typedef struct menu_item menu_item_t;
 typedef struct menu_parent menu_parent_t;

@@ -20,8 +20,6 @@
 #ifndef _BUTTON_H_
 #define _BUTTON_H_
 
-#include "stm32f0xx_hal.h"
-
 #include "lib/tamalib.h"
 
 

@@ -20,7 +20,7 @@
 #ifndef _HAL_TYPES_H_
 #define _HAL_TYPES_H_
 
-#include <stm32f0xx_hal_conf.h>
+#include <stdint.h>
 
 #include "time.h"
 

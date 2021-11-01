@@ -31,6 +31,8 @@
  * | Middle Button   | PA0/VDD |
  * | Right Button    | PB2/VDD |
  */
+#include <stdint.h>
+
 #include "stm32f0xx_hal.h"
 
 #include "ssd1306.h"

@@ -20,7 +20,7 @@
 #ifndef _ROM_H_
 #define _ROM_H_
 
-#include "stm32f0xx_hal.h"
+#include <stdint.h>
 
 #define ROM_SLOTS_NUM					4
 #define DEFAULT_ROM_SLOT				0

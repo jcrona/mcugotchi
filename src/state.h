@@ -20,7 +20,7 @@
 #ifndef _STATE_H_
 #define _STATE_H_
 
-#include "stm32f0xx_hal.h"
+#include <stdint.h>
 
 #define STATE_SLOTS_NUM					10
 
