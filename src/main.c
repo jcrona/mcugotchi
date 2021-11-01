@@ -520,11 +520,6 @@ static menu_item_t main_menu[] = {
 	{NULL, NULL, NULL, 0, NULL},
 };
 
-void fatal_error(void)
-{
-	while(1) __asm__ __volatile__ ("nop");
-}
-
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
 	return HAL_OK;
@@ -666,7 +661,7 @@ int main(void)
 		tamalib_register_hal(&hal);
 
 		if (tamalib_init((const u12_t *) g_program, NULL, 1000000)) {
-			fatal_error();
+			system_fatal_error();
 		}
 
 		job_schedule(&render_job, &render_job_fn, JOB_ASAP);
