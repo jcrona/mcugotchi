@@ -101,3 +101,8 @@ void system_fatal_error(void)
 {
 	while(1) __asm__ __volatile__ ("nop");
 }
+
+HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
+{
+	return HAL_OK;
+}

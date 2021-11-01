@@ -520,11 +520,6 @@ static menu_item_t main_menu[] = {
 	{NULL, NULL, NULL, 0, NULL},
 };
 
-HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
-{
-	return HAL_OK;
-}
-
 static void board_init(void)
 {
 	HAL_Init();
