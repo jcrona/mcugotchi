@@ -33,8 +33,6 @@
  */
 #include <stdint.h>
 
-#include "stm32f0xx_hal.h"
-
 #include "ssd1306.h"
 #include "gfx.h"
 #include "menu.h"
