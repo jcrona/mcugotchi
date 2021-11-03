@@ -1,5 +1,6 @@
 #include "ssd1306.h"
 #include "time.h"
+#include "spi.h"
 
 /*
  * SSD1306.c
@@ -21,7 +22,6 @@ void SSD1306_InitSetup(void){
 	if(Init == 1){
 		Init = 0;
 		__HAL_RCC_GPIOA_CLK_ENABLE();
-		__HAL_RCC_SPI1_CLK_ENABLE();
 
 		G.Pin  = DC | CE | RS;
 		G.Mode  = GPIO_MODE_OUTPUT_PP;
@@ -29,36 +29,7 @@ void SSD1306_InitSetup(void){
 		G.Speed = GPIO_SPEED_FREQ_HIGH;
 		HAL_GPIO_Init(IOGPIO, &G);
 
-		G.Pin = Clk | DIn;
-		G.Mode  = GPIO_MODE_AF_PP;
-		G.Alternate = GPIO_AF0_SPI1;
-		HAL_GPIO_Init(IOGPIO, &G);
-
-		/* Screen power is taken directly from supply!
-		G.GPIO_Pin = VCC;
-		G.GPIO_OType = GPIO_OType_OD;
-		G.GPIO_Mode = GPIO_Mode_OUT;
-		GPIO_Init(IOGPIO, &G);
-		*/
-
-		hspi1.Instance               = SPI1;
-		hspi1.Init.Mode              = SPI_MODE_MASTER;
-		hspi1.Init.Direction         = SPI_DIRECTION_1LINE;
-		hspi1.Init.DataSize          = SPI_DATASIZE_8BIT;
-		hspi1.Init.CLKPolarity       = SPI_POLARITY_LOW;
-		hspi1.Init.CLKPhase          = SPI_PHASE_1EDGE;
-		hspi1.Init.NSS               = SPI_NSS_SOFT;
-		hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-		hspi1.Init.FirstBit          = SPI_FIRSTBIT_MSB;
-		hspi1.Init.TIMode            = SPI_TIMODE_DISABLED;
-		hspi1.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
-		hspi1.Init.CRCPolynomial     = 7;
-		HAL_SPI_Init(&hspi1);
-
-		/* Enable 1LINE TX mode */
-		SPI_1LINE_TX(&hspi1);
-
-		__HAL_SPI_ENABLE(&hspi1);
+		spi_init();
 	}
 
 	//GPIO_ResetBits(IOGPIO, VCC);
@@ -121,9 +92,7 @@ void SB(uint8_t Data, WMode CmdDat, uint8_t En){
 
 	if(En) HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_RESET);
 
-	/* Bypass all the ckecks from HAL and write directly to SPI1 */
-	*(__IO uint8_t *) (&(hspi1.Instance)->DR) = Data;
-	while(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_BSY));
+	spi_write(Data);
 
 	if(En) HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_SET);
 }
