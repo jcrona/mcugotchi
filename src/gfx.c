@@ -1,4 +1,5 @@
 #include "gfx.h"
+#include "gpio.h"
 
 /*
  * SSD1306.c
@@ -145,11 +146,11 @@ uint8_t GBuf[GBufS];
 void PScrn(void){
 	uint16_t Cnt;
 
-	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_RESET);
+	gpio_clear(IOGPIO, CE);
 	for(Cnt = 0; Cnt<((XPix*YPix)/8); Cnt++){
 		SB(GBuf[Cnt], Dat, 0);
 	}
-	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_SET);
+	gpio_set(IOGPIO, CE);
 }
 
 void ClrBuf(void){

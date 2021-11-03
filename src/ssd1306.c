@@ -1,6 +1,7 @@
 #include "ssd1306.h"
 #include "time.h"
 #include "spi.h"
+#include "gpio.h"
 
 /*
  * SSD1306.c
@@ -34,19 +35,19 @@ void SSD1306_InitSetup(void){
 
 	//GPIO_ResetBits(IOGPIO, VCC);
 	Delay(100);
-	HAL_GPIO_WritePin(IOGPIO, Clk, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(IOGPIO, DIn, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_RESET);
+	gpio_clear(IOGPIO, Clk);
+	gpio_clear(IOGPIO, DIn);
+	gpio_clear(IOGPIO, DC);
+	gpio_clear(IOGPIO, CE);
+	gpio_clear(IOGPIO, RS);
 	Delay(1);
-	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_SET);
+	gpio_set(IOGPIO, RS);
 	Delay(1);
-	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_RESET);
+	gpio_clear(IOGPIO, RS);
 	Delay(1);
-	HAL_GPIO_WritePin(IOGPIO, RS, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_SET);
+	gpio_set(IOGPIO, RS);
+	gpio_set(IOGPIO, DC);
+	gpio_set(IOGPIO, CE);
 	Delay(10);
 
 	SB(SetMuxRatio, Reg, 1);
@@ -87,14 +88,14 @@ void SSD1306_InitSetup(void){
 }
 
 void SB(uint8_t Data, WMode CmdDat, uint8_t En){
-	if(CmdDat == Reg) HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_RESET);
-	else HAL_GPIO_WritePin(IOGPIO, DC, GPIO_PIN_SET);
+	if(CmdDat == Reg) gpio_clear(IOGPIO, DC);
+	else gpio_set(IOGPIO, DC);
 
-	if(En) HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_RESET);
+	if(En) gpio_clear(IOGPIO, CE);
 
 	spi_write(Data);
 
-	if(En) HAL_GPIO_WritePin(IOGPIO, CE, GPIO_PIN_SET);
+	if(En) gpio_set(IOGPIO, CE);
 }
 
 void LCDScreenMode(LCDScrnMode Mode){
