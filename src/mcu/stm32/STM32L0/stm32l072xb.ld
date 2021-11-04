@@ -12,4 +12,4 @@ MEMORY
 /* Highest address of the user mode stack */
 _estack = 0x20005000;
 
-INCLUDE "sections_flash.ld"
+INCLUDE "../sections_flash.ld"

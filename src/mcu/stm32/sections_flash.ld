@@ -35,9 +35,20 @@ SECTIONS
 	
 	    . = ALIGN(4);
         _etext = .;
-	    /* This is used by the startup in order to initialize the .data section */
-        _sidata = _etext;
     } >FLASH
+
+    .ARM.extab : {
+        *(.ARM.extab*)
+        *(.gnu.linkonce.armextab.*)
+    } > FLASH
+
+    .ARM : {
+        __exidx_start = .;
+        *(.ARM.exidx*)
+        __exidx_end = .;
+        /* This is used by the startup in order to initialize the .data section */
+        _sidata = __exidx_end;
+    } > FLASH
 
     /* The Tamagotchi ROM goes there */
     .rom :
@@ -51,7 +62,7 @@ SECTIONS
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
-    .data  : AT ( _sidata )
+    .data :
     {
 	    . = ALIGN(4);
         /* This is used by the startup in order to initialize the .data secion */
@@ -65,7 +76,7 @@ SECTIONS
 	    . = ALIGN(4);
 	    /* This is used by the startup in order to initialize the .data secion */
    	    _edata = . ;
-    } >RAM
+    } >RAM AT > FLASH
     
     /* This is the uninitialized data section */
     .bss :
@@ -83,13 +94,10 @@ SECTIONS
 	    /* This is used by the startup in order to initialize the .bss secion */
    	 _ebss = . ;
     } >RAM
-    
+
     PROVIDE ( end = _ebss );
     PROVIDE ( _end = _ebss );
-    
-    __exidx_start = .;
-    __exidx_end = .;
-    
+        
     /* after that it's only debugging information. */
     
     /* remove the debugging information from the standard libraries */
