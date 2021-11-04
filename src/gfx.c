@@ -1,5 +1,4 @@
 #include <string.h>
-#include "ssd1306.h"
 #include "gfx.h"
 
 /*
@@ -148,8 +147,18 @@ const int8_t ST[256] =
 };
 
 static uint8_t GBuf[FRAMEBUFFER_SIZE];
+
+static void (*disp_send_data_cb)(uint8_t *, uint16_t) = NULL;
+
+void gfx_register_display(void (*cb)(uint8_t *, uint16_t))
+{
+	disp_send_data_cb = cb;
+}
+
 void PScrn(void){
-	ssd1306_send_data(GBuf, FRAMEBUFFER_SIZE);
+	if (disp_send_data_cb != NULL) {
+		disp_send_data_cb(GBuf, FRAMEBUFFER_SIZE);
+	}
 }
 
 void ClrBuf(void){

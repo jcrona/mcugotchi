@@ -532,6 +532,8 @@ static void ll_init(void)
 	ssd1306_init();
 	ssd1306_set_power_mode(PWR_MODE_ON);
 	ssd1306_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+
+	gfx_register_display(&ssd1306_send_data);
 }
 
 static void render_job_fn(job_t *job)

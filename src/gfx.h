@@ -23,6 +23,8 @@ typedef enum {
 	PixInv
 } PixT;
 
+void gfx_register_display(void (*cb)(uint8_t *, uint16_t));
+
 void PScrn(void);
 void ClrBuf(void);
 
