@@ -26,14 +26,7 @@ static SPI_HandleTypeDef hspi1;
 
 void spi_init(void)
 {
-	GPIO_InitTypeDef G;
-
 	__HAL_RCC_SPI1_CLK_ENABLE();
-
-	G.Pin = GPIO_PIN_5 | GPIO_PIN_7;
-	G.Mode  = GPIO_MODE_AF_PP;
-	G.Alternate = GPIO_AF0_SPI1;
-	HAL_GPIO_Init(GPIOA, &G);
 
 	hspi1.Instance               = SPI1;
 	hspi1.Init.Mode              = SPI_MODE_MASTER;

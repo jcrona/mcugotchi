@@ -1,6 +1,6 @@
 # Board selection
 BOARD ?= discovery_stm32f0
-FWCFG += -DCFG_$(BOARD)_board
+FWCFG += -DBOARD_IS_$(BOARD)
 
 ROOT = ../
 
@@ -59,8 +59,12 @@ endif
 INC       += -Ilibs/FatFs/src/
 FATFSLIB   = libs/FatFs/src/
 
-SRCS = $(wildcard $(HALCOMMONDIR)/*.c $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
+SRCS = $(wildcard $(HALCOMMONDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
 INC += -I$(HALINCDIR) -I$(HALCOMMONDIR) -I$(HALDIR) -I$(SRCDIR)
+
+# Include only one board file
+SRCS += $(filter-out $(wildcard $(HALDIR)/board_*.c), $(wildcard $(HALDIR)/*.c))
+SRCS += $(HALDIR)/board_$(BOARD).c
 
 TARGET = mcugotchi
 

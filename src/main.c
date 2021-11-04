@@ -44,6 +44,7 @@
 #include "usb.h"
 #include "fs_ll.h"
 #include "rom.h"
+#include "board.h"
 
 #include "lib/tamalib.h"
 
@@ -518,11 +519,13 @@ static menu_item_t main_menu[] = {
 	{NULL, NULL, NULL, 0, NULL},
 };
 
-static void board_init(void)
+static void ll_init(void)
 {
 	system_init();
 
 	system_clock_config();
+
+	board_init();
 
 	time_init();
 
@@ -625,7 +628,7 @@ static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 
 int main(void)
 {
-	board_init();
+	ll_init();
 
 	fs_ll_init();
 	fs_ll_mount();

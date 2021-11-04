@@ -23,6 +23,8 @@
 
 #include "lib/tamalib.h"
 #include "job.h"
+#include "board.h"
+#include "button_ll.h"
 #include "button.h"
 
 #define BTN_NUM						3
@@ -68,44 +70,23 @@ static void config_int_line(EXTI_HandleTypeDef *h, uint32_t port, uint8_t trigge
 
 void button_init(void)
 {
-	GPIO_InitTypeDef g;
+	/* Left button */
+	buttons[BTN_LEFT].handle.Line = BOARD_LEFT_BTN_EXTI_LINE;
+	buttons[BTN_LEFT].exti_port = BOARD_LEFT_BTN_EXTI_PORT;
+	buttons[BTN_LEFT].port = BOARD_LEFT_BTN_PORT;
+	buttons[BTN_LEFT].pin = BOARD_LEFT_BTN_PIN;
 
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
+	/* Middle button */
+	buttons[BTN_MIDDLE].handle.Line = BOARD_MIDDLE_BTN_EXTI_LINE;
+	buttons[BTN_MIDDLE].exti_port = BOARD_MIDDLE_BTN_EXTI_PORT;
+	buttons[BTN_MIDDLE].port = BOARD_MIDDLE_BTN_PORT;
+	buttons[BTN_MIDDLE].pin = BOARD_MIDDLE_BTN_PIN;
 
-	/* Left and right buttons */
-	g.Pin  = GPIO_PIN_2 | GPIO_PIN_3;
-	g.Mode  = GPIO_MODE_IT_RISING;
-	g.Pull  = GPIO_PULLDOWN;
-	g.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(GPIOB, &g);
-
-	buttons[BTN_RIGHT].handle.Line = EXTI_LINE_2;
-	buttons[BTN_RIGHT].exti_port = EXTI_GPIOB;
-	buttons[BTN_RIGHT].port = GPIOB;
-	buttons[BTN_RIGHT].pin = GPIO_PIN_2;
-	buttons[BTN_LEFT].handle.Line = EXTI_LINE_3;
-	buttons[BTN_LEFT].exti_port = EXTI_GPIOB;
-	buttons[BTN_LEFT].port = GPIOB;
-	buttons[BTN_LEFT].pin = GPIO_PIN_3;
-
-	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
-
-	/* Middle button (user button) */
-	g.Pin  = GPIO_PIN_0;
-	g.Mode  = GPIO_MODE_IT_RISING;
-	g.Pull  = GPIO_NOPULL;
-	g.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(GPIOA, &g);
-
-	buttons[BTN_MIDDLE].handle.Line = EXTI_LINE_0;
-	buttons[BTN_MIDDLE].exti_port = EXTI_GPIOA;
-	buttons[BTN_MIDDLE].port = GPIOA;
-	buttons[BTN_MIDDLE].pin = GPIO_PIN_0;
-
-	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+	/* Right button */
+	buttons[BTN_RIGHT].handle.Line = BOARD_RIGHT_BTN_EXTI_LINE;
+	buttons[BTN_RIGHT].exti_port = BOARD_RIGHT_BTN_EXTI_PORT;
+	buttons[BTN_RIGHT].port = BOARD_RIGHT_BTN_PORT;
+	buttons[BTN_RIGHT].pin = BOARD_RIGHT_BTN_PIN;
 }
 
 void button_register_handler(void (*handler)(button_t, btn_state_t, bool_t))
@@ -171,22 +152,11 @@ static void debounce_job_fn(job_t *job)
 	}
 }
 
-static void irq_handler(button_t btn)
+void button_ll_irq_handler(button_t btn)
 {
 	if (HAL_EXTI_GetPending(&(buttons[btn].handle), EXTI_TRIGGER_RISING_FALLING)) {
 		HAL_EXTI_ClearPending(&(buttons[btn].handle), EXTI_TRIGGER_RISING_FALLING);
 
 		job_schedule(&(buttons[btn].debounce_job), &debounce_job_fn, time_get() + DEBOUNCE_DURATION);
 	}
-}
-
-void EXTI0_1_IRQHandler(void)
-{
-	irq_handler(BTN_MIDDLE);
-}
-
-void EXTI2_3_IRQHandler(void)
-{
-	irq_handler(BTN_LEFT);
-	irq_handler(BTN_RIGHT);
 }

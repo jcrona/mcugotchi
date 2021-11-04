@@ -1,5 +1,6 @@
 #include "gfx.h"
 #include "gpio.h"
+#include "board.h"
 
 /*
  * SSD1306.c
@@ -146,11 +147,11 @@ uint8_t GBuf[GBufS];
 void PScrn(void){
 	uint16_t Cnt;
 
-	gpio_clear(IOGPIO, CE);
+	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 	for(Cnt = 0; Cnt<((XPix*YPix)/8); Cnt++){
 		SB(GBuf[Cnt], Dat, 0);
 	}
-	gpio_set(IOGPIO, CE);
+	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 }
 
 void ClrBuf(void){

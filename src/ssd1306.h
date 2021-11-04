@@ -12,28 +12,8 @@
  * This code is provided AS IS and no warranty is included!
  */
 
-#include "stm32_hal.h"
-
 #include <string.h>
 #include <inttypes.h>
-
-//SSD1306 Pin definitions
-/*
- * LCD Clock - PA5
- * LCD Data - PA7
- * LCD DC - PA1
- * LCD CE (or CS depending on LCD model) - PA2
- * LCD Reset - PA6
- * LCD VCC (if used) - PA3
- */
-#define Clk GPIO_PIN_5
-#define DIn GPIO_PIN_7
-#define DC GPIO_PIN_1
-#define CE GPIO_PIN_2
-#define RS GPIO_PIN_6
-#define VCC GPIO_PIN_3
-
-#define IOGPIO GPIOA
 
 #define NormDisp 0xA6
 #define InvDisp 0xA7

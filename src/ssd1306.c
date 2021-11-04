@@ -2,6 +2,7 @@
 #include "time.h"
 #include "spi.h"
 #include "gpio.h"
+#include "board.h"
 
 /*
  * SSD1306.c
@@ -22,32 +23,24 @@ void SSD1306_InitSetup(void){
 	static uint8_t Init = 1;
 	if(Init == 1){
 		Init = 0;
-		__HAL_RCC_GPIOA_CLK_ENABLE();
-
-		G.Pin  = DC | CE | RS;
-		G.Mode  = GPIO_MODE_OUTPUT_PP;
-		G.Pull  = GPIO_PULLUP;
-		G.Speed = GPIO_SPEED_FREQ_HIGH;
-		HAL_GPIO_Init(IOGPIO, &G);
-
 		spi_init();
 	}
 
 	//GPIO_ResetBits(IOGPIO, VCC);
 	Delay(100);
-	gpio_clear(IOGPIO, Clk);
-	gpio_clear(IOGPIO, DIn);
-	gpio_clear(IOGPIO, DC);
-	gpio_clear(IOGPIO, CE);
-	gpio_clear(IOGPIO, RS);
+	gpio_clear(BOARD_SCREEN_SCLK_PORT, BOARD_SCREEN_SCLK_PIN);
+	gpio_clear(BOARD_SCREEN_MOSI_PORT, BOARD_SCREEN_MOSI_PIN);
+	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
+	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+	gpio_clear(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
 	Delay(1);
-	gpio_set(IOGPIO, RS);
+	gpio_set(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
 	Delay(1);
-	gpio_clear(IOGPIO, RS);
+	gpio_clear(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
 	Delay(1);
-	gpio_set(IOGPIO, RS);
-	gpio_set(IOGPIO, DC);
-	gpio_set(IOGPIO, CE);
+	gpio_set(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
+	gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
+	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 	Delay(10);
 
 	SB(SetMuxRatio, Reg, 1);
@@ -88,14 +81,14 @@ void SSD1306_InitSetup(void){
 }
 
 void SB(uint8_t Data, WMode CmdDat, uint8_t En){
-	if(CmdDat == Reg) gpio_clear(IOGPIO, DC);
-	else gpio_set(IOGPIO, DC);
+	if(CmdDat == Reg) gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
+	else gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 
-	if(En) gpio_clear(IOGPIO, CE);
+	if(En) gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 
 	spi_write(Data);
 
-	if(En) gpio_set(IOGPIO, CE);
+	if(En) gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 }
 
 void LCDScreenMode(LCDScrnMode Mode){
