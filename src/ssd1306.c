@@ -1,114 +1,133 @@
-#include "ssd1306.h"
+/*
+ * MCUGotchi - A Tamagotchi P1 emulator for microcontrollers
+ *
+ * Copyright (C) 2021 Jean-Christophe Rona <jc@rona.fr>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+#include <stdint.h>
+
 #include "time.h"
 #include "spi.h"
 #include "gpio.h"
 #include "board.h"
+#include "ssd1306.h"
 
-/*
- * SSD1306.c
- * Author: Harris Shallcross
- * Year: 2014-ish
- *
- * SSD1306 driver library using the STM32F0 discovery board
- * STM32F0 communicates with OLED display through SPI, pinouts described below.
- *
- * This code is provided AS IS and no warranty is included!
- */
+void ssd1306_init(void)
+{
+	spi_init();
 
-GPIO_InitTypeDef G;
-SPI_InitTypeDef S;
-SPI_HandleTypeDef hspi1;
-
-void SSD1306_InitSetup(void){
-	static uint8_t Init = 1;
-	if(Init == 1){
-		Init = 0;
-		spi_init();
-	}
-
-	//GPIO_ResetBits(IOGPIO, VCC);
-	Delay(100);
-	gpio_clear(BOARD_SCREEN_SCLK_PORT, BOARD_SCREEN_SCLK_PIN);
-	gpio_clear(BOARD_SCREEN_MOSI_PORT, BOARD_SCREEN_MOSI_PIN);
+	/* Power-up sequence */
 	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 	gpio_clear(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
-	Delay(1);
+	time_delay(1000);
 	gpio_set(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
-	Delay(1);
+	time_delay(1000);
 	gpio_clear(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
-	Delay(1);
+	time_delay(1000);
 	gpio_set(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
 	gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
-	Delay(10);
+	time_delay(10000);
 
-	SB(SetMuxRatio, Reg, 1);
-	SB(0x3F, Reg, 1);
-	SB(SetDispOffset, Reg, 1);
-	SB(0x00, Reg, 1);
-	SB(SetDispStartLine|0, Reg, 1);
-	SB(SetRemap|0, Reg, 1);
-	SB(SetComPinHW, Reg, 1);
-	SB(0x12, Reg, 1);
-	SB(SetComScanDir|0, Reg, 1);
+	/* Configuration */
+	ssd1306_send_cmd_2b(REG_MUX_RATIO, 0x3F);
+	ssd1306_send_cmd_2b(REG_DISP_OFFSET, 0x00);
+	ssd1306_send_cmd_1b(REG_DISP_START_LINE, 0);
+	ssd1306_send_cmd_1b(REG_SEG_REMAP, 0);
+	ssd1306_send_cmd_2b(REG_COM_PINS_CFG, 0x12);
+	ssd1306_send_cmd_1b(REG_COM_SCAN_DIR, 0);
 
-	SB(Contrast, Reg, 1);
-	SB(0x7F, Reg, 1);
-	SB(MemAddMode, Reg, 1);
-	SB(MModeH, Reg, 1);
-	SB(SetColAdd, Reg, 1);
-	SB(0x00, Reg, 1);
-	SB(0x7F, Reg, 1);
-	SB(SetPageAdd, Reg, 1);
-	SB(0x00, Reg, 1);
-	SB(0x07, Reg, 1);
+	ssd1306_send_cmd_2b(REG_CONTRAST, 0x7F);
+	ssd1306_send_cmd_2b(REG_MEM_ADDR_MODE, MEM_ADDR_MODE_H);
+	ssd1306_send_cmd_3b(REG_COL_ADDR, 0x00, 0x7F);
+	ssd1306_send_cmd_3b(REG_PAGE_ADDR, 0x00, 0x07);
 
-	SB(NormDisp, Reg, 1);
-	SB(SetComHLvl, Reg, 1);
-	SB(0x00, Reg, 1);
+	ssd1306_send_cmd_1b(REG_DISP_MODE, 0);
+	ssd1306_send_cmd_2b(REG_VCOMH_LVL, 0x00);
 
-	//SB(DispOnAll, Reg, 1); //Test whole display
-	SB(DispOnRAM, Reg, 1);
-	SB(SetDispFreq, Reg, 1);
-	SB(0x80, Reg, 1);
-	SB(ChargePump, Reg, 1);
-	SB(0x14, Reg, 1);
-	SB(DispOn, Reg, 1);
-
-	ClrBuf();
-	PScrn();
+	ssd1306_send_cmd_1b(REG_DISP_ON, 0);
+	ssd1306_send_cmd_2b(REG_DISP_CLK_CFG, 0x80);
+	ssd1306_send_cmd_2b(REG_CHRG_PUMP, 0x14);
+	ssd1306_send_cmd_1b(REG_DISP_EN, 1);
 }
 
-void SB(uint8_t Data, WMode CmdDat, uint8_t En){
-	if(CmdDat == Reg) gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
-	else gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
-
-	if(En) gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
-
-	spi_write(Data);
-
-	if(En) gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+void ssd1306_set_display_mode(disp_mode_t mode)
+{
+	ssd1306_send_cmd_1b(REG_DISP_MODE, (mode == DISP_MODE_NORMAL) ? 0 : 1);
 }
 
-void LCDScreenMode(LCDScrnMode Mode){
-	if(Mode == LCDInv) SB(InvDisp, Reg, 1);
-	else SB(NormDisp, Reg, 1);
-}
+void ssd1306_set_power_mode(pwr_mode_t mode)
+{
+	switch (mode) {
+		case PWR_MODE_SLEEP:
+			ssd1306_send_cmd_1b(REG_DISP_EN, 0);
+			ssd1306_send_cmd_2b(REG_CHRG_PUMP, 0x10);
+			break;
 
-void LCDSleepMode(LCDPwrMode Mode){
-	if(Mode == LCDSleep){
-		SB(DispOff, Reg, 1);
-		SB(ChargePump, Reg, 1);
-		SB(0x10, Reg, 1);
-	}
-	else{
-		SB(ChargePump, Reg, 1);
-		SB(0x14, Reg, 1);
-		SB(DispOn, Reg, 1);
+		case PWR_MODE_ON:
+			ssd1306_send_cmd_2b(REG_CHRG_PUMP, 0x14);
+			ssd1306_send_cmd_1b(REG_DISP_EN, 1);
+			break;
 	}
 }
 
-void Delay(uint32_t ms){
-	time_delay(ms * 1000);
+void ssd1306_send_cmd_1b(uint8_t reg, uint8_t data)
+{
+	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
+	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+
+	spi_write(reg | data);
+
+	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+}
+
+void ssd1306_send_cmd_2b(uint8_t reg, uint8_t data)
+{
+	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
+	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+
+	spi_write(reg);
+	spi_write(data);
+
+	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+}
+
+void ssd1306_send_cmd_3b(uint8_t reg, uint8_t data1, uint8_t data2)
+{
+	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
+	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+
+	spi_write(reg);
+	spi_write(data1);
+	spi_write(data2);
+
+	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+}
+
+void ssd1306_send_data(uint8_t *data, uint16_t length)
+{
+	uint16_t i;
+
+	gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
+	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+
+	for (i = 0; i < length; i++) {
+		spi_write(data[i]);
+	}
+
+	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 }

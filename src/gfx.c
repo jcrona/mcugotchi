@@ -1,6 +1,6 @@
+#include <string.h>
+#include "ssd1306.h"
 #include "gfx.h"
-#include "gpio.h"
-#include "board.h"
 
 /*
  * SSD1306.c
@@ -15,6 +15,10 @@
  * Character array below was provided by Adafruit and other than a few added characters,
  * will remain theirs.
  */
+
+#define XPix					128
+#define YPix					64
+#define FRAMEBUFFER_SIZE			((XPix * YPix) >> 3)
 
 const char Chars[] =
 {
@@ -143,24 +147,13 @@ const int8_t ST[256] =
 		-12, -9, -6, -3
 };
 
-uint8_t GBuf[GBufS];
+static uint8_t GBuf[FRAMEBUFFER_SIZE];
 void PScrn(void){
-	uint16_t Cnt;
-
-	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
-	for(Cnt = 0; Cnt<((XPix*YPix)/8); Cnt++){
-		SB(GBuf[Cnt], Dat, 0);
-	}
-	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
+	ssd1306_send_data(GBuf, FRAMEBUFFER_SIZE);
 }
 
 void ClrBuf(void){
 	memset(GBuf, 0, (XPix*YPix)/8);
-}
-
-void DispMode(uint8_t Mode){
-	if(Mode == InvDisp) SB(InvDisp, 0, 1);
-	else SB(NormDisp, 0, 1);
 }
 
 uint8_t WritePix(int16_t X, int16_t Y, PixT V){

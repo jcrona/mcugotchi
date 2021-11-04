@@ -19,7 +19,6 @@
  */
 #include <stdint.h>
 
-#include "ssd1306.h"
 #include "gfx.h"
 #include "menu.h"
 

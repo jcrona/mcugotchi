@@ -335,7 +335,7 @@ static hal_t hal = {
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
-	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
+	ssd1306_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
 }
 
 static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
@@ -529,9 +529,9 @@ static void ll_init(void)
 
 	button_init();
 
-	SSD1306_InitSetup();
-	LCDSleepMode(LCDWake);
-	LCDScreenMode(lcd_inverted ? LCDInv : LCDNorm);
+	ssd1306_init();
+	ssd1306_set_power_mode(PWR_MODE_ON);
+	ssd1306_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
 }
 
 static void render_job_fn(job_t *job)

@@ -1,9 +1,9 @@
 #ifndef GFX_H
 #define GFX_H
 
-#include "ssd1306.h"
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 /*
  * GFX.h
@@ -23,7 +23,8 @@ typedef enum {
 	PixInv
 } PixT;
 
-void DispMode(uint8_t);
+void PScrn(void);
+void ClrBuf(void);
 
 uint8_t WritePix(int16_t, int16_t, PixT);
 uint8_t SetPix(uint8_t, uint8_t);
@@ -42,7 +43,5 @@ int PNum(int, int16_t, int16_t, uint8_t, uint8_t, PixT);
 int PNumF(float, int16_t, int16_t, uint8_t, uint8_t, PixT);
 
 int32_t FPow(int32_t, int32_t);
-
-extern uint8_t GBuf[GBufS];
 
 #endif
