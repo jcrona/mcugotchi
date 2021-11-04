@@ -32,7 +32,7 @@ void system_enable_irq(void)
 	__enable_irq();
 }
 
-void system_clock_config(void)
+static void system_clock_config(void)
 {
 	/* The system Clock is configured as follow :
 	 *  System Clock source            = PLL (HSI48)
@@ -80,6 +80,8 @@ void system_clock_config(void)
 void system_init(void)
 {
 	HAL_Init();
+
+	system_clock_config();
 }
 
 void system_enter_state(exec_state_t state)

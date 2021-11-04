@@ -523,8 +523,6 @@ static void ll_init(void)
 {
 	system_init();
 
-	system_clock_config();
-
 	board_init();
 
 	time_init();
