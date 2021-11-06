@@ -23,6 +23,8 @@
 /* All supported board must be listed here */
 #if defined(BOARD_IS_discovery_stm32f0)
 #include "board_discovery_stm32f0.h"
+#elif defined(BOARD_IS_opentama)
+#include "board_opentama.h"
 #else
 #error "No board selected"
 #endif
