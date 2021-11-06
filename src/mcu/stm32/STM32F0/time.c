@@ -128,7 +128,7 @@ us_time_t time_get(void)
 	us_time_t t;
 	uint32_t cnt;
 
-	__disable_irq();
+	system_disable_irq();
 
 	t = ticks_h;
 	/* Check if an overflow is not already pending */
@@ -138,7 +138,7 @@ us_time_t time_get(void)
 
 	cnt = (htim.Instance)->CNT;
 
-	__enable_irq();
+	system_enable_irq();
 
 	return (t << 23) | (cnt << 7);
 }
