@@ -123,9 +123,9 @@ void time_init(void)
 	HAL_TIM_Base_Start_IT(&htim);
 }
 
-us_time_t time_get(void)
+mcu_time_t time_get(void)
 {
-	us_time_t t;
+	mcu_time_t t;
 	uint32_t cnt;
 
 	system_disable_irq();
@@ -143,21 +143,21 @@ us_time_t time_get(void)
 	return (t << 23) | (cnt << 7);
 }
 
-void time_wait_until(us_time_t time)
+void time_wait_until(mcu_time_t time)
 {
 	while ((int32_t) (time - time_get()) > 0) {
 		__asm__ __volatile__ ("nop");
 	}
 }
 
-void time_delay(us_time_t time)
+void time_delay(mcu_time_t time)
 {
 	time_wait_until(time_get() + time);
 }
 
-exec_state_t time_configure_wakeup(us_time_t time)
+exec_state_t time_configure_wakeup(mcu_time_t time)
 {
-	us_time_t t = time_get();
+	mcu_time_t t = time_get();
 	int32_t delta = time - t;
 	int32_t delta_ticks = delta >> 7;
 	uint32_t cnt = (t >> 7) & 0xFFFF;

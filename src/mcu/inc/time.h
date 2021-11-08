@@ -24,15 +24,15 @@
 
 #include "system.h"
 
-typedef uint32_t us_time_t;
+typedef uint32_t mcu_time_t;
 
 
 void time_init(void);
 
-us_time_t time_get(void);
-void time_wait_until(us_time_t time);
-void time_delay(us_time_t time);
+mcu_time_t time_get(void);
+void time_wait_until(mcu_time_t time);
+void time_delay(mcu_time_t time);
 
-exec_state_t time_configure_wakeup(us_time_t time);
+exec_state_t time_configure_wakeup(mcu_time_t time);
 
 #endif /* _TIME_H_ */
