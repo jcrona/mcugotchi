@@ -28,6 +28,8 @@
 #define US_TO_MCU_TIME(t)				((t * MCU_TIME_FREQ_NUM + MCU_TIME_FREQ_DEN - 1)/MCU_TIME_FREQ_DEN)
 #define MS_TO_MCU_TIME(t)				(US_TO_MCU_TIME(t * 1000))
 
+#define MCU_TIME_FREQ_X1000 				((1000000000UL/MCU_TIME_FREQ_DEN) * MCU_TIME_FREQ_NUM)
+
 typedef uint32_t mcu_time_t;
 
 

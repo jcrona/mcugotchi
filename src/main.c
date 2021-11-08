@@ -67,12 +67,16 @@
 
 #define FRAMERATE 					30
 
+#define TAMALIB_FREQ					32768 // Hz
+
 #define MAIN_JOB_PERIOD					1 //ms
 
 static volatile u12_t *g_program = (volatile u12_t *) (STORAGE_BASE_ADDRESS + (STORAGE_ROM_OFFSET << 2));
 
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
+
+static uint16_t time_shift = 0;
 
 static bool_t tamalib_is_late = 0;
 
@@ -195,7 +199,7 @@ static void hal_log(log_level_t level, char *buff, ...)
 
 static timestamp_t hal_get_timestamp(void)
 {
-	return (timestamp_t) (time_get() << 7);
+	return (timestamp_t) (time_get() << time_shift);
 }
 
 static void hal_sleep_until(timestamp_t ts)
@@ -656,7 +660,14 @@ int main(void)
 
 		tamalib_register_hal(&hal);
 
-		if (tamalib_init((const u12_t *) g_program, NULL, 1000000)) {
+		/* TamaLIB must use an integer time base of at least 32768 Hz,
+		 * so shift the one provided by the MCU until it fits.
+		 */
+		while (((MCU_TIME_FREQ_X1000 << time_shift) < TAMALIB_FREQ * 1000) || (MCU_TIME_FREQ_X1000 << time_shift) % 1000) {
+			time_shift++;
+		}
+
+		if (tamalib_init((const u12_t *) g_program, NULL, (MCU_TIME_FREQ_X1000 << time_shift)/1000)) {
 			system_fatal_error();
 		}
 
