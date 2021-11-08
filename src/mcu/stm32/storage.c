@@ -80,8 +80,8 @@ int8_t storage_read(uint32_t offset, uint32_t *data, uint32_t length)
 static int8_t write_within_page(uint32_t addr, uint32_t *data, uint32_t length)
 {
 	uint32_t page[STORAGE_PAGE_SIZE];
-	uint32_t page_addr = addr & 0xFFFFF800;
-	uint32_t offset_in_page = (addr & 0x7FC) >> 2;
+	uint32_t page_addr = addr & ~((STORAGE_PAGE_SIZE << 2) - 1);
+	uint32_t offset_in_page = (addr >> 2) & (STORAGE_PAGE_SIZE - 1);
 	uint32_t i = 0;
 
 	if (length > STORAGE_PAGE_SIZE - offset_in_page) {
@@ -119,13 +119,8 @@ int8_t storage_write(uint32_t offset, uint32_t *data, uint32_t length)
 	HAL_FLASH_Unlock();
 
 	while (length > 0) {
-		if (addr & 0x7FC) {
-			/* First partial page */
-			page_len = STORAGE_PAGE_SIZE - ((addr & 0x7FC) >> 2);
-		} else {
-			/* Full page */
-			page_len = STORAGE_PAGE_SIZE;
-		}
+		/* Either a first partial page or a full page */
+		page_len = STORAGE_PAGE_SIZE - ((addr >> 2) & (STORAGE_PAGE_SIZE - 1));
 
 		if (page_len > length) {
 			/* Partial page */
