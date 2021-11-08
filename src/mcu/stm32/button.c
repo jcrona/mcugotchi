@@ -29,8 +29,8 @@
 
 #define BTN_NUM						3
 
-#define DEBOUNCE_DURATION				100000 //us
-#define LONG_PRESS_DURATION				1000000 //us
+#define DEBOUNCE_DURATION				100 //ms
+#define LONG_PRESS_DURATION				1000 //ms
 
 typedef struct {
 	btn_state_t state;
@@ -135,7 +135,7 @@ static void debounce_job_fn(job_t *job)
 	}
 
 	if (buttons[btn].state == BTN_STATE_RELEASED && get_btn_hw_state(btn) == BTN_STATE_PRESSED) {
-		job_schedule(&(buttons[btn].long_press_job), &long_press_job_fn, time_get() + LONG_PRESS_DURATION);
+		job_schedule(&(buttons[btn].long_press_job), &long_press_job_fn, time_get() + MS_TO_MCU_TIME(LONG_PRESS_DURATION));
 		config_int_line(&(buttons[btn].handle), buttons[btn].exti_port, EXTI_TRIGGER_FALLING);
 	} else if (buttons[btn].state == BTN_STATE_PRESSED && get_btn_hw_state(btn) == BTN_STATE_RELEASED) {
 		job_cancel(&(buttons[btn].long_press_job));
@@ -157,6 +157,6 @@ void button_ll_irq_handler(button_t btn)
 	if (HAL_EXTI_GetPending(&(buttons[btn].handle), EXTI_TRIGGER_RISING_FALLING)) {
 		HAL_EXTI_ClearPending(&(buttons[btn].handle), EXTI_TRIGGER_RISING_FALLING);
 
-		job_schedule(&(buttons[btn].debounce_job), &debounce_job_fn, time_get() + DEBOUNCE_DURATION);
+		job_schedule(&(buttons[btn].debounce_job), &debounce_job_fn, time_get() + MS_TO_MCU_TIME(DEBOUNCE_DURATION));
 	}
 }

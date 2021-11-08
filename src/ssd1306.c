@@ -33,15 +33,15 @@ void ssd1306_init(void)
 	gpio_clear(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 	gpio_clear(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
-	time_delay(1000);
+	time_delay(MS_TO_MCU_TIME(1));
 	gpio_set(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
-	time_delay(1000);
+	time_delay(MS_TO_MCU_TIME(1));
 	gpio_clear(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
-	time_delay(1000);
+	time_delay(MS_TO_MCU_TIME(1));
 	gpio_set(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
 	gpio_set(BOARD_SCREEN_DC_PORT, BOARD_SCREEN_DC_PIN);
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
-	time_delay(10000);
+	time_delay(MS_TO_MCU_TIME(10));
 
 	/* Configuration */
 	ssd1306_send_cmd_2b(REG_MUX_RATIO, 0x3F);

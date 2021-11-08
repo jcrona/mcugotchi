@@ -140,7 +140,7 @@ mcu_time_t time_get(void)
 
 	system_enable_irq();
 
-	return (t << 23) | (cnt << 7);
+	return (t << 16) | cnt;
 }
 
 void time_wait_until(mcu_time_t time)
@@ -159,8 +159,7 @@ exec_state_t time_configure_wakeup(mcu_time_t time)
 {
 	mcu_time_t t = time_get();
 	int32_t delta = time - t;
-	int32_t delta_ticks = delta >> 7;
-	uint32_t cnt = (t >> 7) & 0xFFFF;
+	uint32_t cnt = t & 0xFFFF;
 	exec_state_t state;
 	uint32_t latency;
 	static TIM_OC_InitTypeDef config = {
@@ -189,10 +188,10 @@ exec_state_t time_configure_wakeup(mcu_time_t time)
 		state = STATE_SLEEP_S3;
 	}
 
-	if (delta_ticks + cnt - (latency >> 7) <= 0xFFFF) {
+	if (delta + cnt - latency <= 0xFFFF) {
 		/* Job is soon enough, configure the comparator in order compensate the CPU wakeup latency */
-		//__HAL_TIM_COMPARE_SET(&htim, (uint16_t) (delta_ticks + cnt - (latency >> 7)));
-		config.Pulse = (uint16_t) (delta_ticks + cnt - (latency >> 7));  
+		//__HAL_TIM_COMPARE_SET(&htim, (uint16_t) (delta + cnt - latency));
+		config.Pulse = (uint16_t) (delta + cnt - latency);
 		HAL_TIM_OC_ConfigChannel(&htim, &config, TIM_CHANNEL_1);
 		/* Enable comparator interrupt */
 		__HAL_TIM_ENABLE_IT(&htim, TIM_IT_CC1);

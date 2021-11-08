@@ -17,26 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _TIME_H_
-#define _TIME_H_
+#ifndef _MCU_H_
+#define _MCU_H_
 
-#include <stdint.h>
+/* MCU time frequency is 7,8125 kHz = ((1000000/MCU_TIME_FREQ_DEN) * MCU_TIME_FREQ_NUM) */
+#define MCU_TIME_FREQ_NUM					1
+#define MCU_TIME_FREQ_DEN					128
 
-#include "system.h"
-#include "mcu.h"
-
-#define US_TO_MCU_TIME(t)				((t * MCU_TIME_FREQ_NUM + MCU_TIME_FREQ_DEN - 1)/MCU_TIME_FREQ_DEN)
-#define MS_TO_MCU_TIME(t)				(US_TO_MCU_TIME(t * 1000))
-
-typedef uint32_t mcu_time_t;
-
-
-void time_init(void);
-
-mcu_time_t time_get(void);
-void time_wait_until(mcu_time_t time);
-void time_delay(mcu_time_t time);
-
-exec_state_t time_configure_wakeup(mcu_time_t time);
-
-#endif /* _TIME_H_ */
+#endif /* _MCU_H_ */

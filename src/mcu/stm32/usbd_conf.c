@@ -410,7 +410,7 @@ uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
   */
 void USBD_LL_Delay(uint32_t Delay)
 {
-  time_delay(Delay * 1000);
+  time_delay(MS_TO_MCU_TIME(Delay));
 }
 
 /**

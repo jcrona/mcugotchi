@@ -67,7 +67,7 @@
 
 #define FRAMERATE 					30
 
-#define MAIN_JOB_PERIOD					1000 //us
+#define MAIN_JOB_PERIOD					1 //ms
 
 static volatile u12_t *g_program = (volatile u12_t *) (STORAGE_BASE_ADDRESS + (STORAGE_ROM_OFFSET << 2));
 
@@ -195,7 +195,7 @@ static void hal_log(log_level_t level, char *buff, ...)
 
 static timestamp_t hal_get_timestamp(void)
 {
-	return (timestamp_t) time_get();
+	return (timestamp_t) (time_get() << 7);
 }
 
 static void hal_sleep_until(timestamp_t ts)
@@ -538,7 +538,7 @@ static void ll_init(void)
 
 static void render_job_fn(job_t *job)
 {
-	job_schedule(&render_job, &render_job_fn, time_get() + 1000000/FRAMERATE);
+	job_schedule(&render_job, &render_job_fn, time_get() + MS_TO_MCU_TIME(1000)/FRAMERATE);
 
 	hal_update_screen();
 }
@@ -547,7 +547,7 @@ static void cpu_job_fn(job_t *job)
 {
 	job_t *next_job;
 
-	job_schedule(&cpu_job, &cpu_job_fn, time_get() + MAIN_JOB_PERIOD);
+	job_schedule(&cpu_job, &cpu_job_fn, time_get() + MS_TO_MCU_TIME(MAIN_JOB_PERIOD));
 
 	tamalib_is_late = 1;
 
