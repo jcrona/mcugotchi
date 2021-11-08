@@ -20,6 +20,8 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
+#include "mcu.h"
+
 /* Low-power states in enter+exit latency order */
 typedef enum {
 	STATE_RUN,
@@ -27,15 +29,6 @@ typedef enum {
 	STATE_SLEEP_S2,
 	STATE_SLEEP_S3,
 } exec_state_t;
-
-#define ENTER_SLEEP_S1_LATENCY		256
-#define EXIT_SLEEP_S1_LATENCY		256
-
-#define ENTER_SLEEP_S2_LATENCY		256
-#define EXIT_SLEEP_S2_LATENCY		256
-
-#define ENTER_SLEEP_S3_LATENCY		256
-#define EXIT_SLEEP_S3_LATENCY		256
 
 #define SLEEP_S1_THRESHOLD		(ENTER_SLEEP_S1_LATENCY + EXIT_SLEEP_S1_LATENCY)
 #define SLEEP_S2_THRESHOLD		(ENTER_SLEEP_S2_LATENCY + EXIT_SLEEP_S2_LATENCY)

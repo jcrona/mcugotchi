@@ -36,4 +36,14 @@
 #define STORAGE_FS_OFFSET					0xC00
 #define STORAGE_FS_SIZE						0x4000 // 64KB in words (sizeof(uint32_t))
 
+/* Sleep states related latencies */
+#define ENTER_SLEEP_S1_LATENCY					256
+#define EXIT_SLEEP_S1_LATENCY					256
+
+#define ENTER_SLEEP_S2_LATENCY					256
+#define EXIT_SLEEP_S2_LATENCY					256
+
+#define ENTER_SLEEP_S3_LATENCY					256
+#define EXIT_SLEEP_S3_LATENCY					256
+
 #endif /* _MCU_H_ */
