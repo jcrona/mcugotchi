@@ -102,7 +102,7 @@ static USBD_StorageTypeDef usbd_disk_fops = {
 void usb_init(void)
 {
 	USBD_Init(&USBD_Device, &MSC_Desc, 0);
-	USBD_RegisterClass(&USBD_Device, &USBD_MSC);
+	USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
 	USBD_MSC_RegisterStorage(&USBD_Device, &usbd_disk_fops);
 }
 
