@@ -76,6 +76,23 @@ static void system_clock_config(void)
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1)!= HAL_OK) {
 		system_fatal_error();
 	}
+
+	/* Configure the clock recovery system (CRS) */
+
+	/* Enable CRS Clock */
+	__HAL_RCC_CRS_CLK_ENABLE();
+
+	/* Default Synchro Signal division factor (not divided) */
+	RCC_CRSInitStruct.Prescaler = RCC_CRS_SYNC_DIV1;
+	/* Set the SYNCSRC[1:0] bits according to CRS_Source value */
+	RCC_CRSInitStruct.Source = RCC_CRS_SYNC_SOURCE_USB;
+	/* HSI48 is synchronized with USB SOF at 1KHz rate */
+	RCC_CRSInitStruct.ReloadValue =  __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000);
+	RCC_CRSInitStruct.ErrorLimitValue = RCC_CRS_ERRORLIMIT_DEFAULT;
+	/* Set the TRIM[5:0] to the default value */
+	RCC_CRSInitStruct.HSI48CalibrationValue = 0x20;
+	/* Start automatic synchronization */
+	HAL_RCCEx_CRSConfig (&RCC_CRSInitStruct);
 }
 
 void system_init(void)
