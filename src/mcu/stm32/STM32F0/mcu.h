@@ -46,4 +46,9 @@
 #define ENTER_SLEEP_S3_LATENCY					256
 #define EXIT_SLEEP_S3_LATENCY					256
 
+/* Device ID */
+#define DEVICE_ID1						(0x1FFFF7AC)
+#define DEVICE_ID2						(0x1FFFF7B0)
+#define DEVICE_ID3						(0x1FFFF7B4)
+
 #endif /* _MCU_H_ */
