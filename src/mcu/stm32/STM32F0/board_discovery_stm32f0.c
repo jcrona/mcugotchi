@@ -84,6 +84,21 @@ void board_init(void)
 	g.Pull  = GPIO_PULLUP;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_SCREEN_RST_PORT, &g);
+
+	/* USB */
+	g.Pin = BOARD_USB_DP_PIN;
+	g.Mode = GPIO_MODE_AF_PP;
+	g.Pull = GPIO_NOPULL;
+	g.Alternate = GPIO_AF2_USB;
+	g.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(BOARD_USB_DP_PORT, &g);
+
+	g.Pin = BOARD_USB_DM_PIN;
+	g.Mode = GPIO_MODE_AF_PP;
+	g.Pull = GPIO_NOPULL;
+	g.Alternate = GPIO_AF2_USB;
+	g.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(BOARD_USB_DM_PORT, &g);
 }
 
 void EXTI0_1_IRQHandler(void)
