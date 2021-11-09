@@ -45,8 +45,9 @@ static void system_clock_config(void)
 	 *  PLLMUL                         = 2
 	 *  Flash Latency(WS)              = 1
 	 */
-	RCC_ClkInitTypeDef RCC_ClkInitStruct;
-	RCC_OscInitTypeDef RCC_OscInitStruct;
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	static RCC_CRSInitTypeDef RCC_CRSInitStruct;
 	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
 	/* Select HSI48 Oscillator as PLL source */
