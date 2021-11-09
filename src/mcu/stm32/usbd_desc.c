@@ -201,6 +201,13 @@ static void Get_SerialNum(void)
     IntToUnicode (deviceserial0, &USBD_StringSerial[2] ,8);
     IntToUnicode (deviceserial1, &USBD_StringSerial[18] ,4);
   }
+  else
+  {
+    deviceserial0 = 0xFFFFFFFF;
+    deviceserial1= 0xFFFFFFFF;
+    IntToUnicode (deviceserial0, &USBD_StringSerial[2] ,8);
+    IntToUnicode (deviceserial1, &USBD_StringSerial[18] ,4);
+  }
 }
 
 /**

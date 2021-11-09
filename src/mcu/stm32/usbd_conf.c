@@ -196,6 +196,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd.Init.dev_endpoints = 8;
   hpcd.Init.phy_itface = PCD_PHY_EMBEDDED;
   hpcd.Init.speed = PCD_SPEED_FULL;
+  hpcd.Init.low_power_enable = 0;
   /* Link The driver to the stack */
   hpcd.pData = pdev;
   pdev->pData = &hpcd;
@@ -406,7 +407,7 @@ void USBD_LL_Delay(uint32_t Delay)
   */
 void *USBD_static_malloc(uint32_t size)
 {
-  static uint32_t mem[sizeof(USBD_MSC_BOT_HandleTypeDef) / 4 + 1];
+  static uint32_t mem[MAX_STATIC_ALLOC_SIZE];
   return mem;
 }
 
