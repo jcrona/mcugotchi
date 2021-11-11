@@ -34,14 +34,14 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
 	/* TIM Break input event */
 	if (__HAL_TIM_GET_FLAG(&htim, TIM_FLAG_BREAK) != RESET) {
 		if (__HAL_TIM_GET_IT_SOURCE(&htim, TIM_IT_BREAK) != RESET) {
-			__HAL_TIM_CLEAR_IT(&htim, TIM_IT_BREAK);
+			__HAL_TIM_CLEAR_IT(&htim, TIM_FLAG_BREAK);
 		}
 	}
 
 	/* TIM Trigger detection event */
 	if (__HAL_TIM_GET_FLAG(&htim, TIM_FLAG_TRIGGER) != RESET) {
 		if (__HAL_TIM_GET_IT_SOURCE(&htim, TIM_IT_TRIGGER) != RESET) {
-			__HAL_TIM_CLEAR_IT(&htim, TIM_IT_TRIGGER);
+			__HAL_TIM_CLEAR_IT(&htim, TIM_FLAG_TRIGGER);
 		}
 	}
 
@@ -55,7 +55,7 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
 	/* TIM Update event */
 	if (__HAL_TIM_GET_FLAG(&htim, TIM_FLAG_UPDATE) != RESET) {
 		if (__HAL_TIM_GET_IT_SOURCE(&htim, TIM_IT_UPDATE) != RESET) {
-			__HAL_TIM_CLEAR_IT(&htim, TIM_IT_UPDATE);
+			__HAL_TIM_CLEAR_IT(&htim, TIM_FLAG_UPDATE);
 			ticks_h++;
 		}
 	}
