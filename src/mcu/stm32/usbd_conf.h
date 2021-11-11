@@ -22,7 +22,7 @@
 #define __USBD_CONF_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f0xx_hal.h"
+#include "stm32_hal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

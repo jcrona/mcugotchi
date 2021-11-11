@@ -19,7 +19,7 @@
  */
 #include <stdint.h>
 
-#include "stm32f0xx_hal.h"
+#include "stm32_hal.h"
 
 #include "lib/tamalib.h"
 #include "job.h"

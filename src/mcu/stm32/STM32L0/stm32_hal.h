@@ -17,18 +17,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <stdint.h>
+#ifndef _STM32_HAL_H_
+#define _STM32_HAL_H_
 
-#include "stm32f0xx_hal.h"
+#include "stm32l0xx_hal.h"
 
-#include "gpio.h"
-
-void gpio_set(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
-{
-	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
-}
-
-void gpio_clear(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
-{
-	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
-}
+#endif /* _STM32_HAL_H_ */

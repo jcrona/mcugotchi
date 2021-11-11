@@ -18,7 +18,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f0xx_hal.h"
+#include "stm32_hal.h"
 #include "usbd_core.h"
 #include "usbd_msc.h"
 #include "time.h"

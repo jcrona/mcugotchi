@@ -22,8 +22,9 @@
 
 #include <stdint.h>
 
+#include "mcu_types.h"
 
-void gpio_set(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-void gpio_clear(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+void gpio_set(gpio_port_t port, gpio_pin_t pin);
+void gpio_clear(gpio_port_t port, gpio_pin_t pin);
 
 #endif /* _GPIO_H_ */

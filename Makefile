@@ -13,21 +13,23 @@ OPENOCD_BIN = $(ROOT)/openocd/bin/openocd
 
 ifeq ($(BOARD), discovery_stm32f0)
 	FWCFG  += -DSTM32F072xB
-	HALTYPE = STM32F0
+	MCU = STM32F0
 	LD_FILE ?= stm32f072xb.ld
 	OPENOCD_CFG_FILE = board/stm32f0discovery.cfg
 else ifeq ($(BOARD), opentama)
 	FWCFG  += -DSTM32L072xx
-	HALTYPE = STM32L0
+	MCU = STM32L0
 	LD_FILE ?= stm32l072xb.ld
 endif
 
-BUILDDIR  = build/$(BOARD)
-HALDIR    = devices/$(HALTYPE)
-SRCDIR    = src
+BUILDDIR     = build/$(BOARD)
+SRCDIR       = src
+HALINCDIR    = $(SRCDIR)/mcu/inc
+HALCOMMONDIR = $(SRCDIR)/mcu/stm32
+HALDIR       = $(HALCOMMONDIR)/$(MCU)
 
-ifeq ($(HALTYPE), STM32F0)
-MCU       = cortex-m0
+ifeq ($(MCU), STM32F0)
+CPU       = cortex-m0
 STLIBROOT = libs/STM32CubeF0
 
 INC       = -I$(STLIBROOT)/Drivers/CMSIS/Include
@@ -39,8 +41,8 @@ INC      += -I$(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc
 STLIBDIR   = $(STLIBROOT)/Drivers/STM32F0xx_HAL_Driver/Src/
 USBCORELIB = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Core/Src/
 USBMSCLIB  = $(STLIBROOT)/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/
-else ifeq ($(HALTYPE), STM32L0)
-MCU       = cortex-m0
+else ifeq ($(MCU), STM32L0)
+CPU       = cortex-m0
 STLIBROOT = libs/STM32CubeL0
 
 INC       = -I$(STLIBROOT)/Drivers/CMSIS/Include
@@ -57,8 +59,8 @@ endif
 INC       += -Ilibs/FatFs/src/
 FATFSLIB   = libs/FatFs/src/
 
-SRCS = $(wildcard $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
-INC += -I$(HALDIR) -I$(SRCDIR)
+SRCS = $(wildcard $(HALCOMMONDIR)/*.c $(HALDIR)/*.c $(HALDIR)/*.s $(SRCDIR)/*.c $(SRCDIR)/lib/*.c)
+INC += -I$(HALINCDIR) -I$(HALCOMMONDIR) -I$(HALDIR) -I$(SRCDIR)
 
 TARGET = mcugotchi
 
@@ -71,13 +73,13 @@ BIN   = $(TOOLCHAIN)/bin/arm-none-eabi-objcopy -O binary
 
 DEBUG = gdb
 
-CCOPTS   = -mcpu=$(MCU) -mthumb -c -std=gnu99 -g$(DEBUG)
+CCOPTS   = -mcpu=$(CPU) -mthumb -c -std=gnu99 -g$(DEBUG)
 CCOPTS  += -fno-common -fmessage-length=0 -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -Os -Wall -Wshadow -Wstrict-aliasing -Wstrict-overflow -Wno-missing-field-initializers
-ASOPTS   = -mcpu=$(MCU) -mthumb -g$(DEBUG)
+ASOPTS   = -mcpu=$(CPU) -mthumb -g$(DEBUG)
 LNLIBS   =
-LNOPTS   = -mcpu=$(MCU) -mthumb -Wl,--gc-sections -Wl,-L$(HALDIR) -Wl,-Map=$(BUILDDIR)/$(TARGET).map -Wl,-T$(LD_FILE)
+LNOPTS   = -mcpu=$(CPU) -mthumb -Wl,--gc-sections -Wl,-L$(HALDIR) -Wl,-Map=$(BUILDDIR)/$(TARGET).map -Wl,-T$(LD_FILE)
 
-vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(USBCORELIB) $(USBMSCLIB) $(FATFSLIB) $(HALDIR)
+vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(USBCORELIB) $(USBMSCLIB) $(FATFSLIB) $(HALCOMMONDIR) $(HALDIR)
 vpath %.s $(SRCDIR) $(STLIBDIR) $(HALDIR)
 
 

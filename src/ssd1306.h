@@ -12,7 +12,7 @@
  * This code is provided AS IS and no warranty is included!
  */
 
-#include "stm32f0xx_hal.h"
+#include "stm32_hal.h"
 
 #include <string.h>
 #include <inttypes.h>
