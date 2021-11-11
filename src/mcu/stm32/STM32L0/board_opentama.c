@@ -93,21 +93,18 @@ void board_init(void)
 
 	/* RGB LED */
 	g.Pin = BOARD_LED_RED_PIN;
-	g.Mode = GPIO_MODE_OUTPUT_PP;
-	g.Pull = GPIO_PULLDOWN;
-	g.Speed = GPIO_SPEED_FREQ_HIGH;
+	g.Mode = GPIO_MODE_AF_PP;
+	g.Alternate = GPIO_AF2_TIM2;
 	HAL_GPIO_Init(BOARD_LED_RED_PORT, &g);
 
 	g.Pin = BOARD_LED_GREEN_PIN;
-	g.Mode = GPIO_MODE_OUTPUT_PP;
-	g.Pull = GPIO_PULLDOWN;
-	g.Speed = GPIO_SPEED_FREQ_HIGH;
+	g.Mode = GPIO_MODE_AF_PP;
+	g.Alternate = GPIO_AF2_TIM2;
 	HAL_GPIO_Init(BOARD_LED_GREEN_PORT, &g);
 
 	g.Pin = BOARD_LED_BLUE_PIN;
-	g.Mode = GPIO_MODE_OUTPUT_PP;
-	g.Pull = GPIO_PULLDOWN;
-	g.Speed = GPIO_SPEED_FREQ_HIGH;
+	g.Mode = GPIO_MODE_AF_PP;
+	g.Alternate = GPIO_AF2_TIM2;
 	HAL_GPIO_Init(BOARD_LED_BLUE_PORT, &g);
 
 	/* Charger */
