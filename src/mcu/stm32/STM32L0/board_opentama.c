@@ -107,6 +107,12 @@ void board_init(void)
 	g.Alternate = GPIO_AF2_TIM2;
 	HAL_GPIO_Init(BOARD_LED_BLUE_PORT, &g);
 
+	/* Speaker */
+	g.Pin = BOARD_SPEAKER_PIN;
+	g.Mode = GPIO_MODE_AF_PP;
+	g.Alternate = GPIO_AF2_TIM3;
+	HAL_GPIO_Init(BOARD_SPEAKER_PORT, &g);
+
 	/* Charger */
 	g.Pin = BOARD_NCHARGE_PIN;
 	g.Mode = GPIO_MODE_IT_RISING;
