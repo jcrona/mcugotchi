@@ -21,36 +21,38 @@
 
 #include "stm32_hal.h"
 
-static SPI_HandleTypeDef hspi1;
+#include "board.h"
+
+static SPI_HandleTypeDef hspi;
 
 
 void spi_init(void)
 {
-	__HAL_RCC_SPI1_CLK_ENABLE();
+	BOARD_SCREEN_SPI_CLK_ENABLE();
 
-	hspi1.Instance               = SPI1;
-	hspi1.Init.Mode              = SPI_MODE_MASTER;
-	hspi1.Init.Direction         = SPI_DIRECTION_1LINE;
-	hspi1.Init.DataSize          = SPI_DATASIZE_8BIT;
-	hspi1.Init.CLKPolarity       = SPI_POLARITY_LOW;
-	hspi1.Init.CLKPhase          = SPI_PHASE_1EDGE;
-	hspi1.Init.NSS               = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-	hspi1.Init.FirstBit          = SPI_FIRSTBIT_MSB;
-	hspi1.Init.TIMode            = SPI_TIMODE_DISABLED;
-	hspi1.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
-	hspi1.Init.CRCPolynomial     = 7;
-	HAL_SPI_Init(&hspi1);
+	hspi.Instance               = BOARD_SCREEN_SPI;
+	hspi.Init.Mode              = SPI_MODE_MASTER;
+	hspi.Init.Direction         = SPI_DIRECTION_1LINE;
+	hspi.Init.DataSize          = SPI_DATASIZE_8BIT;
+	hspi.Init.CLKPolarity       = SPI_POLARITY_LOW;
+	hspi.Init.CLKPhase          = SPI_PHASE_1EDGE;
+	hspi.Init.NSS               = SPI_NSS_SOFT;
+	hspi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+	hspi.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+	hspi.Init.TIMode            = SPI_TIMODE_DISABLED;
+	hspi.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
+	hspi.Init.CRCPolynomial     = 7;
+	HAL_SPI_Init(&hspi);
 
 	/* Enable 1LINE TX mode */
-	SPI_1LINE_TX(&hspi1);
+	SPI_1LINE_TX(&hspi);
 
-	__HAL_SPI_ENABLE(&hspi1);
+	__HAL_SPI_ENABLE(&hspi);
 }
 
 void spi_write(uint8_t data)
 {
-	/* Bypass all the ckecks from HAL and write directly to SPI1 */
-	*(__IO uint8_t *) (&(hspi1.Instance)->DR) = data;
-	while(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_BSY));
+	/* Bypass all the ckecks from HAL and write directly to SPI */
+	*(__IO uint8_t *) (&(hspi.Instance)->DR) = data;
+	while(__HAL_SPI_GET_FLAG(&hspi, SPI_FLAG_BSY));
 }
