@@ -21,6 +21,7 @@
 
 #include "stm32_hal.h"
 
+#include "spi.h"
 #include "board.h"
 
 static SPI_HandleTypeDef hspi;
