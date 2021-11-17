@@ -48,6 +48,8 @@
 
 #include "lib/tamalib.h"
 
+#define FIRMWARE_VERSION				"v0.1"
+
 #define PIXEL_SIZE					3
 #define ICON_SIZE					8
 #define ICON_STRIDE_X					24
@@ -477,6 +479,7 @@ static menu_item_t options_menu[] = {
 	{"", &menu_pause_arg, &menu_pause, 0, NULL},
 	{"Reset CPU", NULL, &menu_reset_cpu, 1, NULL},
 	{"Fact. Reset", NULL, &menu_factory_reset, 1, NULL},
+	{"FW. "FIRMWARE_VERSION, NULL, NULL, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
