@@ -86,9 +86,8 @@ void board_init(void)
 	HAL_GPIO_Init(BOARD_SCREEN_RST_PORT, &g);
 
 	g.Pin = BOARD_SCREEN_BL_PIN;
-	g.Mode = GPIO_MODE_OUTPUT_PP;
-	g.Pull = GPIO_PULLDOWN;
-	g.Speed = GPIO_SPEED_FREQ_HIGH;
+	g.Mode = GPIO_MODE_AF_PP;
+	g.Alternate = GPIO_AF2_TIM3;
 	HAL_GPIO_Init(BOARD_SCREEN_BL_PORT, &g);
 
 	/* RGB LED */
