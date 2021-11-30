@@ -110,7 +110,7 @@ void board_init(void)
 	/* Speaker */
 	g.Pin = BOARD_SPEAKER_PIN;
 	g.Mode = GPIO_MODE_AF_PP;
-	g.Alternate = GPIO_AF2_TIM3;
+	g.Alternate = GPIO_AF4_TIM22;
 	HAL_GPIO_Init(BOARD_SPEAKER_PORT, &g);
 
 	/* Charger */
