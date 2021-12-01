@@ -98,6 +98,8 @@ static bool_t emulation_paused = 0;
 static bool_t usb_enabled = 0;
 static bool_t rom_loaded = 1;
 static uint8_t backlight_level = 2;
+static bool_t speaker_enabled = 1;
+static bool_t led_enabled = 1;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -323,7 +325,7 @@ static void hal_set_frequency(u32_t freq)
 
 static void hal_play_frequency(bool_t en)
 {
-	speaker_enable((uint8_t) en);
+	speaker_enable((uint8_t) (en && speaker_enabled));
 }
 
 static int hal_handler(void)
@@ -393,6 +395,40 @@ static char * menu_backlight_arg(uint8_t pos, menu_parent_t *parent)
 	str[1] = '0' + backlight_level % 10;
 
 	return str;
+}
+
+static void menu_sound(uint8_t pos, menu_parent_t *parent)
+{
+	speaker_enabled = !speaker_enabled;
+}
+
+static char * menu_sound_arg(uint8_t pos, menu_parent_t *parent)
+{
+	switch (speaker_enabled) {
+		case 0:
+			return "ON";
+
+		default:
+		case 1:
+			return "OFF";
+	}
+}
+
+static void menu_led(uint8_t pos, menu_parent_t *parent)
+{
+	led_enabled = !led_enabled;
+}
+
+static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
+{
+	switch (led_enabled) {
+		case 0:
+			return "ON";
+
+		default:
+		case 1:
+			return "OFF";
+	}
 }
 
 static void menu_toggle_speed(uint8_t pos, menu_parent_t *parent)
@@ -523,6 +559,8 @@ static menu_item_t backlight_menu[] = {
 static menu_item_t interface_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
 	{"Backlight", NULL, NULL, 0, backlight_menu},
+	{"Sound ", &menu_sound_arg, &menu_sound, 0, NULL},
+	{"RGB LED ", &menu_led_arg, &menu_led, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
