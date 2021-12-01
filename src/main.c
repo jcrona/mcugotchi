@@ -33,7 +33,6 @@
  */
 #include <stdint.h>
 
-#include "ssd1306.h"
 #include "gfx.h"
 #include "menu.h"
 #include "job.h"
@@ -48,6 +47,11 @@
 #include "fs_ll.h"
 #include "rom.h"
 #include "board.h"
+#if defined(BOARD_HAS_SSD1306)
+#include "ssd1306.h"
+#elif defined(BOARD_HAS_UC1701X)
+#include "uc1701x.h"
+#endif
 
 #include "lib/tamalib.h"
 
@@ -346,7 +350,11 @@ static hal_t hal = {
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
+#if defined(BOARD_HAS_SSD1306)
 	ssd1306_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+#elif defined(BOARD_HAS_UC1701X)
+	uc1701x_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+#endif
 }
 
 static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
@@ -582,11 +590,19 @@ static void ll_init(void)
 
 	speaker_init();
 
+#if defined(BOARD_HAS_SSD1306)
 	ssd1306_init();
 	ssd1306_set_power_mode(PWR_MODE_ON);
 	ssd1306_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
 
 	gfx_register_display(&ssd1306_send_data);
+#elif defined(BOARD_HAS_UC1701X)
+	uc1701x_init();
+	uc1701x_set_power_mode(PWR_MODE_ON);
+	uc1701x_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+
+	gfx_register_display(&uc1701x_send_data);
+#endif
 }
 
 static void render_job_fn(job_t *job)
