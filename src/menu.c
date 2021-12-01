@@ -33,7 +33,7 @@
 static uint8_t is_visible = 0;
 static menu_item_t *g_menu = NULL;
 static menu_item_t *current_menu = NULL;
-static uint8_t current_item = 0;
+static int8_t current_item = -1;
 static uint8_t current_depth = 0;
 
 static menu_parent_t parents[MAX_DEPTH + 1] = { 0 }; // parents[0] will always be NULL
@@ -106,8 +106,10 @@ void menu_open(void)
 	is_visible = 1;
 
 	current_menu = g_menu;
-	current_item = 0;
 	current_depth = 0;
+	current_item = -1;
+	menu_next();
+
 	draw_menu();
 }
 
@@ -126,11 +128,13 @@ uint8_t menu_is_visible(void)
 
 void menu_next(void)
 {
-	current_item++;
+	do {
+		current_item++;
 
-	if (current_menu[current_item].name == NULL) {
-		current_item = 0;
-	}
+		if (current_menu[current_item].name == NULL) {
+			current_item = 0;
+		}
+	} while(current_menu[current_item].cb == NULL && current_menu[current_item].sub_menu == NULL);
 
 	draw_menu();
 }
@@ -158,7 +162,8 @@ void menu_enter(void)
 		parents[current_depth].menu = current_menu;
 		parents[current_depth].pos = current_item;
 		current_menu = sub_menu;
-		current_item = 0;
+		current_item = -1;
+		menu_next();
 	}
 
 	draw_menu();
