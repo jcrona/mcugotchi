@@ -41,6 +41,7 @@
 #include "storage.h"
 #include "state.h"
 #include "button.h"
+#include "led.h"
 #include "usb.h"
 #include "fs_ll.h"
 #include "rom.h"
@@ -535,6 +536,8 @@ static void ll_init(void)
 	time_init();
 
 	button_init();
+
+	led_init();
 
 	ssd1306_init();
 	ssd1306_set_power_mode(PWR_MODE_ON);
