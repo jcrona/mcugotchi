@@ -520,7 +520,7 @@ static menu_item_t backlight_menu[] = {
 	{NULL, NULL, NULL, 0, NULL},
 };
 
-static menu_item_t display_menu[] = {
+static menu_item_t interface_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
 	{"Backlight", NULL, NULL, 0, backlight_menu},
 
@@ -578,7 +578,7 @@ static menu_item_t roms_menu[] = {
 static menu_item_t main_menu[] = {
 	{"States", NULL, NULL, 0, states_menu},
 	{"ROMs", NULL, NULL, 0, roms_menu},
-	{"Display", NULL, NULL, 0, display_menu},
+	{"Interface", NULL, NULL, 0, interface_menu},
 	{"Emulation", NULL, NULL, 0, emulation_menu},
 	{"USB Mode", NULL, &menu_usb, 0, NULL},
 	{"System", NULL, NULL, 0, system_menu},
