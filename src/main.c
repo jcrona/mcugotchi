@@ -308,7 +308,7 @@ static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
 {
-	if (icon_buffer[icon] == 0 && val == 1) {
+	if (icon == 7 && icon_buffer[icon] == 0 && val == 1) {
 		/* The Tamagotchi is calling */
 		if (menu_is_visible()) {
 			menu_close();
