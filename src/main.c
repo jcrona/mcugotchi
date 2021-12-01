@@ -43,6 +43,7 @@
 #include "button.h"
 #include "led.h"
 #include "speaker.h"
+#include "backlight.h"
 #include "usb.h"
 #include "fs_ll.h"
 #include "rom.h"
@@ -92,6 +93,7 @@ static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
 static bool_t usb_enabled = 0;
 static bool_t rom_loaded = 1;
+static uint8_t backlight_level = 2;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -359,6 +361,32 @@ static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
 	}
 }
 
+static void menu_backlight_inc(uint8_t pos, menu_parent_t *parent)
+{
+	if (backlight_level < 16) {
+		backlight_level++;
+		backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+	}
+}
+
+static void menu_backlight_dec(uint8_t pos, menu_parent_t *parent)
+{
+	if (backlight_level > 0) {
+		backlight_level--;
+		backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+	}
+}
+
+static char * menu_backlight_arg(uint8_t pos, menu_parent_t *parent)
+{
+	static char str[] = "00";
+
+	str[0] = '0' + backlight_level/10;
+	str[1] = '0' + backlight_level % 10;
+
+	return str;
+}
+
 static void menu_toggle_speed(uint8_t pos, menu_parent_t *parent)
 {
 	speed_ratio = !speed_ratio;
@@ -476,8 +504,16 @@ static void menu_usb(uint8_t pos, menu_parent_t *parent)
 	usb_enabled = 1;
 }
 
+static menu_item_t backlight_menu[] = {
+	{"+", NULL, &menu_backlight_inc, 0, NULL},
+	{"-", NULL, &menu_backlight_dec, 0, NULL},
+
+	{NULL, NULL, NULL, 0, NULL},
+};
+
 static menu_item_t options_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
+	{"Backlight ", &menu_backlight_arg, NULL, 0, backlight_menu},
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
 	{"", &menu_pause_arg, &menu_pause, 0, NULL},
 	{"Reset CPU", NULL, &menu_reset_cpu, 1, NULL},
@@ -540,6 +576,9 @@ static void ll_init(void)
 	button_init();
 
 	led_init();
+
+	backlight_init();
+	backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
 
 	speaker_init();
 
