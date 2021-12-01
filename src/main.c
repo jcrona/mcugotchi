@@ -519,12 +519,22 @@ static menu_item_t backlight_menu[] = {
 	{NULL, NULL, NULL, 0, NULL},
 };
 
-static menu_item_t options_menu[] = {
+static menu_item_t display_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
 	{"Backlight ", &menu_backlight_arg, NULL, 0, backlight_menu},
+
+	{NULL, NULL, NULL, 0, NULL},
+};
+
+static menu_item_t emulation_menu[] = {
 	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
 	{"", &menu_pause_arg, &menu_pause, 0, NULL},
 	{"Reset CPU", NULL, &menu_reset_cpu, 1, NULL},
+
+	{NULL, NULL, NULL, 0, NULL},
+};
+
+static menu_item_t system_menu[] = {
 	{"Fact. Reset", NULL, &menu_factory_reset, 1, NULL},
 	{"FW. "FIRMWARE_VERSION, NULL, NULL, 0, NULL},
 
@@ -565,10 +575,12 @@ static menu_item_t roms_menu[] = {
 };
 
 static menu_item_t main_menu[] = {
-	{"Options", NULL, NULL, 0, options_menu},
 	{"States", NULL, NULL, 0, states_menu},
 	{"ROMs", NULL, NULL, 0, roms_menu},
+	{"Display", NULL, NULL, 0, display_menu},
+	{"Emulation", NULL, NULL, 0, emulation_menu},
 	{"USB Mode", NULL, &menu_usb, 0, NULL},
+	{"System", NULL, NULL, 0, system_menu},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
