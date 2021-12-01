@@ -513,6 +513,7 @@ static void menu_usb(uint8_t pos, menu_parent_t *parent)
 }
 
 static menu_item_t backlight_menu[] = {
+	{"", &menu_backlight_arg, NULL, 0, NULL},
 	{"+", NULL, &menu_backlight_inc, 0, NULL},
 	{"-", NULL, &menu_backlight_dec, 0, NULL},
 
@@ -521,7 +522,7 @@ static menu_item_t backlight_menu[] = {
 
 static menu_item_t display_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
-	{"Backlight ", &menu_backlight_arg, NULL, 0, backlight_menu},
+	{"Backlight", NULL, NULL, 0, backlight_menu},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
