@@ -65,59 +65,44 @@ void led_set(uint8_t r, uint8_t g, uint8_t b)
 
 #ifdef BOARD_LED_RED_PWM_CHANNEL
 	/* Red */
-	if (r > 0) {
-		config.Pulse = (r * (BOARD_LED_RED_CALIBRATION - 1))/(0x100 - 1);
+	config.Pulse = (r * (BOARD_LED_RED_CALIBRATION - 1))/(0x100 - 1);
 
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_LED_RED_PWM_CHANNEL);
+	/* Stop the timer */
+	HAL_TIM_PWM_Stop(&htim, BOARD_LED_RED_PWM_CHANNEL);
 
-		/* Configure the PWM */
-		HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_LED_RED_PWM_CHANNEL);
+	/* Configure the PWM */
+	HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_LED_RED_PWM_CHANNEL);
 
-		/* Start the timer */
-		HAL_TIM_PWM_Start(&htim, BOARD_LED_RED_PWM_CHANNEL);
-	} else {
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_LED_RED_PWM_CHANNEL);
-	}
+	/* Start the timer */
+	HAL_TIM_PWM_Start(&htim, BOARD_LED_RED_PWM_CHANNEL);
 #endif
 
 #ifdef BOARD_LED_GREEN_PWM_CHANNEL
 	/* Green */
-	if (g > 0) {
-		config.Pulse = (g * (BOARD_LED_GREEN_CALIBRATION - 1))/(0x100 - 1);
+	config.Pulse = (g * (BOARD_LED_GREEN_CALIBRATION - 1))/(0x100 - 1);
 
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_LED_GREEN_PWM_CHANNEL);
+	/* Stop the timer */
+	HAL_TIM_PWM_Stop(&htim, BOARD_LED_GREEN_PWM_CHANNEL);
 
-		/* Configure the PWM */
-		HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_LED_GREEN_PWM_CHANNEL);
+	/* Configure the PWM */
+	HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_LED_GREEN_PWM_CHANNEL);
 
-		/* Start the timer */
-		HAL_TIM_PWM_Start(&htim, BOARD_LED_GREEN_PWM_CHANNEL);
-	} else {
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_LED_GREEN_PWM_CHANNEL);
-	}
+	/* Start the timer */
+	HAL_TIM_PWM_Start(&htim, BOARD_LED_GREEN_PWM_CHANNEL);
 #endif
 
 #ifdef BOARD_LED_BLUE_PWM_CHANNEL
 	/* Blue */
-	if (b > 0) {
-		config.Pulse = (b * (BOARD_LED_BLUE_CALIBRATION - 1))/(0x100 - 1);
+	config.Pulse = (b * (BOARD_LED_BLUE_CALIBRATION - 1))/(0x100 - 1);
 
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_LED_BLUE_PWM_CHANNEL);
+	/* Stop the timer */
+	HAL_TIM_PWM_Stop(&htim, BOARD_LED_BLUE_PWM_CHANNEL);
 
-		/* Configure the PWM */
-		HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_LED_BLUE_PWM_CHANNEL);
+	/* Configure the PWM */
+	HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_LED_BLUE_PWM_CHANNEL);
 
-		/* Start the timer */
-		HAL_TIM_PWM_Start(&htim, BOARD_LED_BLUE_PWM_CHANNEL);
-	} else {
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_LED_BLUE_PWM_CHANNEL);
-	}
+	/* Start the timer */
+	HAL_TIM_PWM_Start(&htim, BOARD_LED_BLUE_PWM_CHANNEL);
 #endif
 #endif
 }

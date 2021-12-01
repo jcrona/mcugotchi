@@ -64,21 +64,16 @@ void backlight_set(uint8_t v)
 	};
 
 #ifdef BOARD_SCREEN_BL_PWM_CHANNEL
-	if (v > 0) {
-		config.Pulse = v;
+	config.Pulse = v;
 
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_SCREEN_BL_PWM_CHANNEL);
+	/* Stop the timer */
+	HAL_TIM_PWM_Stop(&htim, BOARD_SCREEN_BL_PWM_CHANNEL);
 
-		/* Configure the PWM */
-		HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_SCREEN_BL_PWM_CHANNEL);
+	/* Configure the PWM */
+	HAL_TIM_PWM_ConfigChannel(&htim, &config, BOARD_SCREEN_BL_PWM_CHANNEL);
 
-		/* Start the timer */
-		HAL_TIM_PWM_Start(&htim, BOARD_SCREEN_BL_PWM_CHANNEL);
-	} else {
-		/* Stop the timer */
-		HAL_TIM_PWM_Stop(&htim, BOARD_SCREEN_BL_PWM_CHANNEL);
-	}
+	/* Start the timer */
+	HAL_TIM_PWM_Start(&htim, BOARD_SCREEN_BL_PWM_CHANNEL);
 #endif
 #endif
 }
