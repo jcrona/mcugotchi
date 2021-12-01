@@ -536,8 +536,8 @@ static menu_item_t emulation_menu[] = {
 };
 
 static menu_item_t system_menu[] = {
-	{"Fact. Reset", NULL, &menu_factory_reset, 1, NULL},
 	{"FW. "FIRMWARE_VERSION, NULL, NULL, 0, NULL},
+	{"Fact. Reset", NULL, &menu_factory_reset, 1, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
