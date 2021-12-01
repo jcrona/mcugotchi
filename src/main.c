@@ -42,6 +42,7 @@
 #include "state.h"
 #include "button.h"
 #include "led.h"
+#include "speaker.h"
 #include "usb.h"
 #include "fs_ll.h"
 #include "rom.h"
@@ -309,13 +310,14 @@ static void hal_set_lcd_icon(u8_t icon, bool_t val)
 	icon_buffer[icon] = val;
 }
 
-/* TODO: sound support */
 static void hal_set_frequency(u32_t freq)
 {
+	speaker_set_frequency(freq);
 }
 
 static void hal_play_frequency(bool_t en)
 {
+	speaker_enable((uint8_t) en);
 }
 
 static int hal_handler(void)
@@ -538,6 +540,8 @@ static void ll_init(void)
 	button_init();
 
 	led_init();
+
+	speaker_init();
 
 	ssd1306_init();
 	ssd1306_set_power_mode(PWR_MODE_ON);
