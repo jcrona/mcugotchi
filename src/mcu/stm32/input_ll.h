@@ -17,13 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _BUTTON_H_
-#define _BUTTON_H_
+#ifndef _INPUT_LL_H_
+#define _INPUT_LL_H_
 
-#include "lib/tamalib.h"
+#include "input.h"
 
+void input_ll_irq_handler(input_t btn);
 
-void button_init(void);
-void button_register_handler(void (*handler)(button_t, btn_state_t, bool_t));
-
-#endif /* _BUTTON_H_ */
+#endif /* _INPUT_LL_H_ */

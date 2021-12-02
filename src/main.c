@@ -39,7 +39,7 @@
 #include "time.h"
 #include "storage.h"
 #include "state.h"
-#include "button.h"
+#include "input.h"
 #include "led.h"
 #include "speaker.h"
 #include "backlight.h"
@@ -638,7 +638,7 @@ static void ll_init(void)
 
 	time_init();
 
-	button_init();
+	input_init();
 
 	led_init();
 
@@ -689,14 +689,14 @@ static void cpu_job_fn(job_t *job)
 		}
 	}
 }
-static void no_rom_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
 	system_reset();
 }
 
-static void usb_mode_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
-	if (state == BTN_STATE_PRESSED && !long_press) {
+	if (state == INPUT_STATE_HIGH && !long_press) {
 		usb_enabled = 0;
 		usb_stop();
 		fs_ll_mount();
@@ -704,19 +704,19 @@ static void usb_mode_btn_handler(button_t btn, btn_state_t state, bool_t long_pr
 	}
 }
 
-static void menu_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+static void menu_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
-	if (state == BTN_STATE_PRESSED) {
+	if (state == INPUT_STATE_HIGH) {
 		switch (btn) {
-			case BTN_LEFT:
+			case INPUT_BTN_LEFT:
 				menu_next();
 				break;
 
-			case BTN_MIDDLE:
+			case INPUT_BTN_MIDDLE:
 				menu_enter();
 				break;
 
-			case BTN_RIGHT:
+			case INPUT_BTN_RIGHT:
 				menu_back();
 				break;
 
@@ -724,10 +724,10 @@ static void menu_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
 	}
 }
 
-static void default_btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+static void default_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
 	if (long_press) {
-		if (btn == BTN_RIGHT) {
+		if (btn == INPUT_BTN_RIGHT) {
 			menu_open();
 
 			/* Make sure TamaLIB receives a release since it received a press */
@@ -738,17 +738,17 @@ static void default_btn_handler(button_t btn, btn_state_t state, bool_t long_pre
 	}
 }
 
-static void btn_handler(button_t btn, btn_state_t state, bool_t long_press)
+static void input_handler(input_t input, input_state_t state, uint8_t long_press)
 {
 	/* Dispatch the event */
 	if (!rom_loaded) {
-		no_rom_btn_handler(btn, state, long_press);
+		no_rom_btn_handler(input, state, long_press);
 	} else if (usb_enabled) {
-		usb_mode_btn_handler(btn, state, long_press);
+		usb_mode_btn_handler(input, state, long_press);
 	} else if (menu_is_visible()) {
-		menu_btn_handler(btn, state, long_press);
+		menu_btn_handler(input, state, long_press);
 	} else {
-		default_btn_handler(btn, state, long_press);
+		default_btn_handler(input, state, long_press);
 	}
 }
 
@@ -761,7 +761,7 @@ int main(void)
 
 	usb_init();
 
-	button_register_handler(&btn_handler);
+	input_register_handler(&input_handler);
 
 	/* Try to load the default ROM from the filesystem if it is not loaded */
 	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {

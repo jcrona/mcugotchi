@@ -17,11 +17,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _BUTTON_LL_H_
-#define _BUTTON_LL_H_
+#ifndef _INPUT_H_
+#define _INPUT_H_
 
-#include "lib/tamalib.h"
+typedef enum {
+	INPUT_STATE_LOW = 0,
+	INPUT_STATE_HIGH,
+} input_state_t;
 
-void button_ll_irq_handler(button_t btn);
+typedef enum {
+	INPUT_BTN_LEFT = 0,
+	INPUT_BTN_MIDDLE,
+	INPUT_BTN_RIGHT,
+} input_t;
 
-#endif /* _BUTTON_LL_H_ */
+
+void input_init(void);
+void input_register_handler(void (*handler)(input_t, input_state_t, uint8_t));
+
+#endif /* _INPUT_H_ */

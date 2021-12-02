@@ -19,7 +19,7 @@
  */
 #include "stm32_hal.h"
 
-#include "button_ll.h"
+#include "input_ll.h"
 #include "board.h"
 
 
@@ -103,11 +103,11 @@ void board_init(void)
 
 void EXTI0_1_IRQHandler(void)
 {
-	button_ll_irq_handler(BTN_MIDDLE);
+	input_ll_irq_handler(INPUT_BTN_MIDDLE);
 }
 
 void EXTI2_3_IRQHandler(void)
 {
-	button_ll_irq_handler(BTN_LEFT);
-	button_ll_irq_handler(BTN_RIGHT);
+	input_ll_irq_handler(INPUT_BTN_LEFT);
+	input_ll_irq_handler(INPUT_BTN_RIGHT);
 }
