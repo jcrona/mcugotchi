@@ -41,17 +41,7 @@ typedef struct {
 	uint16_t pin;
 } input_data_t;
 
-static input_data_t inputs[INPUT_NUM] = {
-	[INPUT_BTN_LEFT] = {
-		.state = INPUT_STATE_LOW,
-	},
-	[INPUT_BTN_MIDDLE] = {
-		.state = INPUT_STATE_LOW,
-	},
-	[INPUT_BTN_RIGHT] = {
-		.state = INPUT_STATE_LOW,
-	},
-};
+static input_data_t inputs[INPUT_NUM];
 
 static void (*input_handler)(input_t, input_state_t, uint8_t) = NULL;
 
@@ -67,6 +57,11 @@ static void config_int_line(EXTI_HandleTypeDef *h, uint32_t port, uint8_t trigge
 	HAL_EXTI_SetConfigLine(h, &e);
 }
 
+static input_state_t get_input_hw_state(input_t input)
+{
+	return (HAL_GPIO_ReadPin(inputs[input].port, inputs[input].pin) == GPIO_PIN_SET) ? INPUT_STATE_HIGH : INPUT_STATE_LOW;
+}
+
 void input_init(void)
 {
 	/* Left button */
@@ -74,28 +69,29 @@ void input_init(void)
 	inputs[INPUT_BTN_LEFT].exti_port = BOARD_LEFT_BTN_EXTI_PORT;
 	inputs[INPUT_BTN_LEFT].port = BOARD_LEFT_BTN_PORT;
 	inputs[INPUT_BTN_LEFT].pin = BOARD_LEFT_BTN_PIN;
+	inputs[INPUT_BTN_LEFT].state = get_input_hw_state(INPUT_BTN_LEFT);
+	config_int_line(&(inputs[INPUT_BTN_LEFT].handle), inputs[INPUT_BTN_LEFT].exti_port, (inputs[INPUT_BTN_LEFT].state == INPUT_STATE_HIGH) ? EXTI_TRIGGER_FALLING : EXTI_TRIGGER_RISING);
 
 	/* Middle button */
 	inputs[INPUT_BTN_MIDDLE].handle.Line = BOARD_MIDDLE_BTN_EXTI_LINE;
 	inputs[INPUT_BTN_MIDDLE].exti_port = BOARD_MIDDLE_BTN_EXTI_PORT;
 	inputs[INPUT_BTN_MIDDLE].port = BOARD_MIDDLE_BTN_PORT;
 	inputs[INPUT_BTN_MIDDLE].pin = BOARD_MIDDLE_BTN_PIN;
+	inputs[INPUT_BTN_MIDDLE].state = get_input_hw_state(INPUT_BTN_MIDDLE);
+	config_int_line(&(inputs[INPUT_BTN_MIDDLE].handle), inputs[INPUT_BTN_MIDDLE].exti_port, (inputs[INPUT_BTN_MIDDLE].state == INPUT_STATE_HIGH) ? EXTI_TRIGGER_FALLING : EXTI_TRIGGER_RISING);
 
 	/* Right button */
 	inputs[INPUT_BTN_RIGHT].handle.Line = BOARD_RIGHT_BTN_EXTI_LINE;
 	inputs[INPUT_BTN_RIGHT].exti_port = BOARD_RIGHT_BTN_EXTI_PORT;
 	inputs[INPUT_BTN_RIGHT].port = BOARD_RIGHT_BTN_PORT;
 	inputs[INPUT_BTN_RIGHT].pin = BOARD_RIGHT_BTN_PIN;
+	inputs[INPUT_BTN_RIGHT].state = get_input_hw_state(INPUT_BTN_RIGHT);
+	config_int_line(&(inputs[INPUT_BTN_RIGHT].handle), inputs[INPUT_BTN_RIGHT].exti_port, (inputs[INPUT_BTN_RIGHT].state == INPUT_STATE_HIGH) ? EXTI_TRIGGER_FALLING : EXTI_TRIGGER_RISING);
 }
 
 void input_register_handler(void (*handler)(input_t, input_state_t, uint8_t))
 {
 	input_handler = handler;
-}
-
-static input_state_t get_input_hw_state(input_t input)
-{
-	return (HAL_GPIO_ReadPin(inputs[input].port, inputs[input].pin) == GPIO_PIN_SET) ? INPUT_STATE_HIGH : INPUT_STATE_LOW;
 }
 
 static void long_press_job_fn(job_t *job)
