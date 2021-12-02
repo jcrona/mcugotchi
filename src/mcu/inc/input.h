@@ -35,6 +35,7 @@ typedef enum {
 
 
 void input_init(void);
+input_state_t input_get_state(input_t input);
 void input_register_handler(void (*handler)(input_t, input_state_t, uint8_t));
 
 #endif /* _INPUT_H_ */

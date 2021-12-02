@@ -109,6 +109,11 @@ void input_init(void)
 #endif
 }
 
+input_state_t input_get_state(input_t input)
+{
+	return inputs[input].state;
+}
+
 void input_register_handler(void (*handler)(input_t, input_state_t, uint8_t))
 {
 	input_handler = handler;
