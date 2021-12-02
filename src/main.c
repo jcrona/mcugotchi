@@ -100,6 +100,7 @@ static bool_t rom_loaded = 1;
 static uint8_t backlight_level = 2;
 static bool_t speaker_enabled = 1;
 static bool_t led_enabled = 1;
+static bool_t is_calling = 0;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -308,11 +309,13 @@ static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
 {
-	if (icon == 7 && icon_buffer[icon] == 0 && val == 1) {
-		/* The Tamagotchi is calling */
-		if (menu_is_visible()) {
+	if (icon == 7 && icon_buffer[icon] != val) {
+		/* The Tamagotchi started or stopped calling */
+		if (val && menu_is_visible()) {
 			menu_close();
 		}
+
+		is_calling = val;
 	}
 
 	icon_buffer[icon] = val;
@@ -754,6 +757,8 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 static void states_init(void)
 {
 	backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+
+	is_calling = icon_buffer[7];
 }
 
 int main(void)
