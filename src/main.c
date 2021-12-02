@@ -188,6 +188,28 @@ static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 };
 
 
+static void update_led(void)
+{
+	uint8_t r = 0, g = 0, b = 0;
+
+	if (!led_enabled) {
+		led_set(0, 0, 0);
+		return;
+	}
+
+	if (is_charging) {
+		r = 0xFF;
+	} else if (is_vbus) {
+		g = 0xFF;
+	}
+
+	if (is_calling) {
+		b = 0xFF;
+	}
+
+	led_set(r, g, b);
+}
+
 /* No need to support breakpoints */
 static void * hal_malloc(u32_t size)
 {
@@ -318,6 +340,8 @@ static void hal_set_lcd_icon(u8_t icon, bool_t val)
 		}
 
 		is_calling = val;
+
+		update_led();
 	}
 
 	icon_buffer[icon] = val;
@@ -422,6 +446,7 @@ static char * menu_sound_arg(uint8_t pos, menu_parent_t *parent)
 static void menu_led(uint8_t pos, menu_parent_t *parent)
 {
 	led_enabled = !led_enabled;
+	update_led();
 }
 
 static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
@@ -747,11 +772,15 @@ static void default_btn_handler(input_t btn, input_state_t state, uint8_t long_p
 static void battery_charging_handler(input_state_t state)
 {
 	is_charging = (state == INPUT_STATE_LOW);
+
+	update_led();
 }
 
 static void vbus_sensing_handler(input_state_t state)
 {
 	is_vbus = (state == INPUT_STATE_HIGH);
+
+	update_led();
 }
 
 static void input_handler(input_t input, input_state_t state, uint8_t long_press)
@@ -786,7 +815,7 @@ static void states_init(void)
 {
 	backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
 
-	is_calling = icon_buffer[7];
+	is_calling = icon_buffer[7]; // No need for update_led() since that call will be made by the following handlers
 
 	battery_charging_handler(input_get_state(INPUT_BATTERY_CHARGING));
 
