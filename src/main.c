@@ -643,7 +643,6 @@ static void ll_init(void)
 	led_init();
 
 	backlight_init();
-	backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
 
 	speaker_init();
 
@@ -752,6 +751,11 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 	}
 }
 
+static void states_init(void)
+{
+	backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+}
+
 int main(void)
 {
 	ll_init();
@@ -760,6 +764,8 @@ int main(void)
 	fs_ll_mount();
 
 	usb_init();
+
+	states_init();
 
 	input_register_handler(&input_handler);
 
