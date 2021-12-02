@@ -100,7 +100,9 @@ static bool_t rom_loaded = 1;
 static uint8_t backlight_level = 2;
 static bool_t speaker_enabled = 1;
 static bool_t led_enabled = 1;
+static bool_t is_charging = 0;
 static bool_t is_calling = 0;
+static bool_t is_vbus = 0;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -722,6 +724,8 @@ static void menu_btn_handler(input_t btn, input_state_t state, uint8_t long_pres
 				menu_back();
 				break;
 
+			default:
+				break;
 		}
 	}
 }
@@ -740,17 +744,41 @@ static void default_btn_handler(input_t btn, input_state_t state, uint8_t long_p
 	}
 }
 
+static void battery_charging_handler(input_state_t state)
+{
+	is_charging = (state == INPUT_STATE_LOW);
+}
+
+static void vbus_sensing_handler(input_state_t state)
+{
+	is_vbus = (state == INPUT_STATE_HIGH);
+}
+
 static void input_handler(input_t input, input_state_t state, uint8_t long_press)
 {
 	/* Dispatch the event */
-	if (!rom_loaded) {
-		no_rom_btn_handler(input, state, long_press);
-	} else if (usb_enabled) {
-		usb_mode_btn_handler(input, state, long_press);
-	} else if (menu_is_visible()) {
-		menu_btn_handler(input, state, long_press);
-	} else {
-		default_btn_handler(input, state, long_press);
+	switch(input) {
+		case INPUT_BTN_LEFT:
+		case INPUT_BTN_MIDDLE:
+		case INPUT_BTN_RIGHT:
+			if (!rom_loaded) {
+				no_rom_btn_handler(input, state, long_press);
+			} else if (usb_enabled) {
+				usb_mode_btn_handler(input, state, long_press);
+			} else if (menu_is_visible()) {
+				menu_btn_handler(input, state, long_press);
+			} else {
+				default_btn_handler(input, state, long_press);
+			}
+			break;
+
+		case INPUT_BATTERY_CHARGING:
+			battery_charging_handler(state);
+			break;
+
+		case INPUT_VBUS_SENSING:
+			vbus_sensing_handler(state);
+			break;
 	}
 }
 
@@ -759,6 +787,10 @@ static void states_init(void)
 	backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
 
 	is_calling = icon_buffer[7];
+
+	battery_charging_handler(input_get_state(INPUT_BATTERY_CHARGING));
+
+	vbus_sensing_handler(input_get_state(INPUT_VBUS_SENSING));
 }
 
 int main(void)
