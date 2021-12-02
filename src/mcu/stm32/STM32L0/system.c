@@ -36,14 +36,15 @@ static void system_clock_config(void)
 {
 	/* The system Clock is configured as follow:
 	 * HSI48 used as USB clock source
-	 *  - System Clock source            = HSI
+	 *  - System Clock source            = PLL
 	 *  - HSI Frequency(Hz)              = 16000000
-	 *  - SYSCLK(Hz)                     = 16000000
-	 *  - HCLK(Hz)                       = 16000000
+	 *  - PLL Frequency(Hz)              = 32000000
+	 *  - SYSCLK(Hz)                     = 32000000
+	 *  - HCLK(Hz)                       = 32000000
 	 *  - AHB Prescaler                  = 1
 	 *  - APB1 Prescaler                 = 1
 	 *  - APB2 Prescaler                 = 1
-	 *  - Flash Latency(WS)              = 0
+	 *  - Flash Latency(WS)              = 1
 	 *  - Main regulator output voltage  = Scale1 mode
 	 */
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -59,6 +60,10 @@ static void system_clock_config(void)
 	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
 	RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
 	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+	RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSI;
+	RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL6;
+	RCC_OscInitStruct.PLL.PLLDIV     = RCC_PLL_DIV3;
 	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
 		system_fatal_error();
 	}
@@ -70,13 +75,13 @@ static void system_clock_config(void)
 		system_fatal_error();
 	}
 
-	/* Select HSI as system clock source and configure the HCLK, PCLK1 and PCLK2 clock dividers */
+	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 clock dividers */
 	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK) {
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
 		system_fatal_error();
 	}
 
