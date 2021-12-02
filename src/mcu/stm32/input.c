@@ -26,7 +26,7 @@
 #include "input_ll.h"
 #include "input.h"
 
-#define INPUT_NUM					3
+#define INPUT_NUM					5
 
 #define DEBOUNCE_DURATION				100 //ms
 #define LONG_PRESS_DURATION				1000 //ms
@@ -87,6 +87,26 @@ void input_init(void)
 	inputs[INPUT_BTN_RIGHT].pin = BOARD_RIGHT_BTN_PIN;
 	inputs[INPUT_BTN_RIGHT].state = get_input_hw_state(INPUT_BTN_RIGHT);
 	config_int_line(&(inputs[INPUT_BTN_RIGHT].handle), inputs[INPUT_BTN_RIGHT].exti_port, (inputs[INPUT_BTN_RIGHT].state == INPUT_STATE_HIGH) ? EXTI_TRIGGER_FALLING : EXTI_TRIGGER_RISING);
+
+#ifdef BOARD_NCHARGE_PIN
+	/* Battery charging */
+	inputs[INPUT_BATTERY_CHARGING].handle.Line = BOARD_NCHARGE_EXTI_LINE;
+	inputs[INPUT_BATTERY_CHARGING].exti_port = BOARD_NCHARGE_EXTI_PORT;
+	inputs[INPUT_BATTERY_CHARGING].port = BOARD_NCHARGE_PORT;
+	inputs[INPUT_BATTERY_CHARGING].pin = BOARD_NCHARGE_PIN;
+	inputs[INPUT_BATTERY_CHARGING].state = get_input_hw_state(INPUT_BATTERY_CHARGING);
+	config_int_line(&(inputs[INPUT_BATTERY_CHARGING].handle), inputs[INPUT_BATTERY_CHARGING].exti_port, (inputs[INPUT_BATTERY_CHARGING].state == INPUT_STATE_HIGH) ? EXTI_TRIGGER_FALLING : EXTI_TRIGGER_RISING);
+#endif
+
+#ifdef BOARD_VBUS_SENSE_PIN
+	/* VBUS sensing */
+	inputs[INPUT_VBUS_SENSING].handle.Line = BOARD_VBUS_SENSE_EXTI_LINE;
+	inputs[INPUT_VBUS_SENSING].exti_port = BOARD_VBUS_SENSE_EXTI_PORT;
+	inputs[INPUT_VBUS_SENSING].port = BOARD_VBUS_SENSE_PORT;
+	inputs[INPUT_VBUS_SENSING].pin = BOARD_VBUS_SENSE_PIN;
+	inputs[INPUT_VBUS_SENSING].state = get_input_hw_state(INPUT_VBUS_SENSING);
+	config_int_line(&(inputs[INPUT_VBUS_SENSING].handle), inputs[INPUT_VBUS_SENSING].exti_port, (inputs[INPUT_VBUS_SENSING].state == INPUT_STATE_HIGH) ? EXTI_TRIGGER_FALLING : EXTI_TRIGGER_RISING);
+#endif
 }
 
 void input_register_handler(void (*handler)(input_t, input_state_t, uint8_t))
@@ -125,6 +145,10 @@ static void debounce_job_fn(job_t *job)
 		input = INPUT_BTN_MIDDLE;
 	} else if (job == &(inputs[INPUT_BTN_RIGHT].debounce_job)) {
 		input = INPUT_BTN_RIGHT;
+	} else if (job == &(inputs[INPUT_BATTERY_CHARGING].debounce_job)) {
+		input = INPUT_BATTERY_CHARGING;
+	} else if (job == &(inputs[INPUT_VBUS_SENSING].debounce_job)) {
+		input = INPUT_VBUS_SENSING;
 	} else {
 		return;
 	}

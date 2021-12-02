@@ -119,6 +119,9 @@ void board_init(void)
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_NCHARGE_PORT, &g);
 
+	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 3, 0);
+	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+
 	/* Battery voltage measurement */
 	g.Pin = BOARD_VBATT_MEAS_PIN;
 	g.Mode = GPIO_MODE_OUTPUT_PP;
@@ -160,4 +163,10 @@ void EXTI2_3_IRQHandler(void)
 {
 	input_ll_irq_handler(INPUT_BTN_LEFT);
 	input_ll_irq_handler(INPUT_BTN_RIGHT);
+}
+
+void EXTI4_15_IRQHandler(void)
+{
+	input_ll_irq_handler(INPUT_BATTERY_CHARGING);
+	input_ll_irq_handler(INPUT_VBUS_SENSING);
 }
