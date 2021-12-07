@@ -26,7 +26,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-PCD_HandleTypeDef hpcd;
+PCD_HandleTypeDef g_hpcd;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -192,21 +192,21 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 {
   /* Set LL Driver parameters */
-  hpcd.Instance = USB;
-  hpcd.Init.dev_endpoints = 8;
-  hpcd.Init.phy_itface = PCD_PHY_EMBEDDED;
-  hpcd.Init.speed = PCD_SPEED_FULL;
-  hpcd.Init.low_power_enable = 0;
+  g_hpcd.Instance = USB;
+  g_hpcd.Init.dev_endpoints = 8;
+  g_hpcd.Init.phy_itface = PCD_PHY_EMBEDDED;
+  g_hpcd.Init.speed = PCD_SPEED_FULL;
+  g_hpcd.Init.low_power_enable = 0;
   /* Link The driver to the stack */
-  hpcd.pData = pdev;
-  pdev->pData = &hpcd;
+  g_hpcd.pData = pdev;
+  pdev->pData = &g_hpcd;
   /* Initialize LL Driver */
-  HAL_PCD_Init(&hpcd);
+  HAL_PCD_Init(&g_hpcd);
 
-  HAL_PCDEx_PMAConfig(&hpcd , 0x00 , PCD_SNG_BUF, 0x18);
-  HAL_PCDEx_PMAConfig(&hpcd , 0x80 , PCD_SNG_BUF, 0x58);
-  HAL_PCDEx_PMAConfig(&hpcd , MSC_EPIN_ADDR , PCD_SNG_BUF, 0x98);
-  HAL_PCDEx_PMAConfig(&hpcd , MSC_EPOUT_ADDR , PCD_SNG_BUF, 0xD8);
+  HAL_PCDEx_PMAConfig(&g_hpcd , 0x00 , PCD_SNG_BUF, 0x18);
+  HAL_PCDEx_PMAConfig(&g_hpcd , 0x80 , PCD_SNG_BUF, 0x58);
+  HAL_PCDEx_PMAConfig(&g_hpcd , MSC_EPIN_ADDR , PCD_SNG_BUF, 0x98);
+  HAL_PCDEx_PMAConfig(&g_hpcd , MSC_EPOUT_ADDR , PCD_SNG_BUF, 0xD8);
 
   return USBD_OK;
 }

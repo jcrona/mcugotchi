@@ -31,7 +31,7 @@
 #define STORAGE_BLK_SIZE				512
 
 static USBD_HandleTypeDef USBD_Device;
-extern PCD_HandleTypeDef hpcd;
+extern PCD_HandleTypeDef g_hpcd;
 
 static int8_t msc_inquiry_data[] = { /* 36 */
 	/* LUN 0 */
@@ -118,5 +118,5 @@ void usb_stop(void)
 
 void USB_IRQHandler(void)
 {
-	HAL_PCD_IRQHandler(&hpcd);
+	HAL_PCD_IRQHandler(&g_hpcd);
 }
