@@ -49,12 +49,6 @@ void board_init(void)
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_RIGHT_BTN_PORT, &g);
 
-	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
-
-	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
-
 	/* SPI 1 */
 	g.Pin = BOARD_SCREEN_SCLK_PIN;
 	g.Mode = GPIO_MODE_AF_PP;
@@ -119,9 +113,6 @@ void board_init(void)
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_NCHARGE_PORT, &g);
 
-	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-
 	/* Battery voltage measurement */
 	g.Pin = BOARD_VBATT_MEAS_PIN;
 	g.Mode = GPIO_MODE_OUTPUT_PP;
@@ -152,6 +143,20 @@ void board_init(void)
 	g.Pull = GPIO_NOPULL;
 	g.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
 	HAL_GPIO_Init(BOARD_USB_DM_PORT, &g);
+}
+
+void board_init_irq(void)
+{
+	/* Buttons */
+	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
+	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+
+	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
+	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+
+	/* Charger and VBUS */
+	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 3, 0);
+	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 }
 
 void EXTI0_1_IRQHandler(void)

@@ -49,12 +49,6 @@ void board_init(void)
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_RIGHT_BTN_PORT, &g);
 
-	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
-
-	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
-	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
-
 	/* SPI 1 */
 	g.Pin = BOARD_SCREEN_SCLK_PIN;
 	g.Mode = GPIO_MODE_AF_PP;
@@ -99,6 +93,17 @@ void board_init(void)
 	g.Alternate = GPIO_AF2_USB;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_USB_DM_PORT, &g);
+}
+
+void board_init_irq(void)
+{
+	/* Buttons */
+	HAL_NVIC_SetPriority(EXTI2_3_IRQn, 3, 0);
+	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+
+	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
+	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+
 }
 
 void EXTI0_1_IRQHandler(void)

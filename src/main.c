@@ -689,6 +689,8 @@ static void ll_init(void)
 
 	gfx_register_display(&uc1701x_send_data);
 #endif
+
+	board_init_irq();
 }
 
 static void render_job_fn(job_t *job)

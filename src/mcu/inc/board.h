@@ -31,5 +31,6 @@
 
 
 void board_init(void);
+void board_init_irq(void);
 
 #endif /* _BOARD_H_ */
