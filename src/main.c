@@ -668,8 +668,6 @@ static void ll_init(void)
 
 	time_init();
 
-	input_init();
-
 	led_init();
 
 	backlight_init();
@@ -689,6 +687,11 @@ static void ll_init(void)
 
 	gfx_register_display(&uc1701x_send_data);
 #endif
+
+	/* Wait a little bit to make sure all I/Os are stable */
+	time_delay(MS_TO_MCU_TIME(10));
+
+	input_init();
 
 	board_init_irq();
 }
