@@ -181,7 +181,7 @@ void state_load(uint8_t slot)
 		return;
 	}
 
-        if (f_read(&f, state_buf, sizeof(state_buf), &num) || (num < sizeof(state_buf))) {
+	if (f_read(&f, state_buf, sizeof(state_buf), &num) || (num < sizeof(state_buf))) {
 		/* Error */
 		f_close(&f);
 		return;

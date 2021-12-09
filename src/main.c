@@ -723,6 +723,7 @@ static void cpu_job_fn(job_t *job)
 		}
 	}
 }
+
 static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
 	system_reset();

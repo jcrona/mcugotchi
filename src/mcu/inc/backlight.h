@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 
+
 void backlight_init(void);
 void backlight_set(uint8_t v);
 
