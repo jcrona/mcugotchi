@@ -22,12 +22,29 @@
 #include "stm32_hal.h"
 
 #include "board.h"
+#include "job.h"
+#include "time.h"
 #include "led.h"
+
+/* Define this to get a breathing animation instead of a static light */
+#define BREATHING_LED
+
+#define BREATHING_RATE					30 // Hz
+#define BREATHING_IN_TIME				2 // s
+#define BREATHING_HOLD_TIME				1 // s
+#define BREATHING_OUT_TIME				2 // s
+#define BREATHING_WAIT_TIME				5 // s
 
 #define TIMER_PERIOD					0x400
 
 #ifdef BOARD_LED_RGB_PWM_TIMER
 static TIM_HandleTypeDef htim;
+#endif
+
+#ifdef BREATHING_LED
+static job_t breathing_job;
+static uint8_t red = 0, green = 0, blue = 0;
+static uint16_t breathing_counter = 0;
 #endif
 
 
@@ -53,7 +70,7 @@ void led_init(void)
 #endif
 }
 
-void led_set(uint8_t r, uint8_t g, uint8_t b)
+static void led_set_raw(uint8_t r, uint8_t g, uint8_t b)
 {
 #ifdef BOARD_LED_RGB_PWM_TIMER
 	static TIM_OC_InitTypeDef config = {
@@ -104,5 +121,57 @@ void led_set(uint8_t r, uint8_t g, uint8_t b)
 	/* Start the timer */
 	HAL_TIM_PWM_Start(&htim, BOARD_LED_BLUE_PWM_CHANNEL);
 #endif
+#endif
+}
+
+#ifdef BREATHING_LED
+static void breathing_job_fn(job_t *job)
+{
+	uint8_t r, g, b;
+
+	job_schedule(&breathing_job, &breathing_job_fn, time_get() + MS_TO_MCU_TIME(1000)/BREATHING_RATE);
+
+	if (breathing_counter < BREATHING_IN_TIME * BREATHING_RATE) {
+		r = (red * breathing_counter)/(BREATHING_IN_TIME * BREATHING_RATE);
+		g = (green * breathing_counter)/(BREATHING_IN_TIME * BREATHING_RATE);
+		b = (blue * breathing_counter)/(BREATHING_IN_TIME * BREATHING_RATE);
+	} else if (breathing_counter < BREATHING_IN_TIME * BREATHING_RATE + 1) {
+		job_schedule(&breathing_job, &breathing_job_fn, time_get() + MS_TO_MCU_TIME(1000 * BREATHING_HOLD_TIME));
+		r = red;
+		g = green;
+		b = blue;
+	} else if (breathing_counter < (BREATHING_IN_TIME + BREATHING_OUT_TIME) * BREATHING_RATE + 1) {
+		r = (red * ((BREATHING_IN_TIME + BREATHING_OUT_TIME) * BREATHING_RATE - breathing_counter))/(BREATHING_OUT_TIME * BREATHING_RATE);
+		g = (green * ((BREATHING_IN_TIME + BREATHING_OUT_TIME) * BREATHING_RATE - breathing_counter))/(BREATHING_OUT_TIME * BREATHING_RATE);
+		b = (blue * ((BREATHING_IN_TIME + BREATHING_OUT_TIME) * BREATHING_RATE - breathing_counter))/(BREATHING_OUT_TIME * BREATHING_RATE);
+	} else {
+		job_schedule(&breathing_job, &breathing_job_fn, time_get() + MS_TO_MCU_TIME(1000 * BREATHING_WAIT_TIME));
+		breathing_counter = 0;
+		led_set_raw(0, 0, 0);
+		return;
+	}
+
+	led_set_raw(r, g, b);
+
+	breathing_counter++;
+}
+#endif
+
+void led_set(uint8_t r, uint8_t g, uint8_t b)
+{
+#ifdef BREATHING_LED
+	breathing_counter = 0;
+
+	if (r == 0 && g == 0 && b == 0) {
+		job_cancel(&breathing_job);
+		led_set_raw(0, 0, 0);
+	} else {
+		job_schedule(&breathing_job, &breathing_job_fn, JOB_ASAP);
+		red = r;
+		green = g;
+		blue = b;
+	}
+#else
+	led_set_raw(r, g, b);
 #endif
 }
