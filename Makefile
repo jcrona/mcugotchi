@@ -5,7 +5,7 @@ FWCFG += -DBOARD_IS_$(BOARD)
 ROOT = ../
 
 # GNU ARM Embedded Toolchain location
-TOOLCHAIN = $(ROOT)/toolchain/gcc-arm-none-eabi-6-2017-q2-update
+TOOLCHAIN = $(ROOT)/toolchain/gcc-arm-none-eabi-10.3-2021.10
 
 # OpenOCD location
 OPENOCD_BIN = $(ROOT)/openocd/bin/openocd
