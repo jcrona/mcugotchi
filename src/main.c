@@ -214,12 +214,16 @@ static void update_led(void)
 	}
 
 	if (is_charging) {
+		/* Yellow */
 		r = 0xFF;
+		g = 0xFF;
 	} else if (is_vbus) {
+		/* Green */
 		g = 0xFF;
 	}
 
 	if (is_calling) {
+		/* Blue */
 		b = 0xFF;
 	}
 
