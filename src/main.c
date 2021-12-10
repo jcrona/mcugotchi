@@ -510,6 +510,11 @@ static void menu_factory_reset(uint8_t pos, menu_parent_t *parent)
 	system_reset();
 }
 
+static void menu_firmware_update(uint8_t pos, menu_parent_t *parent)
+{
+	system_dfu_reset();
+}
+
 static void menu_reset_device(uint8_t pos, menu_parent_t *parent)
 {
 	system_reset();
@@ -610,6 +615,7 @@ static menu_item_t emulation_menu[] = {
 
 static menu_item_t system_menu[] = {
 	{"FW. "FIRMWARE_VERSION, NULL, NULL, 0, NULL},
+	{"FW. Update", NULL, &menu_firmware_update, 1, NULL},
 	{"Reset", NULL, &menu_reset_device, 1, NULL},
 	{"Fact. Reset", NULL, &menu_factory_reset, 1, NULL},
 
