@@ -220,6 +220,9 @@ static void update_led(void)
 	} else if (is_vbus) {
 		/* Green */
 		g = 0xFF;
+	} else if (current_battery < BATTERY_LOW) {
+		/* Red */
+		r = 0xFF;
 	}
 
 	if (is_calling) {
