@@ -43,6 +43,7 @@
 #include "led.h"
 #include "speaker.h"
 #include "backlight.h"
+#include "battery.h"
 #include "usb.h"
 #include "fs_ll.h"
 #include "rom.h"
@@ -79,6 +80,7 @@
 #define TAMALIB_FREQ					32768 // Hz
 
 #define MAIN_JOB_PERIOD					1 //ms
+#define BATTERY_JOB_PERIOD				60000 //ms
 
 static volatile u12_t *g_program = (volatile u12_t *) (STORAGE_BASE_ADDRESS + (STORAGE_ROM_OFFSET << 2));
 
@@ -91,6 +93,7 @@ static bool_t tamalib_is_late = 0;
 
 static job_t cpu_job;
 static job_t render_job;
+static job_t battery_job;
 
 static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
@@ -103,6 +106,7 @@ static bool_t led_enabled = 1;
 static bool_t is_charging = 0;
 static bool_t is_calling = 0;
 static bool_t is_vbus = 0;
+static uint16_t current_battery = 0;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -680,6 +684,8 @@ static void ll_init(void)
 
 	speaker_init();
 
+	battery_init();
+
 #if defined(BOARD_HAS_SSD1306)
 	ssd1306_init();
 	ssd1306_set_power_mode(PWR_MODE_ON);
@@ -728,6 +734,17 @@ static void cpu_job_fn(job_t *job)
 			break;
 		}
 	}
+}
+
+static void battery_job_fn(job_t *job)
+{
+	job_schedule(&battery_job, &battery_job_fn, time_get() + MS_TO_MCU_TIME(BATTERY_JOB_PERIOD));
+	battery_start_meas();
+}
+
+static void battery_cb(uint16_t v)
+{
+	current_battery = v;
 }
 
 static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
@@ -851,6 +868,8 @@ int main(void)
 
 	input_register_handler(&input_handler);
 
+	battery_register_cb(&battery_cb);
+
 	/* Try to load the default ROM from the filesystem if it is not loaded */
 	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {
 		rom_loaded = 0;
@@ -883,6 +902,7 @@ int main(void)
 
 		job_schedule(&render_job, &render_job_fn, JOB_ASAP);
 		job_schedule(&cpu_job, &cpu_job_fn, JOB_ASAP);
+		job_schedule(&battery_job, &battery_job_fn, JOB_ASAP);
 	}
 
 	job_mainloop();
