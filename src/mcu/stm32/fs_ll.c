@@ -91,7 +91,8 @@ static DRESULT storage_drv_ioctl(BYTE lun, BYTE cmd, void *buff)
 
 		/* Get erase block size (DWORD) */
 		case GET_BLOCK_SIZE :
-			*((DWORD*) buff) = (STORAGE_PAGE_SIZE << 4);
+			*((DWORD*) buff) = ((STORAGE_PAGE_SIZE << 2) + STORAGE_BLK_SIZE - 1)/STORAGE_BLK_SIZE;
+			res = RES_OK;
 			break;
 
 		default:
@@ -123,9 +124,11 @@ void fs_ll_init(void)
 
 int8_t fs_ll_mount(void)
 {
+	BYTE work[_MAX_SS];
+
 	if (f_mount(&storage_drv_fs, (TCHAR const*) storage_drv_path, 1) != FR_OK) {
 		/* Format the storage if it is not valid (SFD mode) */
-		if (f_mkfs((TCHAR const*) storage_drv_path, 1, 0) != FR_OK) {
+		if (f_mkfs((TCHAR const*) storage_drv_path, FM_SFD | FM_FAT, 0, work, sizeof work) != FR_OK) {
 			return - 1;
 		}
 	}
