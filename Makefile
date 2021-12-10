@@ -78,10 +78,10 @@ BIN   = $(TOOLCHAIN)/bin/arm-none-eabi-objcopy -O binary
 DEBUG = gdb
 
 CCOPTS   = -mcpu=$(CPU) -mthumb -c -std=gnu99 -g$(DEBUG)
-CCOPTS  += -fno-common -fmessage-length=0 -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -Os -Wall -Wshadow -Wstrict-aliasing -Wstrict-overflow -Wno-missing-field-initializers
+CCOPTS  += -fno-common -fmessage-length=0 -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -Os -Wall -Wshadow -Wstrict-aliasing -Wstrict-overflow -Wno-missing-field-initializers -flto
 ASOPTS   = -mcpu=$(CPU) -mthumb -g$(DEBUG)
 LNLIBS   =
-LNOPTS   = -mcpu=$(CPU) -mthumb -Wl,--gc-sections -Wl,-L$(HALDIR) -Wl,-Map=$(BUILDDIR)/$(TARGET).map -Wl,-T$(LD_FILE)
+LNOPTS   = -mcpu=$(CPU) -mthumb -Wl,--gc-sections -Wl,-L$(HALDIR) -Wl,-Map=$(BUILDDIR)/$(TARGET).map -Wl,-T$(LD_FILE) --specs=nano.specs -Wl,-flto
 
 vpath %.c $(SRCDIR) $(SRCDIR)/lib $(STLIBDIR) $(USBCORELIB) $(USBMSCLIB) $(FATFSLIB) $(HALCOMMONDIR) $(HALDIR)
 vpath %.s $(SRCDIR) $(STLIBDIR) $(HALDIR)
