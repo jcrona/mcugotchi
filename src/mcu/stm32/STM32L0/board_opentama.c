@@ -122,6 +122,7 @@ void board_init(void)
 
 	g.Pin = BOARD_VBATT_ANA_PIN;
 	g.Mode = GPIO_MODE_ANALOG;
+	g.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(BOARD_VBATT_ANA_PORT, &g);
 
 	/* VBUS sensing */
