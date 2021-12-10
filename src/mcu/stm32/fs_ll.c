@@ -23,7 +23,6 @@
 #include "storage.h"
 #include "fs_ll.h"
 
-#define STORAGE_BLK_NBR					0x10000
 #define STORAGE_BLK_SIZE				512
 
 static FATFS storage_drv_fs;
