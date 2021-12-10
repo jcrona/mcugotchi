@@ -75,12 +75,23 @@
 #define USBON_Y						24
 #define USBON_STR					"USB Mode"
 
+#define BATTERY_X					2
+#define BATTERY_Y					21
+#define BATTERY_W					12
+#define BATTERY_THICKNESS				2
+#define BATTERY_LVL_THICKNESS				2
+
 #define FRAMERATE 					30
 
 #define TAMALIB_FREQ					32768 // Hz
 
 #define MAIN_JOB_PERIOD					1 //ms
 #define BATTERY_JOB_PERIOD				60000 //ms
+
+#define BATTERY_MIN					3500 // mV
+#define BATTERY_MAX					4200 // mV
+#define BATTERY_LOW					3650 // mV
+#define BATTERY_MAX_LEVEL				5
 
 static volatile u12_t *g_program = (volatile u12_t *) (STORAGE_BASE_ADDRESS + (STORAGE_ROM_OFFSET << 2));
 
@@ -103,6 +114,7 @@ static bool_t rom_loaded = 1;
 static uint8_t backlight_level = 2;
 static bool_t speaker_enabled = 1;
 static bool_t led_enabled = 1;
+static bool_t battery_enabled = 0;
 static bool_t is_charging = 0;
 static bool_t is_calling = 0;
 static bool_t is_vbus = 0;
@@ -295,9 +307,28 @@ static void draw_square(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t v)
 	}
 }
 
+static void draw_battery(uint8_t x, uint8_t y, uint8_t w, uint8_t thickness, uint8_t level_thickness, uint8_t max_level, uint8_t level)
+{
+	uint8_t h = max_level * (level_thickness + 1) + 1 + 3 * thickness;
+	uint8_t i;
+
+	/* Body */
+	draw_square(x, y + thickness, thickness, h - thickness, 1);
+	draw_square(x + w - thickness, y + thickness, thickness, h - thickness, 1);
+	draw_square(x + thickness, y + thickness, w - thickness * 2, thickness, 1);
+	draw_square(x + thickness, y + h - thickness, w - thickness * 2, thickness, 1);
+	draw_square(x + w/4, y, w/2, thickness, 1);
+
+	/* Level */
+	for (i = 0; i < level; i++) {
+		draw_square(x + thickness + 1, y + h - thickness - (i + 1) * (level_thickness + 1), w - thickness * 2 - 2, level_thickness, 1);
+	}
+}
+
 static void hal_update_screen(void)
 {
 	u8_t i, j;
+	int8_t level;
 
 	if (menu_is_visible()) {
 		return;
@@ -325,6 +356,21 @@ static void hal_update_screen(void)
 		PStr(USBON_STR, USBON_X, USBON_Y, 1, PixNorm);
 	} else if (emulation_paused) {
 		PStr(PAUSED_STR, PAUSED_X, PAUSED_Y, 1, PixNorm);
+	}
+
+	/* Battery */
+	if (battery_enabled || current_battery < BATTERY_LOW) {
+		level = (((int32_t) current_battery - BATTERY_MIN) * (BATTERY_MAX_LEVEL + 1))/(BATTERY_MAX - BATTERY_MIN);
+
+		if (level > BATTERY_MAX_LEVEL) {
+			level = BATTERY_MAX_LEVEL;
+		}
+
+		if (level < 0) {
+			level = 0;
+		}
+
+		draw_battery(BATTERY_X, BATTERY_Y, BATTERY_W, BATTERY_THICKNESS, BATTERY_LVL_THICKNESS, BATTERY_MAX_LEVEL, level);
 	}
 
 	PScrn();
@@ -465,6 +511,23 @@ static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
 	}
 }
 
+static void menu_battery(uint8_t pos, menu_parent_t *parent)
+{
+	battery_enabled = !battery_enabled;
+}
+
+static char * menu_battery_arg(uint8_t pos, menu_parent_t *parent)
+{
+	switch (battery_enabled) {
+		case 0:
+			return "ON";
+
+		default:
+		case 1:
+			return "OFF";
+	}
+}
+
 static void menu_toggle_speed(uint8_t pos, menu_parent_t *parent)
 {
 	speed_ratio = !speed_ratio;
@@ -499,6 +562,17 @@ static char * menu_pause_arg(uint8_t pos, menu_parent_t *parent)
 		case 1:
 			return "Run";
 	}
+}
+
+static char * menu_vbat_arg(uint8_t pos, menu_parent_t *parent)
+{
+	static char str[] = "0.00 V";
+
+	str[0] = '0' + current_battery/1000;
+	str[2] = '0' + (current_battery/100) % 10;
+	str[3] = '0' + (current_battery/10) % 10;
+
+	return str;
 }
 
 static void menu_reset_cpu(uint8_t pos, menu_parent_t *parent)
@@ -605,6 +679,7 @@ static menu_item_t interface_menu[] = {
 	{"Backlight", NULL, NULL, 0, backlight_menu},
 	{"Sound ", &menu_sound_arg, &menu_sound, 0, NULL},
 	{"RGB LED ", &menu_led_arg, &menu_led, 0, NULL},
+	{"Battery ", &menu_battery_arg, &menu_battery, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
@@ -618,6 +693,7 @@ static menu_item_t emulation_menu[] = {
 };
 
 static menu_item_t system_menu[] = {
+	{"Batt. ", &menu_vbat_arg, NULL, 0, NULL},
 	{"FW. "FIRMWARE_VERSION, NULL, NULL, 0, NULL},
 	{"FW. Update", NULL, &menu_firmware_update, 1, NULL},
 	{"Reset", NULL, &menu_reset_device, 1, NULL},
