@@ -17,33 +17,41 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _SYSTEM_H_
-#define _SYSTEM_H_
+#include <stdint.h>
 
-#include "mcu.h"
+#include "stm32_hal.h"
 
-/* Low-power states in enter+exit latency order */
-typedef enum {
-	STATE_RUN,
-	STATE_SLEEP_S1,
-	STATE_SLEEP_S2,
-	STATE_SLEEP_S3,
-} exec_state_t;
+#include "dfu.h"
 
-#define SLEEP_S1_THRESHOLD		(ENTER_SLEEP_S1_LATENCY + EXIT_SLEEP_S1_LATENCY)
-#define SLEEP_S2_THRESHOLD		(ENTER_SLEEP_S2_LATENCY + EXIT_SLEEP_S2_LATENCY)
-#define SLEEP_S3_THRESHOLD		(ENTER_SLEEP_S3_LATENCY + EXIT_SLEEP_S3_LATENCY)
+/* The flag that will be kept across reboots */
+volatile __attribute__((used, section(".bss_noinit"))) uint32_t dfu_flag;
 
 
-void system_disable_irq(void);
-void system_enable_irq(void);
+void dfu_jump(void)
+{
+	uint32_t vtor = 0;
 
-void system_init(void);
+	/* Disable the SysTick if any */
+	SysTick->CTRL = 0;
+	SysTick->LOAD = 0;
+	SysTick->VAL = 0;
 
-void system_enter_state(exec_state_t state);
+	/* Remap 0x0 to System Memory */
+	MODIFY_REG(SYSCFG->CFGR1, SYSCFG_CFGR1_MEM_MODE, SYSCFG_CFGR1_MEM_MODE_0);
 
-void system_fatal_error(void);
-void system_reset(void);
-void system_dfu_reset(void);
+	//SCB->VTOR = 0;
 
-#endif /* _SYSTEM_H_ */
+	/* Sync */
+	__DSB();
+	__ISB();
+
+	/* Set the Stack Pointer and jump */
+	asm volatile (
+		/* Update SP (offset 0 of the vector table) */
+		"ldr     r1, [%0];"
+		"mov     sp, r1;"
+		/* Jump to the entry point (offset 1 of the vector table) */
+		"ldr     r0, [%0, #4];"
+		"bx      r0;"
+		:: "r" (vtor));
+}

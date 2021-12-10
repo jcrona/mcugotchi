@@ -17,33 +17,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _SYSTEM_H_
-#define _SYSTEM_H_
+#ifndef _DFU_H_
+#define _DFU_H_
 
-#include "mcu.h"
+#include <stdint.h>
 
-/* Low-power states in enter+exit latency order */
-typedef enum {
-	STATE_RUN,
-	STATE_SLEEP_S1,
-	STATE_SLEEP_S2,
-	STATE_SLEEP_S3,
-} exec_state_t;
+#define DFU_FLAG_MAGIC				0x12345678
 
-#define SLEEP_S1_THRESHOLD		(ENTER_SLEEP_S1_LATENCY + EXIT_SLEEP_S1_LATENCY)
-#define SLEEP_S2_THRESHOLD		(ENTER_SLEEP_S2_LATENCY + EXIT_SLEEP_S2_LATENCY)
-#define SLEEP_S3_THRESHOLD		(ENTER_SLEEP_S3_LATENCY + EXIT_SLEEP_S3_LATENCY)
+#define SET_DFU_FLAG()				(dfu_flag = DFU_FLAG_MAGIC)
+#define CLEAR_DFU_FLAG()			(dfu_flag = 0)
+#define IS_DFU_FLAG_SET()			(dfu_flag == DFU_FLAG_MAGIC)
+
+extern volatile uint32_t dfu_flag;
 
 
-void system_disable_irq(void);
-void system_enable_irq(void);
+void dfu_jump(void);
 
-void system_init(void);
-
-void system_enter_state(exec_state_t state);
-
-void system_fatal_error(void);
-void system_reset(void);
-void system_dfu_reset(void);
-
-#endif /* _SYSTEM_H_ */
+#endif /* _DFU_H_ */

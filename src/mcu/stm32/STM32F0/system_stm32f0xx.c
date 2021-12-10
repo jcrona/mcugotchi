@@ -64,6 +64,7 @@
   */
 
 #include "stm32f0xx.h"
+#include "dfu.h"
 
 /**
   * @}
@@ -146,6 +147,12 @@ const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
   */
 void SystemInit(void)
 {
+  /* Check if we should jump to bootloader first */
+  if (IS_DFU_FLAG_SET()) {
+    CLEAR_DFU_FLAG();
+    dfu_jump();
+  }
+
   /* Reset the RCC clock configuration to the default reset state ------------*/
   /* Set HSION bit */
   RCC->CR |= (uint32_t)0x00000001U;

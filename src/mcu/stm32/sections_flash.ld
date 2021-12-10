@@ -98,6 +98,14 @@ SECTIONS
     PROVIDE ( end = _ebss );
     PROVIDE ( _end = _ebss );
         
+    /* This is the uninitialized data section that will stay that way */
+    .bss_noinit :
+    {
+	    . = ALIGN(4);
+        *(.bss_noinit)
+	    . = ALIGN(4);
+    } >RAM
+
     /* after that it's only debugging information. */
     
     /* remove the debugging information from the standard libraries */

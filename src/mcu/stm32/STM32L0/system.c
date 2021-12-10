@@ -19,6 +19,7 @@
  */
 #include "stm32_hal.h"
 
+#include "dfu.h"
 #include "system.h"
 
 
@@ -146,6 +147,12 @@ void system_enter_state(exec_state_t state)
 void system_reset(void)
 {
 	NVIC_SystemReset();
+}
+
+void system_dfu_reset(void)
+{
+	SET_DFU_FLAG();
+	system_reset();
 }
 
 void system_fatal_error(void)

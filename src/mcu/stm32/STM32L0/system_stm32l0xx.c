@@ -46,6 +46,7 @@
   */
 
 #include "stm32l0xx.h"
+#include "dfu.h"
 
 #if !defined  (HSE_VALUE)
   #define HSE_VALUE    ((uint32_t)8000000U) /*!< Value of the External oscillator in Hz */
@@ -153,6 +154,12 @@
   */
 void SystemInit (void)
 {
+  /* Check if we should jump to bootloader first */
+  if (IS_DFU_FLAG_SET()) {
+    CLEAR_DFU_FLAG();
+    dfu_jump();
+  }
+
   /* Configure the Vector Table location add offset address ------------------*/
 #if defined (USER_VECT_TAB_ADDRESS)
   SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
