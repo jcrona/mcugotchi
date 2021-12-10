@@ -838,6 +838,10 @@ int main(void)
 {
 	ll_init();
 
+	/* Clear any remainig data in RAM */
+	ClrBuf();
+	PScrn();
+
 	fs_ll_init();
 	fs_ll_mount();
 
