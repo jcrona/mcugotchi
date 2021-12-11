@@ -128,7 +128,6 @@ mcu_time_t time_get(void)
 
 	system_enable_irq();
 
-	/* TODO: fix the frequency */
 	return (cnt | (t << 16));
 }
 
