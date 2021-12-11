@@ -704,7 +704,9 @@ static menu_item_t backlight_menu[] = {
 
 static menu_item_t interface_menu[] = {
 	{"Screen ", &menu_screen_mode_arg, &menu_screen_mode, 0, NULL},
+#ifdef BOARD_HAS_UC1701X
 	{"Backlight", NULL, NULL, 0, backlight_menu},
+#endif
 	{"Sound ", &menu_sound_arg, &menu_sound, 0, NULL},
 	{"RGB LED ", &menu_led_arg, &menu_led, 0, NULL},
 	{"Battery ", &menu_battery_arg, &menu_battery, 0, NULL},
