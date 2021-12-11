@@ -959,6 +959,9 @@ int main(void)
 {
 	ll_init();
 
+	/* Make sure the RGB LED is off */
+	led_set(0, 0, 0);
+
 	/* Clear any remainig data in RAM */
 	ClrBuf();
 	PScrn();
