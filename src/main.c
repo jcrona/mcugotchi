@@ -75,6 +75,10 @@
 #define USBON_Y						24
 #define USBON_STR					"USB Mode"
 
+#define PLEASE_WAIT_X					9
+#define PLEASE_WAIT_Y					24
+#define PLEASE_WAIT_STR					"Please Wait"
+
 #define BATTERY_X					2
 #define BATTERY_Y					21
 #define BATTERY_W					12
@@ -435,6 +439,15 @@ static hal_t hal = {
 	.handler = &hal_handler,
 };
 
+static void please_wait_screen(void)
+{
+	ClrBuf();
+
+	PStr(PLEASE_WAIT_STR, PLEASE_WAIT_X, PLEASE_WAIT_Y, 1, PixNorm);
+
+	PScrn();
+}
+
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
@@ -590,6 +603,8 @@ static void menu_reset_cpu(uint8_t pos, menu_parent_t *parent)
 
 static void menu_factory_reset(uint8_t pos, menu_parent_t *parent)
 {
+	please_wait_screen();
+
 	fs_ll_umount();
 	storage_erase();
 	system_reset();
@@ -607,6 +622,8 @@ static void menu_reset_device(uint8_t pos, menu_parent_t *parent)
 
 static void menu_slots(uint8_t pos, menu_parent_t *parent)
 {
+	please_wait_screen();
+
 	if (parent->pos == 0) {
 		/* Load */
 		state_load(pos);
@@ -637,6 +654,8 @@ static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 {
 	uint8_t i;
 
+	please_wait_screen();
+
 	for (i = 0; i < STATE_SLOTS_NUM; i++) {
 		state_erase(i);
 	}
@@ -644,6 +663,8 @@ static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 
 static void menu_roms(uint8_t pos, menu_parent_t *parent)
 {
+	please_wait_screen();
+
 	if (rom_load(pos) < 0) {
 		return;
 	}
@@ -942,12 +963,14 @@ int main(void)
 	ClrBuf();
 	PScrn();
 
-	fs_ll_init();
-	fs_ll_mount();
-
 	usb_init();
 
 	states_init();
+
+	please_wait_screen();
+
+	fs_ll_init();
+	fs_ll_mount();
 
 	input_register_handler(&input_handler);
 
@@ -957,12 +980,15 @@ int main(void)
 	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {
 		rom_loaded = 0;
 
+		ClrBuf();
+
 		PStr("No ROM found !", 0, 0, 0, PixNorm);
 		PStr("Connect me to a computer", 0, 16, 0, PixNorm);
 		PStr("and copy a Tamagotchi ROM", 0, 24, 0, PixNorm);
 		PStr("named rom0.bin.", 0, 32, 0, PixNorm);
 		PStr("Once done, press any", 0, 48, 0, PixNorm);
 		PStr("button to continue.", 0, 56, 0, PixNorm);
+
 		PScrn();
 
 		fs_ll_umount();
