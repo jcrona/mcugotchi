@@ -91,7 +91,7 @@ void job_mainloop(void)
 				state = time_configure_wakeup(jobs->time);
 			}
 		} else {
-			state = STATE_SLEEP_S3;
+			state = system_get_max_state();
 		}
 
 		if (state == STATE_RUN) {

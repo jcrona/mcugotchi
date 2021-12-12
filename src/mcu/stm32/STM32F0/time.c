@@ -160,6 +160,7 @@ exec_state_t time_configure_wakeup(mcu_time_t time)
 	mcu_time_t t = time_get();
 	int32_t delta = time - t;
 	uint32_t cnt = t & 0xFFFF;
+	exec_state_t max_state = system_get_max_state();
 	exec_state_t state;
 	uint32_t latency;
 	static TIM_OC_InitTypeDef config = {
@@ -171,16 +172,16 @@ exec_state_t time_configure_wakeup(mcu_time_t time)
 		.OCFastMode   = TIM_OCFAST_DISABLE,
 	};
 
-	if (delta < SLEEP_S1_THRESHOLD) {
+	if (delta < SLEEP_S1_THRESHOLD || max_state == STATE_RUN) {
 		/* Job is now/very soon, no time to sleep */
 		/* Disable the comparator and its interrupt */
 		__HAL_TIM_DISABLE_IT(&htim, TIM_IT_CC1);
 		//HAL_TIM_OC_Stop_IT(&htim, TIM_CHANNEL_1);
 		return STATE_RUN;
-	} else if (delta < SLEEP_S2_THRESHOLD) {
+	} else if (delta < SLEEP_S2_THRESHOLD || max_state == STATE_SLEEP_S1) {
 		latency = EXIT_SLEEP_S1_LATENCY;
 		state = STATE_SLEEP_S1;
-	} else if (delta < SLEEP_S3_THRESHOLD) {
+	} else if (delta < SLEEP_S3_THRESHOLD || max_state == STATE_SLEEP_S2) {
 		latency = EXIT_SLEEP_S2_LATENCY;
 		state = STATE_SLEEP_S2;
 	} else {

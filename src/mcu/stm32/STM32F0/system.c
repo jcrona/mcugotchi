@@ -22,6 +22,8 @@
 #include "dfu.h"
 #include "system.h"
 
+static exec_state_t max_state = HIGHEST_ALLOWED_STATE;
+
 
 void system_disable_irq(void)
 {
@@ -115,6 +117,20 @@ void system_enter_state(exec_state_t state)
 
 		default:
 			break;
+	}
+}
+
+exec_state_t system_get_max_state(void)
+{
+	return max_state;
+}
+
+void system_set_max_state(exec_state_t state)
+{
+	if (state <= HIGHEST_ALLOWED_STATE) {
+		max_state = state;
+	} else {
+		max_state = HIGHEST_ALLOWED_STATE;
 	}
 }
 

@@ -46,6 +46,8 @@
 #define ENTER_SLEEP_S3_LATENCY					256
 #define EXIT_SLEEP_S3_LATENCY					256
 
+#define HIGHEST_ALLOWED_STATE					STATE_SLEEP_S2
+
 /* Device ID */
 #define DEVICE_ID1						(0x1FF80050)
 #define DEVICE_ID2						(0x1FF80054)
