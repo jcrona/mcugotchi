@@ -122,7 +122,7 @@ static bool_t battery_enabled = 0;
 static bool_t is_charging = 0;
 static bool_t is_calling = 0;
 static bool_t is_vbus = 0;
-static uint16_t current_battery = 0;
+static uint16_t current_battery = BATTERY_MAX;
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -855,7 +855,10 @@ static void battery_job_fn(job_t *job)
 
 static void battery_cb(uint16_t v)
 {
-	current_battery = v;
+	/* The battery voltage is allowed to rise only if the device is charging */
+	if (v < current_battery || is_charging) {
+		current_battery = v;
+	}
 }
 
 static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
