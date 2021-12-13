@@ -370,7 +370,7 @@ static void hal_update_screen(void)
 	}
 
 	/* Battery */
-	if (battery_enabled || current_battery < BATTERY_LOW) {
+	if (battery_enabled || current_battery < BATTERY_LOW || is_vbus) {
 		level = (((int32_t) current_battery - BATTERY_MIN) * (BATTERY_MAX_LEVEL + 1))/(BATTERY_MAX - BATTERY_MIN);
 
 		if (level > BATTERY_MAX_LEVEL) {
