@@ -913,6 +913,9 @@ static void battery_charging_handler(input_state_t state)
 {
 	is_charging = (state == INPUT_STATE_LOW);
 
+	/* The battery voltage has probably changed, let's update it */
+	job_schedule(&battery_job, &battery_job_fn, JOB_ASAP);
+
 	update_led();
 }
 
