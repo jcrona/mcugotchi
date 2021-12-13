@@ -91,6 +91,7 @@
 
 #define MAIN_JOB_PERIOD					1 //ms
 #define BATTERY_JOB_PERIOD				60000 //ms
+#define BACKLIGHT_OFF_PERIOD				5000 //ms
 
 #define BATTERY_MIN					3500 // mV
 #define BATTERY_MAX					4200 // mV
@@ -109,12 +110,15 @@ static bool_t tamalib_is_late = 0;
 static job_t cpu_job;
 static job_t render_job;
 static job_t battery_job;
+static job_t backlight_job;
 
 static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
 static bool_t usb_enabled = 0;
 static bool_t rom_loaded = 1;
+static bool_t backlight_always_on = 0;
+static bool_t is_backlight_on = 0;
 static uint8_t backlight_level = 2;
 static bool_t speaker_enabled = 1;
 static bool_t led_enabled = 1;
@@ -453,6 +457,24 @@ static void please_wait_screen(void)
 	PScrn();
 }
 
+static void backlight_job_fn(job_t *job)
+{
+	backlight_set(0);
+	is_backlight_on = 0;
+}
+
+static void turn_on_backlight(bool_t force)
+{
+	if (!is_backlight_on || force) {
+		backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+		is_backlight_on = 1;
+	}
+
+	if (!backlight_always_on) {
+		job_schedule(&backlight_job, &backlight_job_fn, time_get() + MS_TO_MCU_TIME(BACKLIGHT_OFF_PERIOD));
+	}
+}
+
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
@@ -479,7 +501,7 @@ static void menu_backlight_inc(uint8_t pos, menu_parent_t *parent)
 {
 	if (backlight_level < 16) {
 		backlight_level++;
-		backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+		turn_on_backlight(1);
 	}
 }
 
@@ -487,7 +509,7 @@ static void menu_backlight_dec(uint8_t pos, menu_parent_t *parent)
 {
 	if (backlight_level > 0) {
 		backlight_level--;
-		backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+		turn_on_backlight(1);
 	}
 }
 
@@ -499,6 +521,29 @@ static char * menu_backlight_arg(uint8_t pos, menu_parent_t *parent)
 	str[1] = '0' + backlight_level % 10;
 
 	return str;
+}
+
+static void menu_backlight_mode(uint8_t pos, menu_parent_t *parent)
+{
+	backlight_always_on = !backlight_always_on;
+
+	turn_on_backlight(0);
+
+	if (backlight_always_on) {
+		job_cancel(&backlight_job);
+	}
+}
+
+static char * menu_backlight_mode_arg(uint8_t pos, menu_parent_t *parent)
+{
+	switch (backlight_always_on) {
+		case 0:
+			return "Always ON";
+
+		default:
+		case 1:
+			return "Dynamic";
+	}
 }
 
 static void menu_sound(uint8_t pos, menu_parent_t *parent)
@@ -703,6 +748,7 @@ static menu_item_t backlight_menu[] = {
 	{"", &menu_backlight_arg, NULL, 0, NULL},
 	{"+", NULL, &menu_backlight_inc, 0, NULL},
 	{"-", NULL, &menu_backlight_dec, 0, NULL},
+	{"", &menu_backlight_mode_arg, &menu_backlight_mode, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
@@ -936,6 +982,8 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 		case INPUT_BTN_LEFT:
 		case INPUT_BTN_MIDDLE:
 		case INPUT_BTN_RIGHT:
+			turn_on_backlight(0);
+
 			if (!rom_loaded) {
 				no_rom_btn_handler(input, state, long_press);
 			} else if (usb_enabled) {
@@ -952,6 +1000,8 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 			break;
 
 		case INPUT_VBUS_SENSING:
+			turn_on_backlight(0);
+
 			vbus_sensing_handler(state);
 			break;
 	}
@@ -959,7 +1009,7 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 
 static void states_init(void)
 {
-	backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+	turn_on_backlight(1);
 
 	is_calling = icon_buffer[7]; // No need for update_led() since that call will be made by the following handlers
 
