@@ -382,6 +382,11 @@ static void hal_update_screen(void)
 		}
 
 		draw_battery(BATTERY_X, BATTERY_Y, BATTERY_W, BATTERY_THICKNESS, BATTERY_LVL_THICKNESS, BATTERY_MAX_LEVEL, level);
+
+		if (is_charging) {
+			draw_square(BATTERY_X + BATTERY_W/2 - 2, BATTERY_Y - 1 - 3 * 2, 2, 4, 1);
+			draw_square(BATTERY_X + BATTERY_W/2, BATTERY_Y - 1 - 2 * 2, 2, 4, 1);
+		}
 	}
 
 	PScrn();
