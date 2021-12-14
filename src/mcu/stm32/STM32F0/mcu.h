@@ -37,14 +37,17 @@
 #define STORAGE_FS_SIZE						0x4000 // 64KB in words (sizeof(uint32_t))
 
 /* Sleep states related latencies */
-#define ENTER_SLEEP_S1_LATENCY					256
-#define EXIT_SLEEP_S1_LATENCY					256
+/* Sleep */
+#define ENTER_SLEEP_S1_LATENCY					5 // mcu_time_t ticks
+#define EXIT_SLEEP_S1_LATENCY					3 // mcu_time_t ticks
 
-#define ENTER_SLEEP_S2_LATENCY					256
-#define EXIT_SLEEP_S2_LATENCY					256
+/* Undefined */
+#define ENTER_SLEEP_S2_LATENCY					0 // mcu_time_t ticks
+#define EXIT_SLEEP_S2_LATENCY					0 // mcu_time_t ticks
 
-#define ENTER_SLEEP_S3_LATENCY					256
-#define EXIT_SLEEP_S3_LATENCY					256
+/* Undefined */
+#define ENTER_SLEEP_S3_LATENCY					0 // mcu_time_t ticks
+#define EXIT_SLEEP_S3_LATENCY					0 // mcu_time_t ticks
 
 #define HIGHEST_ALLOWED_STATE					STATE_SLEEP_S1
 
