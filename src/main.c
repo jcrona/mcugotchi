@@ -475,6 +475,28 @@ static void turn_on_backlight(bool_t force)
 	}
 }
 
+static void enable_usb(void)
+{
+	emulation_paused = 1;
+	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
+
+	fs_ll_umount();
+	usb_start();
+
+	usb_enabled = 1;
+}
+
+static void disable_usb(void)
+{
+	usb_enabled = 0;
+	usb_stop();
+
+	fs_ll_mount();
+
+	emulation_paused = 0;
+	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
+}
+
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
@@ -737,11 +759,8 @@ static char * menu_roms_arg(uint8_t pos, menu_parent_t *parent)
 
 static void menu_usb(uint8_t pos, menu_parent_t *parent)
 {
-	menu_pause(0, NULL);
-	fs_ll_umount();
-	usb_start();
+	enable_usb();
 	menu_close();
-	usb_enabled = 1;
 }
 
 static menu_item_t backlight_menu[] = {
@@ -915,10 +934,7 @@ static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_pr
 static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
 	if (state == INPUT_STATE_HIGH && !long_press) {
-		usb_enabled = 0;
-		usb_stop();
-		fs_ll_mount();
-		menu_pause(0, NULL);
+		disable_usb();
 	}
 }
 
@@ -973,6 +989,10 @@ static void vbus_sensing_handler(input_state_t state)
 	is_vbus = (state == INPUT_STATE_HIGH);
 
 	update_led();
+
+	if (!is_vbus && usb_enabled) {
+		disable_usb();
+	}
 }
 
 static void input_handler(input_t input, input_state_t state, uint8_t long_press)
