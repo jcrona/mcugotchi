@@ -89,7 +89,7 @@
 
 #define TAMALIB_FREQ					32768 // Hz
 
-#define MAIN_JOB_PERIOD					1 //ms
+#define MAIN_JOB_PERIOD					10 //ms
 #define BATTERY_JOB_PERIOD				60000 //ms
 #define BACKLIGHT_OFF_PERIOD				5000 //ms
 
