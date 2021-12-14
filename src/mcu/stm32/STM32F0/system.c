@@ -107,10 +107,11 @@ void system_init(void)
 
 void system_enter_state(exec_state_t state)
 {
+	/* TODO: implement low-power sleep states */
 	switch (state) {
-		case STATE_SLEEP_S1:
-		case STATE_SLEEP_S2:
 		case STATE_SLEEP_S3:
+		case STATE_SLEEP_S2:
+		case STATE_SLEEP_S1:
 			/* Sleep until the next IRQ */
 			__WFI();
 			break;
