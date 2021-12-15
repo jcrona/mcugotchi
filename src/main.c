@@ -969,6 +969,11 @@ static void battery_cb(uint16_t v)
 	if (v < current_battery || is_charging) {
 		current_battery = v;
 	}
+
+	if (current_battery <= BATTERY_MIN) {
+		/* Battery is critical */
+		power_off();
+	}
 }
 
 static void power_off_handler(input_t btn, input_state_t state, uint8_t long_press)
