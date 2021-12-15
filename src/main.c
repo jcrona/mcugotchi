@@ -930,11 +930,14 @@ static void battery_cb(uint16_t v)
 
 static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
+	turn_on_backlight(0);
 	system_reset();
 }
 
 static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
+	turn_on_backlight(0);
+
 	if (state == INPUT_STATE_HIGH && !long_press) {
 		disable_usb();
 	}
@@ -942,6 +945,8 @@ static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_
 
 static void menu_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
+	turn_on_backlight(0);
+
 	if (state == INPUT_STATE_HIGH) {
 		switch (btn) {
 			case INPUT_BTN_LEFT:
@@ -964,6 +969,8 @@ static void menu_btn_handler(input_t btn, input_state_t state, uint8_t long_pres
 
 static void default_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
+	turn_on_backlight(0);
+
 	if (long_press) {
 		if (btn == INPUT_BTN_RIGHT) {
 			menu_open();
@@ -988,6 +995,8 @@ static void battery_charging_handler(input_state_t state)
 
 static void vbus_sensing_handler(input_state_t state)
 {
+	turn_on_backlight(0);
+
 	is_vbus = (state == INPUT_STATE_HIGH);
 
 	update_led();
@@ -1004,8 +1013,6 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 		case INPUT_BTN_LEFT:
 		case INPUT_BTN_MIDDLE:
 		case INPUT_BTN_RIGHT:
-			turn_on_backlight(0);
-
 			if (!rom_loaded) {
 				no_rom_btn_handler(input, state, long_press);
 			} else if (usb_enabled) {
@@ -1022,8 +1029,6 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 			break;
 
 		case INPUT_VBUS_SENSING:
-			turn_on_backlight(0);
-
 			vbus_sensing_handler(state);
 			break;
 	}
