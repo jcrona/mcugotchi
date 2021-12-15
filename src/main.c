@@ -805,16 +805,16 @@ static menu_item_t system_menu[] = {
 };
 
 static menu_item_t slots_menu[] = {
-	{"Slot 0", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 1", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 2", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 3", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 4", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 5", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 6", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 7", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 8", &menu_slots_arg, &menu_slots, 0, NULL},
-	{"Slot 9", &menu_slots_arg, &menu_slots, 0, NULL},
+	{"Slot 0", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 1", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 2", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 3", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 4", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 5", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 6", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 7", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 8", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 9", &menu_slots_arg, &menu_slots, 1, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
