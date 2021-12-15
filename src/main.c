@@ -759,8 +759,10 @@ static char * menu_roms_arg(uint8_t pos, menu_parent_t *parent)
 
 static void menu_usb(uint8_t pos, menu_parent_t *parent)
 {
-	enable_usb();
-	menu_close();
+	if (is_vbus) {
+		enable_usb();
+		menu_close();
+	}
 }
 
 static menu_item_t backlight_menu[] = {
