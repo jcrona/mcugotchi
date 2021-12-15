@@ -28,6 +28,7 @@ typedef enum {
 	STATE_SLEEP_S1,
 	STATE_SLEEP_S2,
 	STATE_SLEEP_S3,
+	STATE_NUM
 } exec_state_t;
 
 #define SLEEP_S1_THRESHOLD		(ENTER_SLEEP_S1_LATENCY + EXIT_SLEEP_S1_LATENCY)
@@ -43,7 +44,8 @@ void system_init(void);
 void system_enter_state(exec_state_t state);
 
 exec_state_t system_get_max_state(void);
-void system_set_max_state(exec_state_t state);
+void system_lock_max_state(exec_state_t state, uint8_t *lock);
+void system_unlock_max_state(exec_state_t state, uint8_t *lock);
 
 void system_fatal_error(void);
 void system_reset(void);

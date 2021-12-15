@@ -22,7 +22,7 @@
 #include "dfu.h"
 #include "system.h"
 
-static exec_state_t max_state = HIGHEST_ALLOWED_STATE;
+static uint8_t state_lock_counters[STATE_NUM] = {0};
 
 
 void system_disable_irq(void)
@@ -149,15 +149,30 @@ void system_enter_state(exec_state_t state)
 
 exec_state_t system_get_max_state(void)
 {
-	return max_state;
+	uint32_t i;
+
+	for (i = 0; i < HIGHEST_ALLOWED_STATE; i++) {
+		if (state_lock_counters[i]) {
+			return (exec_state_t) i;
+		}
+	}
+
+	return HIGHEST_ALLOWED_STATE;
 }
 
-void system_set_max_state(exec_state_t state)
+void system_lock_max_state(exec_state_t state, uint8_t *lock)
 {
-	if (state <= HIGHEST_ALLOWED_STATE) {
-		max_state = state;
-	} else {
-		max_state = HIGHEST_ALLOWED_STATE;
+	if (!(*lock)) {
+		state_lock_counters[(uint32_t) state]++;
+		*lock = 1;
+	}
+}
+
+void system_unlock_max_state(exec_state_t state, uint8_t *lock)
+{
+	if (*lock) {
+		state_lock_counters[(uint32_t) state]--;
+		*lock = 0;
 	}
 }
 
