@@ -117,6 +117,7 @@ static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
 static bool_t usb_enabled = 0;
 static bool_t rom_loaded = 1;
+static bool_t power_off_mode = 0;
 static bool_t backlight_always_on = 0;
 static bool_t is_backlight_on = 0;
 static uint8_t backlight_level = 2;
@@ -497,6 +498,41 @@ static void disable_usb(void)
 	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 }
 
+static void power_off(void)
+{
+	/* Disable everything so that the device goes to Stop mode */
+	emulation_paused = 1;
+	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
+
+	fs_ll_umount();
+
+	speaker_enabled = 0;
+
+	led_enabled = 0;
+	update_led();
+
+	backlight_set(0);
+	is_backlight_on = 0;
+
+	job_cancel(&render_job);
+	job_cancel(&cpu_job);
+	job_cancel(&battery_job);
+
+#if defined(BOARD_HAS_SSD1306)
+	ssd1306_set_power_mode(PWR_MODE_SLEEP);
+#elif defined(BOARD_HAS_UC1701X)
+	uc1701x_set_power_mode(PWR_MODE_SLEEP);
+#endif
+
+	power_off_mode = 1;
+}
+
+static void power_on(void)
+{
+	/* Just a reset for now */
+	system_reset();
+}
+
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	lcd_inverted = !lcd_inverted;
@@ -667,6 +703,12 @@ static char * menu_vbat_arg(uint8_t pos, menu_parent_t *parent)
 	return str;
 }
 
+static void menu_power_off(uint8_t pos, menu_parent_t *parent)
+{
+	power_off();
+	menu_close();
+}
+
 static void menu_reset_cpu(uint8_t pos, menu_parent_t *parent)
 {
 	cpu_reset();
@@ -798,6 +840,7 @@ static menu_item_t system_menu[] = {
 	{"Batt. ", &menu_vbat_arg, NULL, 0, NULL},
 	{"FW. "FIRMWARE_VERSION, NULL, NULL, 0, NULL},
 	{"FW. Update", NULL, &menu_firmware_update, 1, NULL},
+	{"Power OFF", NULL, &menu_power_off, 1, NULL},
 	{"Reset", NULL, &menu_reset_device, 1, NULL},
 	{"Fact. Reset", NULL, &menu_factory_reset, 1, NULL},
 
@@ -928,6 +971,13 @@ static void battery_cb(uint16_t v)
 	}
 }
 
+static void power_off_handler(input_t btn, input_state_t state, uint8_t long_press)
+{
+	if (long_press && btn == INPUT_BTN_MIDDLE) {
+		power_on();
+	}
+}
+
 static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
 	turn_on_backlight(0);
@@ -1013,7 +1063,9 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 		case INPUT_BTN_LEFT:
 		case INPUT_BTN_MIDDLE:
 		case INPUT_BTN_RIGHT:
-			if (!rom_loaded) {
+			if (power_off_mode) {
+				power_off_handler(input, state, long_press);
+			} else if (!rom_loaded) {
 				no_rom_btn_handler(input, state, long_press);
 			} else if (usb_enabled) {
 				usb_mode_btn_handler(input, state, long_press);
