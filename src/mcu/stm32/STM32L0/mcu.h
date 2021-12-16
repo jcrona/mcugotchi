@@ -42,14 +42,14 @@
 #define EXIT_SLEEP_S1_LATENCY					2 // mcu_time_t ticks
 
 /* Low-power Sleep */
-#define ENTER_SLEEP_S2_LATENCY					0//5 // mcu_time_t ticks
-#define EXIT_SLEEP_S2_LATENCY					0//3 // mcu_time_t ticks
+#define ENTER_SLEEP_S2_LATENCY					5 // mcu_time_t ticks
+#define EXIT_SLEEP_S2_LATENCY					3 // mcu_time_t ticks
 
-/* Undefined */
-#define ENTER_SLEEP_S3_LATENCY					0 // mcu_time_t ticks
-#define EXIT_SLEEP_S3_LATENCY					0 // mcu_time_t ticks
+/* Stop mode */
+#define ENTER_SLEEP_S3_LATENCY					5 // mcu_time_t ticks
+#define EXIT_SLEEP_S3_LATENCY					3 // mcu_time_t ticks
 
-#define HIGHEST_ALLOWED_STATE					STATE_SLEEP_S1
+#define HIGHEST_ALLOWED_STATE					STATE_SLEEP_S3
 
 /* Device ID */
 #define DEVICE_ID1						(0x1FF80050)

@@ -131,15 +131,154 @@ void system_init(void)
 	system_clock_config();
 }
 
+static void system_lp_sleep_stop(uint8_t stop)
+{
+	/* Enable the fast wake up from Ultra low power mode */
+	HAL_PWREx_EnableFastWakeUp();
+
+	/* Enable Ultra low power mode (up to 3ms wake up time) */
+	HAL_PWREx_EnableUltraLowPower();
+
+	/* Reset RCC (MSI as System Clock) */
+	/* Set MSION bit */
+	RCC->CR |= (uint32_t) 0x00000100U;
+	/* Reset SW[1:0], HPRE[3:0], PPRE1[2:0], PPRE2[2:0], MCOSEL[2:0] and MCOPRE[2:0] bits */
+	RCC->CFGR &= (uint32_t) 0x88FF400CU;
+	/* Reset HSION, HSIDIVEN, HSEON, CSSON and PLLON bits */
+	RCC->CR &= (uint32_t) 0xFEF6FFF6U;
+	/* Reset HSI48ON  bit */
+	RCC->CRRCR &= (uint32_t) 0xFFFFFFFEU;
+	/* Reset HSEBYP bit */
+	RCC->CR &= (uint32_t) 0xFFFBFFFFU;
+	/* Reset PLLSRC, PLLMUL[3:0] and PLLDIV[1:0] bits */
+	RCC->CFGR &= (uint32_t) 0xFF02FFFFU;
+	/* Disable all interrupts */
+	RCC->CIER = 0x00000000U;
+
+
+	/* Wait until MSI is used as system clock source */
+	while ((RCC->CFGR & (uint32_t) RCC_CFGR_SWS) != (uint32_t) RCC_CFGR_SWS_MSI);
+
+	/* Disable LSI clock */
+	RCC->CSR &= (uint32_t) ((uint32_t) ~RCC_CSR_LSION);
+
+
+	/* Switch Flash mode to no latency (WS 0) */
+	__HAL_FLASH_SET_LATENCY(FLASH_LATENCY_0);
+
+	/* Disable Prefetch Buffer */
+	__HAL_FLASH_PREFETCH_BUFFER_DISABLE();
+
+	/* Disable FLASH during Sleep */
+	__HAL_FLASH_SLEEP_POWERDOWN_ENABLE();
+
+
+	/* Select the Voltage Range 3 (1.2V) */
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+
+	/* Wait Until the Voltage Regulator is ready */
+	while ((PWR->CSR & PWR_CSR_VOSF) != RESET);
+
+
+	/* Suspend execution until IRQ */
+	if (stop) {
+		HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	} else {
+		HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	}
+
+
+	/* Enable HSI Clock */
+	RCC->CR |= ((uint32_t) RCC_CR_HSION);
+
+	/* Wait until HSI is ready */
+	while ((RCC->CR & RCC_CR_HSIRDY) == RESET);
+
+	/* Enable HSI48 Clock */
+	RCC->CRRCR |= ((uint32_t) RCC_CRRCR_HSI48ON);
+
+	/* Wait until HSI48 is ready */
+	while ((RCC->CRRCR & RCC_CRRCR_HSI48RDY) == RESET);
+
+	/* Enable Prefetch Buffer */
+	__HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+
+	/* Switch Flash mode to 1 cycle latency (WS 1) */
+	__HAL_FLASH_SET_LATENCY(FLASH_LATENCY_1);
+
+	/* Select the Voltage Range 1 (1.8V) */
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+	/* Wait Until the Voltage Regulator is ready */
+	while ((PWR->CSR & PWR_CSR_VOSF) != RESET);
+
+	/* PLL configuration */
+	RCC->CFGR &= (uint32_t) ((uint32_t) ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLMUL | RCC_CFGR_PLLDIV));
+	RCC->CFGR |= (uint32_t) (RCC_CFGR_PLLSRC_HSI | RCC_CFGR_PLLMUL6 | RCC_CFGR_PLLDIV3);
+
+	/* Enable PLL Clock */
+	RCC->CR |= ((uint32_t) RCC_CR_PLLON);
+
+	/* Wait until PLL is ready */
+	while ((RCC->CR & RCC_CR_PLLRDY) == RESET);
+
+	/* Select PLL as system clock source */
+	RCC->CFGR = (RCC->CFGR & (uint32_t) ((uint32_t) ~(RCC_CFGR_SW))) | (uint32_t) RCC_CFGR_SW_PLL;
+
+	/* Wait until PLL is used as system clock source */
+	while ((RCC->CFGR & (uint32_t) RCC_CFGR_SWS) != (uint32_t) RCC_CFGR_SWS_PLL);
+
+	/* HCLK = SYSCLK/1 */
+	RCC->CFGR = (RCC->CFGR & (uint32_t) ((uint32_t) ~RCC_CFGR_HPRE)) | (uint32_t) RCC_CFGR_HPRE_DIV1;
+
+	/* PCLK2 = HCLK/1 */
+	RCC->CFGR = (RCC->CFGR & (uint32_t) ((uint32_t) ~RCC_CFGR_PPRE2)) | (uint32_t) RCC_CFGR_PPRE2_DIV1;
+
+	/* PCLK1 = HCLK/1 */
+	RCC->CFGR = (RCC->CFGR & (uint32_t) ((uint32_t) ~RCC_CFGR_PPRE1)) | (uint32_t) RCC_CFGR_PPRE1_DIV1;
+
+	/* Disable Ultra low power mode */
+	HAL_PWREx_DisableUltraLowPower();
+
+	/* Enable FLASH during Sleep */
+	__HAL_FLASH_SLEEP_POWERDOWN_DISABLE();
+
+	/* Clear Wake Up flag */
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+}
+
+static void system_sleep(void)
+{
+	__HAL_FLASH_SLEEP_POWERDOWN_ENABLE();
+	HAL_PWREx_EnableUltraLowPower();
+	HAL_PWREx_EnableFastWakeUp();
+
+	/* Sleep until the next IRQ */
+	__WFI();
+
+	/* Disable Ultra low power mode */
+	HAL_PWREx_DisableUltraLowPower();
+
+	/* Enable FLASH during Sleep */
+	__HAL_FLASH_SLEEP_POWERDOWN_DISABLE();
+}
+
 void system_enter_state(exec_state_t state)
 {
-	/* TODO: implement low-power sleep states */
 	switch (state) {
 		case STATE_SLEEP_S3:
+			/* Stop */
+			system_lp_sleep_stop(1);
+			break;
+
 		case STATE_SLEEP_S2:
+			/* Low-power Sleep */
+			system_lp_sleep_stop(0);
+			break;
+
 		case STATE_SLEEP_S1:
-			/* Sleep until the next IRQ */
-			__WFI();
+			/* Sleep */
+			system_sleep();
 			break;
 
 		default:
