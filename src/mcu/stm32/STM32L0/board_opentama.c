@@ -20,6 +20,7 @@
 #include "stm32_hal.h"
 
 #include "input_ll.h"
+#include "system_ll.h"
 #include "board.h"
 
 
@@ -36,18 +37,21 @@ void board_init(void)
 	g.Pull = GPIO_PULLDOWN;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_LEFT_BTN_PORT, &g);
+	system_register_lp_pin(BOARD_LEFT_BTN_PORT, BOARD_LEFT_BTN_PIN);
 
 	g.Pin = BOARD_MIDDLE_BTN_PIN;
 	g.Mode = GPIO_MODE_IT_RISING;
 	g.Pull = GPIO_NOPULL;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_MIDDLE_BTN_PORT, &g);
+	system_register_lp_pin(BOARD_MIDDLE_BTN_PORT, BOARD_MIDDLE_BTN_PIN);
 
 	g.Pin = BOARD_RIGHT_BTN_PIN;
 	g.Mode = GPIO_MODE_IT_RISING;
 	g.Pull = GPIO_PULLDOWN;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_RIGHT_BTN_PORT, &g);
+	system_register_lp_pin(BOARD_RIGHT_BTN_PORT, BOARD_RIGHT_BTN_PIN);
 
 	/* SPI 1 */
 	g.Pin = BOARD_SCREEN_SCLK_PIN;
@@ -78,6 +82,7 @@ void board_init(void)
 	g.Pull  = GPIO_PULLUP;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_SCREEN_RST_PORT, &g);
+	system_register_lp_pin(BOARD_SCREEN_RST_PORT, BOARD_SCREEN_RST_PIN);
 
 	g.Pin = BOARD_SCREEN_BL_PIN;
 	g.Mode = GPIO_MODE_AF_PP;
@@ -112,6 +117,7 @@ void board_init(void)
 	g.Pull = GPIO_PULLUP;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_NCHARGE_PORT, &g);
+	system_register_lp_pin(BOARD_NCHARGE_PORT, BOARD_NCHARGE_PIN);
 
 	/* Battery voltage measurement */
 	g.Pin = BOARD_VBATT_MEAS_PIN;
@@ -119,6 +125,7 @@ void board_init(void)
 	g.Pull = GPIO_PULLDOWN;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_VBATT_MEAS_PORT, &g);
+	system_register_lp_pin(BOARD_VBATT_MEAS_PORT, BOARD_VBATT_MEAS_PIN);
 
 	g.Pin = BOARD_VBATT_ANA_PIN;
 	g.Mode = GPIO_MODE_ANALOG;
@@ -131,6 +138,7 @@ void board_init(void)
 	g.Pull = GPIO_NOPULL;
 	g.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(BOARD_VBUS_SENSE_PORT, &g);
+	system_register_lp_pin(BOARD_VBUS_SENSE_PORT, BOARD_VBUS_SENSE_PIN);
 
 	/* USB */
 	g.Pin = BOARD_USB_DP_PIN;
@@ -138,12 +146,14 @@ void board_init(void)
 	g.Pull = GPIO_NOPULL;
 	g.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
 	HAL_GPIO_Init(BOARD_USB_DP_PORT, &g);
+	system_register_lp_pin(BOARD_USB_DP_PORT, BOARD_USB_DP_PIN);
 
 	g.Pin = BOARD_USB_DM_PIN;
 	g.Mode = GPIO_MODE_INPUT;
 	g.Pull = GPIO_NOPULL;
 	g.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
 	HAL_GPIO_Init(BOARD_USB_DM_PORT, &g);
+	system_register_lp_pin(BOARD_USB_DM_PORT, BOARD_USB_DM_PIN);
 }
 
 void board_init_irq(void)
