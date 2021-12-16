@@ -22,6 +22,7 @@
 #include "stm32_hal.h"
 
 #include "board.h"
+#include "system.h"
 #include "speaker.h"
 
 #define TIMER_PERIOD					0x10
@@ -29,6 +30,8 @@
 #ifdef BOARD_SPEAKER_PWM_TIMER
 static TIM_HandleTypeDef htim;
 #endif
+
+static uint8_t state_lock = 0;
 
 
 void speaker_init(void)
@@ -82,9 +85,14 @@ void speaker_enable(uint8_t en)
 	if (en) {
 		/* Start the timer */
 		HAL_TIM_PWM_Start(&htim, BOARD_SPEAKER_PWM_CHANNEL);
+
+		/* Low-power modes introduce noise, thus are not allowed */
+		system_lock_max_state(STATE_SLEEP_S1, &state_lock);
 	} else {
 		/* Stop the timer */
 		HAL_TIM_PWM_Stop(&htim, BOARD_SPEAKER_PWM_CHANNEL);
+
+		system_unlock_max_state(STATE_SLEEP_S1, &state_lock);
 	}
 #endif
 #endif

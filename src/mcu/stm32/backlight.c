@@ -22,6 +22,7 @@
 #include "stm32_hal.h"
 
 #include "board.h"
+#include "system.h"
 #include "backlight.h"
 
 #define TIMER_PERIOD					0x100
@@ -29,6 +30,8 @@
 #ifdef BOARD_SCREEN_BL_PWM_TIMER
 static TIM_HandleTypeDef htim;
 #endif
+
+static uint8_t state_lock = 0;
 
 
 void backlight_init(void)
@@ -76,4 +79,12 @@ void backlight_set(uint8_t v)
 	HAL_TIM_PWM_Start(&htim, BOARD_SCREEN_BL_PWM_CHANNEL);
 #endif
 #endif
+
+	if (v == 0) {
+		/* Low-power modes introduce noise, thus are not allowed */
+		system_unlock_max_state(STATE_SLEEP_S1, &state_lock);
+	} else {
+		/* Stop mode is not allowed */
+		system_lock_max_state(STATE_SLEEP_S1, &state_lock);
+	}
 }

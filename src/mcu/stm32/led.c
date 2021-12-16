@@ -24,6 +24,7 @@
 #include "board.h"
 #include "job.h"
 #include "time.h"
+#include "system.h"
 #include "led.h"
 
 /* Define this to get a breathing animation instead of a static light */
@@ -46,6 +47,8 @@ static job_t breathing_job;
 static uint8_t red = 0, green = 0, blue = 0;
 static uint16_t breathing_counter = 0;
 #endif
+
+static uint8_t state_lock = 0;
 
 
 void led_init(void)
@@ -122,6 +125,14 @@ static void led_set_raw(uint8_t r, uint8_t g, uint8_t b)
 	HAL_TIM_PWM_Start(&htim, BOARD_LED_BLUE_PWM_CHANNEL);
 #endif
 #endif
+
+	if (r == 0 && g == 0 && b == 0) {
+		/* Low-power modes introduce noise, thus are not allowed */
+		system_unlock_max_state(STATE_SLEEP_S1, &state_lock);
+	} else {
+		/* Stop mode is not allowed */
+		system_lock_max_state(STATE_SLEEP_S1, &state_lock);
+	}
 }
 
 #ifdef BREATHING_LED

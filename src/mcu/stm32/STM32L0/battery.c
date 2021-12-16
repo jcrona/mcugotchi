@@ -42,6 +42,8 @@ static void (*battery_cb)(uint16_t) = NULL;
 
 static job_t battery_processing_job;
 
+static uint8_t state_lock = 0;
+
 
 void battery_init(void)
 {
@@ -132,6 +134,9 @@ void battery_register_cb(void (*cb)(uint16_t))
 void battery_start_meas(void)
 {
 #ifdef BOARD_VBATT_ANA_ADC_CHANNEL
+	/* The ADC does not work in low-power modes, thus those modes are not allowed */
+	system_lock_max_state(STATE_SLEEP_S1, &state_lock);
+
 #ifdef BOARD_VBATT_MEAS_PIN
 	gpio_set(BOARD_VBATT_MEAS_PORT, BOARD_VBATT_MEAS_PIN);
 #endif
@@ -154,6 +159,8 @@ void battery_stop_meas(void)
 #ifdef BOARD_VBATT_MEAS_PIN
 	gpio_clear(BOARD_VBATT_MEAS_PORT, BOARD_VBATT_MEAS_PIN);
 #endif
+
+	system_unlock_max_state(STATE_SLEEP_S1, &state_lock);
 #endif
 }
 
