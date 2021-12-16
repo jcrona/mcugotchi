@@ -24,6 +24,7 @@
 #include "board.h"
 #include "system.h"
 #include "job.h"
+#include "time.h"
 #include "gpio.h"
 #include "battery.h"
 
@@ -44,7 +45,11 @@ static job_t battery_processing_job;
 
 void battery_init(void)
 {
+}
+
 #ifdef BOARD_VBATT_ANA_ADC_CHANNEL
+static void adc_init(void)
+{
 	ADC_ChannelConfTypeDef sConfig;
 
 	/* Initialize DMA */
@@ -105,8 +110,19 @@ void battery_init(void)
 	if (HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK) {
 		system_fatal_error();
 	}
-#endif
 }
+
+static void adc_deinit(void)
+{
+	/* Disable ADC */
+	HAL_ADC_DeInit(&AdcHandle);
+	__HAL_RCC_ADC1_CLK_DISABLE();
+
+	/* Disable DMA */
+	HAL_DMA_DeInit(&DmaHandle);
+	__HAL_RCC_DMA1_CLK_DISABLE();
+}
+#endif
 
 void battery_register_cb(void (*cb)(uint16_t))
 {
@@ -120,6 +136,8 @@ void battery_start_meas(void)
 	gpio_set(BOARD_VBATT_MEAS_PORT, BOARD_VBATT_MEAS_PIN);
 #endif
 
+	adc_init();
+
 	if (HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *) adc_data, ADC_DATA_SIZE) != HAL_OK) {
 		system_fatal_error();
 	}
@@ -130,6 +148,8 @@ void battery_stop_meas(void)
 {
 #ifdef BOARD_VBATT_ANA_ADC_CHANNEL
 	HAL_ADC_Stop_DMA(&AdcHandle);
+
+	adc_deinit();
 
 #ifdef BOARD_VBATT_MEAS_PIN
 	gpio_clear(BOARD_VBATT_MEAS_PORT, BOARD_VBATT_MEAS_PIN);
