@@ -20,9 +20,25 @@
 #include "stm32_hal.h"
 
 #include "dfu.h"
+#include "system_ll.h"
 #include "system.h"
 
+typedef struct {
+	uint32_t moder;
+	uint32_t ospeedr;
+	uint32_t otyper;
+	uint32_t pupdr;
+} gpio_config_t;
+
+typedef struct {
+	uint16_t one;
+	uint32_t two;
+} gpio_masks_t;
+
 static uint8_t state_lock_counters[STATE_NUM] = {0};
+
+static gpio_config_t gpio_a, gpio_b, gpio_c, gpio_d, gpio_e, gpio_h;
+static gpio_masks_t gpio_a_msk = {0}, gpio_b_msk = {0}, gpio_c_msk = {0}, gpio_d_msk = {0}, gpio_e_msk = {0}, gpio_h_msk = {0};
 
 
 void system_disable_irq(void)
@@ -131,8 +147,132 @@ void system_init(void)
 	system_clock_config();
 }
 
+void system_register_lp_pin(GPIO_TypeDef *port, uint16_t pin)
+{
+	gpio_masks_t *gpio_msk = NULL;
+
+	if (port == GPIOA) {
+		gpio_msk = &gpio_a_msk;
+	} else if (port == GPIOB) {
+		gpio_msk = &gpio_b_msk;
+	} else if (port == GPIOC) {
+		gpio_msk = &gpio_c_msk;
+	} else if (port == GPIOD) {
+		gpio_msk = &gpio_d_msk;
+	} else if (port == GPIOE) {
+		gpio_msk = &gpio_e_msk;
+	} else if (port == GPIOH) {
+		gpio_msk = &gpio_h_msk;
+	} else {
+		return;
+	}
+
+	gpio_msk->one |= pin;
+	gpio_msk->two |= (pin * pin) | ((pin * pin) << 1);
+}
+
+static void save_gpio_config(void)
+{
+	/* Save the GPIO configuration */
+	gpio_a.moder = GPIOA->MODER;
+	gpio_b.moder = GPIOB->MODER;
+	gpio_c.moder = GPIOC->MODER;
+	gpio_d.moder = GPIOD->MODER;
+	gpio_e.moder = GPIOE->MODER;
+	gpio_h.moder = GPIOH->MODER;
+
+	gpio_a.ospeedr = GPIOA->OSPEEDR;
+	gpio_b.ospeedr = GPIOB->OSPEEDR;
+	gpio_c.ospeedr = GPIOC->OSPEEDR;
+	gpio_d.ospeedr = GPIOD->OSPEEDR;
+	gpio_e.ospeedr = GPIOE->OSPEEDR;
+	gpio_h.ospeedr = GPIOH->OSPEEDR;
+
+	gpio_a.otyper = GPIOA->OTYPER;
+	gpio_b.otyper = GPIOB->OTYPER;
+	gpio_c.otyper = GPIOC->OTYPER;
+	gpio_d.otyper = GPIOD->OTYPER;
+	gpio_e.otyper = GPIOE->OTYPER;
+	gpio_h.otyper = GPIOH->OTYPER;
+
+	gpio_a.pupdr = GPIOA->PUPDR;
+	gpio_b.pupdr = GPIOB->PUPDR;
+	gpio_c.pupdr = GPIOC->PUPDR;
+	gpio_d.pupdr = GPIOD->PUPDR;
+	gpio_e.pupdr = GPIOE->PUPDR;
+	gpio_h.pupdr = GPIOH->PUPDR;
+
+	/* Configure all GPIO port pins in Analog input mode
+	 * (Analog, 400kHz, PP, NOPULL), except the registered
+	 * low-power pins
+	 */
+	GPIOA->MODER = (GPIOA->MODER & gpio_a_msk.two) | ~gpio_a_msk.two;
+	GPIOA->OSPEEDR = (GPIOA->OSPEEDR & gpio_a_msk.two);
+	GPIOA->OTYPER = (GPIOA->OTYPER & gpio_a_msk.one);
+	GPIOA->PUPDR = (GPIOA->PUPDR & gpio_a_msk.two);
+
+	GPIOB->MODER = (GPIOB->MODER & gpio_b_msk.two) | ~gpio_b_msk.two;
+	GPIOB->OSPEEDR = (GPIOB->OSPEEDR & gpio_b_msk.two);
+	GPIOB->OTYPER = (GPIOB->OTYPER & gpio_b_msk.one);
+	GPIOB->PUPDR = (GPIOB->PUPDR & gpio_b_msk.two);
+
+	GPIOC->MODER = (GPIOC->MODER & gpio_c_msk.two) | ~gpio_c_msk.two;
+	GPIOC->OSPEEDR = (GPIOC->OSPEEDR & gpio_c_msk.two);
+	GPIOC->OTYPER = (GPIOC->OTYPER & gpio_c_msk.one);
+	GPIOC->PUPDR = (GPIOC->PUPDR & gpio_c_msk.two);
+
+	GPIOD->MODER = (GPIOC->MODER & gpio_d_msk.two) | ~gpio_d_msk.two;
+	GPIOD->OSPEEDR = (GPIOC->OSPEEDR & gpio_d_msk.two);
+	GPIOD->OTYPER = (GPIOC->OTYPER & gpio_d_msk.one);
+	GPIOD->PUPDR = (GPIOC->PUPDR & gpio_d_msk.two);
+
+	GPIOE->MODER = (GPIOC->MODER & gpio_e_msk.two) | ~gpio_e_msk.two;
+	GPIOE->OSPEEDR = (GPIOC->OSPEEDR & gpio_e_msk.two);
+	GPIOE->OTYPER = (GPIOC->OTYPER & gpio_e_msk.one);
+	GPIOE->PUPDR = (GPIOC->PUPDR & gpio_e_msk.two);
+
+	GPIOH->MODER = (GPIOH->MODER & gpio_h_msk.two) | ~gpio_h_msk.two;
+	GPIOH->OSPEEDR = (GPIOH->OSPEEDR & gpio_h_msk.two);
+	GPIOH->OTYPER = (GPIOH->OTYPER & gpio_h_msk.one);
+	GPIOH->PUPDR = (GPIOH->PUPDR & gpio_h_msk.two);
+}
+
+static void restore_gpio_config(void)
+{
+	/* Restore the GPIO configuration */
+	GPIOA->MODER = gpio_a.moder;
+	GPIOB->MODER = gpio_b.moder;
+	GPIOC->MODER = gpio_c.moder;
+	GPIOD->MODER = gpio_d.moder;
+	GPIOE->MODER = gpio_e.moder;
+	GPIOH->MODER = gpio_h.moder;
+
+	GPIOA->OSPEEDR = gpio_a.ospeedr;
+	GPIOB->OSPEEDR = gpio_b.ospeedr;
+	GPIOC->OSPEEDR = gpio_c.ospeedr;
+	GPIOD->OSPEEDR = gpio_d.ospeedr;
+	GPIOE->OSPEEDR = gpio_e.ospeedr;
+	GPIOH->OSPEEDR = gpio_h.ospeedr;
+
+	GPIOA->OTYPER = gpio_a.otyper;
+	GPIOB->OTYPER = gpio_b.otyper;
+	GPIOC->OTYPER = gpio_c.otyper;
+	GPIOD->OTYPER = gpio_d.otyper;
+	GPIOE->OTYPER = gpio_e.otyper;
+	GPIOH->OTYPER = gpio_h.otyper;
+
+	GPIOA->PUPDR = gpio_a.pupdr;
+	GPIOB->PUPDR = gpio_b.pupdr;
+	GPIOC->PUPDR = gpio_c.pupdr;
+	GPIOD->PUPDR = gpio_d.pupdr;
+	GPIOE->PUPDR = gpio_e.pupdr;
+	GPIOH->PUPDR = gpio_h.pupdr;
+}
+
 static void system_lp_sleep_stop(uint8_t stop)
 {
+	save_gpio_config();
+
 	/* Enable the fast wake up from Ultra low power mode */
 	HAL_PWREx_EnableFastWakeUp();
 
@@ -242,6 +382,8 @@ static void system_lp_sleep_stop(uint8_t stop)
 
 	/* Enable FLASH during Sleep */
 	__HAL_FLASH_SLEEP_POWERDOWN_DISABLE();
+
+	restore_gpio_config();
 
 	/* Clear Wake Up flag */
 	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
