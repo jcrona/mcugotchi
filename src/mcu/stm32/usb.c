@@ -106,6 +106,11 @@ void usb_init(void)
 	USBD_MSC_RegisterStorage(&USBD_Device, &usbd_disk_fops);
 }
 
+void usb_deinit(void)
+{
+	USBD_DeInit(&USBD_Device);
+}
+
 void usb_start(void)
 {
 	USBD_Start(&USBD_Device);

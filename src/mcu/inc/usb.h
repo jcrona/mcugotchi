@@ -22,6 +22,7 @@
 
 
 void usb_init(void);
+void usb_deinit(void);
 
 void usb_start(void);
 void usb_stop(void);
