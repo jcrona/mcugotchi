@@ -1141,8 +1141,7 @@ int main(void)
 
 		PScrn();
 
-		fs_ll_umount();
-		usb_start();
+		enable_usb();
 	} else {
 		menu_register(main_menu);
 
