@@ -143,9 +143,38 @@ static void system_clock_config(void)
 
 void system_init(void)
 {
+	GPIO_InitTypeDef g;
+
 	HAL_Init();
 
 	system_clock_config();
+
+	/* Configure all GPIOs in Analog mode */
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+
+	g.Pin  = GPIO_PIN_All;
+	g.Mode  = GPIO_MODE_ANALOG;
+	g.Pull  = GPIO_NOPULL;
+	g.Speed = GPIO_SPEED_FREQ_LOW;
+
+	HAL_GPIO_Init(GPIOA, &g);
+	HAL_GPIO_Init(GPIOB, &g);
+	HAL_GPIO_Init(GPIOC, &g);
+	HAL_GPIO_Init(GPIOD, &g);
+	HAL_GPIO_Init(GPIOE, &g);
+	HAL_GPIO_Init(GPIOH, &g);
+
+	__HAL_RCC_GPIOA_CLK_DISABLE();
+	__HAL_RCC_GPIOB_CLK_DISABLE();
+	__HAL_RCC_GPIOC_CLK_DISABLE();
+	__HAL_RCC_GPIOD_CLK_DISABLE();
+	__HAL_RCC_GPIOE_CLK_DISABLE();
+	__HAL_RCC_GPIOH_CLK_DISABLE();
 }
 
 void system_register_lp_pin(GPIO_TypeDef *port, uint16_t pin)
