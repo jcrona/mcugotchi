@@ -28,6 +28,7 @@ typedef struct {
 	uint32_t ospeedr;
 	uint32_t otyper;
 	uint32_t pupdr;
+	uint8_t enabled;
 } gpio_config_t;
 
 typedef struct {
@@ -173,6 +174,22 @@ void system_register_lp_pin(GPIO_TypeDef *port, uint16_t pin)
 
 static void save_gpio_config(void)
 {
+	/* Keep track of which port is enabled */
+	gpio_a.enabled = __HAL_RCC_GPIOA_IS_CLK_ENABLED();
+	gpio_b.enabled = __HAL_RCC_GPIOB_IS_CLK_ENABLED();
+	gpio_c.enabled = __HAL_RCC_GPIOC_IS_CLK_ENABLED();
+	gpio_d.enabled = __HAL_RCC_GPIOD_IS_CLK_ENABLED();
+	gpio_e.enabled = __HAL_RCC_GPIOE_IS_CLK_ENABLED();
+	gpio_h.enabled = __HAL_RCC_GPIOH_IS_CLK_ENABLED();
+
+	/* Enable all clocks */
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+
 	/* Save the GPIO configuration */
 	gpio_a.moder = GPIOA->MODER;
 	gpio_b.moder = GPIOB->MODER;
@@ -235,10 +252,43 @@ static void save_gpio_config(void)
 	GPIOH->OSPEEDR = (GPIOH->OSPEEDR & gpio_h_msk.two);
 	GPIOH->OTYPER = (GPIOH->OTYPER & gpio_h_msk.one);
 	GPIOH->PUPDR = (GPIOH->PUPDR & gpio_h_msk.two);
+
+	/* Disable unused clocks */
+	if (!gpio_a_msk.one) {
+		__HAL_RCC_GPIOA_CLK_DISABLE();
+	}
+
+	if (!gpio_b_msk.one) {
+		__HAL_RCC_GPIOB_CLK_DISABLE();
+	}
+
+	if (!gpio_c_msk.one) {
+		__HAL_RCC_GPIOC_CLK_DISABLE();
+	}
+
+	if (!gpio_d_msk.one) {
+		__HAL_RCC_GPIOD_CLK_DISABLE();
+	}
+
+	if (!gpio_e_msk.one) {
+		__HAL_RCC_GPIOE_CLK_DISABLE();
+	}
+
+	if (!gpio_h_msk.one) {
+		__HAL_RCC_GPIOH_CLK_DISABLE();
+	}
 }
 
 static void restore_gpio_config(void)
 {
+	/* Enable all clocks */
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+
 	/* Restore the GPIO configuration */
 	GPIOA->MODER = gpio_a.moder;
 	GPIOB->MODER = gpio_b.moder;
@@ -267,6 +317,31 @@ static void restore_gpio_config(void)
 	GPIOD->PUPDR = gpio_d.pupdr;
 	GPIOE->PUPDR = gpio_e.pupdr;
 	GPIOH->PUPDR = gpio_h.pupdr;
+
+	/* Disable unused clocks */
+	if (!gpio_a.enabled) {
+		__HAL_RCC_GPIOA_CLK_DISABLE();
+	}
+
+	if (!gpio_b.enabled) {
+		__HAL_RCC_GPIOB_CLK_DISABLE();
+	}
+
+	if (!gpio_c.enabled) {
+		__HAL_RCC_GPIOC_CLK_DISABLE();
+	}
+
+	if (!gpio_d.enabled) {
+		__HAL_RCC_GPIOD_CLK_DISABLE();
+	}
+
+	if (!gpio_e.enabled) {
+		__HAL_RCC_GPIOE_CLK_DISABLE();
+	}
+
+	if (!gpio_h.enabled) {
+		__HAL_RCC_GPIOH_CLK_DISABLE();
+	}
 }
 
 static void system_lp_sleep_stop(uint8_t stop)
