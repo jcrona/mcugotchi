@@ -482,6 +482,7 @@ static void enable_usb(void)
 	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 
 	fs_ll_umount();
+	usb_init();
 	usb_start();
 
 	usb_enabled = 1;
@@ -491,6 +492,7 @@ static void disable_usb(void)
 {
 	usb_enabled = 0;
 	usb_stop();
+	usb_deinit();
 
 	fs_ll_mount();
 
@@ -1112,8 +1114,6 @@ int main(void)
 	/* Clear any remainig data in RAM */
 	ClrBuf();
 	PScrn();
-
-	usb_init();
 
 	states_init();
 
