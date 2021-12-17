@@ -16,20 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- * The expected connections are the following:
- * | Name            | PIN     |
- * |-----------------|---------|
- * | SSD1306 CLK PIN | PA5     |
- * | SSD1306 DIN PIN | PA7     |
- * | SSD1306 DC PIN  | PA1     |
- * | SSD1306 CE PIN  | PA2     |
- * | SSD1306 RES PIN | PA6     |
- * | SSD1306 VCC PIN | VDD     |
- * | SSD1306 GND PIN | GND     |
- * | Left Button     | PB3/VDD |
- * | Middle Button   | PA0/VDD |
- * | Right Button    | PB2/VDD |
  */
 #include <stdint.h>
 
