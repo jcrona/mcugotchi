@@ -476,6 +476,10 @@ static void power_off(void)
 
 	fs_ll_umount();
 
+	if (usb_enabled) {
+		disable_usb();
+	}
+
 	speaker_enabled = 0;
 
 	led_enabled = 0;
