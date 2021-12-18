@@ -23,6 +23,7 @@
 #include "usbd_desc.h"
 #include "usbd_msc.h"
 
+#include "system.h"
 #include "storage.h"
 #include "usb.h"
 
@@ -32,6 +33,8 @@
 
 static USBD_HandleTypeDef USBD_Device;
 extern PCD_HandleTypeDef g_hpcd;
+
+static uint8_t state_lock = 0;
 
 static int8_t msc_inquiry_data[] = { /* 36 */
 	/* LUN 0 */
@@ -113,12 +116,17 @@ void usb_deinit(void)
 
 void usb_start(void)
 {
+	/* The USB does not work in low-power modes, thus those modes are not allowed */
+	system_lock_max_state(STATE_SLEEP_S1, &state_lock);
+
 	USBD_Start(&USBD_Device);
 }
 
 void usb_stop(void)
 {
 	USBD_Stop(&USBD_Device);
+
+	system_unlock_max_state(STATE_SLEEP_S1, &state_lock);
 }
 
 void USB_IRQHandler(void)
