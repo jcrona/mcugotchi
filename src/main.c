@@ -65,7 +65,7 @@
 #define PLEASE_WAIT_Y					24
 #define PLEASE_WAIT_STR					"Please Wait"
 
-#define BATTERY_X					2
+#define BATTERY_X					114
 #define BATTERY_Y					21
 #define BATTERY_W					12
 #define BATTERY_THICKNESS				2
