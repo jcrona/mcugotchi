@@ -267,6 +267,62 @@ static void hal_sleep_until(timestamp_t ts)
 	}
 }
 
+static void hal_update_screen(void)
+{
+}
+
+static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
+{
+	matrix_buffer[y][x] = val;
+}
+
+static void hal_set_lcd_icon(u8_t icon, bool_t val)
+{
+	if (icon == 7 && icon_buffer[icon] != val) {
+		/* The Tamagotchi started or stopped calling */
+		if (val && menu_is_visible()) {
+			menu_close();
+		}
+
+		is_calling = val;
+
+		update_led();
+	}
+
+	icon_buffer[icon] = val;
+}
+
+static void hal_set_frequency(u32_t freq)
+{
+	speaker_set_frequency(freq);
+}
+
+static void hal_play_frequency(bool_t en)
+{
+	speaker_enable((uint8_t) (en && speaker_enabled));
+}
+
+static int hal_handler(void)
+{
+	return 0;
+}
+
+static hal_t hal = {
+	.malloc = &hal_malloc,
+	.free = &hal_free,
+	.halt = &hal_halt,
+	.is_log_enabled = &hal_is_log_enabled,
+	.log = &hal_log,
+	.sleep_until = &hal_sleep_until,
+	.get_timestamp = &hal_get_timestamp,
+	.update_screen = &hal_update_screen,
+	.set_lcd_matrix = &hal_set_lcd_matrix,
+	.set_lcd_icon = &hal_set_lcd_icon,
+	.set_frequency = &hal_set_frequency,
+	.play_frequency = &hal_play_frequency,
+	.handler = &hal_handler,
+};
+
 static void draw_icon(uint8_t x, uint8_t y, uint8_t num, uint8_t v)
 {
 	uint8_t i, j;
@@ -327,7 +383,7 @@ static void draw_battery(uint8_t x, uint8_t y, uint8_t w, uint8_t thickness, uin
 	}
 }
 
-static void hal_update_screen(void)
+static void tamalib_screen(void)
 {
 	u8_t i, j;
 	int8_t level;
@@ -378,58 +434,6 @@ static void hal_update_screen(void)
 
 	PScrn();
 }
-
-static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
-{
-	matrix_buffer[y][x] = val;
-}
-
-static void hal_set_lcd_icon(u8_t icon, bool_t val)
-{
-	if (icon == 7 && icon_buffer[icon] != val) {
-		/* The Tamagotchi started or stopped calling */
-		if (val && menu_is_visible()) {
-			menu_close();
-		}
-
-		is_calling = val;
-
-		update_led();
-	}
-
-	icon_buffer[icon] = val;
-}
-
-static void hal_set_frequency(u32_t freq)
-{
-	speaker_set_frequency(freq);
-}
-
-static void hal_play_frequency(bool_t en)
-{
-	speaker_enable((uint8_t) (en && speaker_enabled));
-}
-
-static int hal_handler(void)
-{
-	return 0;
-}
-
-static hal_t hal = {
-	.malloc = &hal_malloc,
-	.free = &hal_free,
-	.halt = &hal_halt,
-	.is_log_enabled = &hal_is_log_enabled,
-	.log = &hal_log,
-	.sleep_until = &hal_sleep_until,
-	.get_timestamp = &hal_get_timestamp,
-	.update_screen = &hal_update_screen,
-	.set_lcd_matrix = &hal_set_lcd_matrix,
-	.set_lcd_icon = &hal_set_lcd_icon,
-	.set_frequency = &hal_set_frequency,
-	.play_frequency = &hal_play_frequency,
-	.handler = &hal_handler,
-};
 
 static void please_wait_screen(void)
 {
@@ -921,7 +925,7 @@ static void render_job_fn(job_t *job)
 		return;
 	}
 
-	hal_update_screen();
+	tamalib_screen();
 }
 
 static void cpu_job_fn(job_t *job)
