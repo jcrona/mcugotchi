@@ -496,14 +496,9 @@ static void system_lp_sleep_stop(uint8_t stop)
 static void system_sleep(void)
 {
 	__HAL_FLASH_SLEEP_POWERDOWN_ENABLE();
-	HAL_PWREx_EnableUltraLowPower();
-	HAL_PWREx_EnableFastWakeUp();
 
 	/* Sleep until the next IRQ */
 	__WFI();
-
-	/* Disable Ultra low power mode */
-	HAL_PWREx_DisableUltraLowPower();
 
 	/* Enable FLASH during Sleep */
 	__HAL_FLASH_SLEEP_POWERDOWN_DISABLE();
