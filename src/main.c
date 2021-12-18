@@ -332,10 +332,6 @@ static void hal_update_screen(void)
 	u8_t i, j;
 	int8_t level;
 
-	if (menu_is_visible()) {
-		return;
-	}
-
 	ClrBuf();
 
 	/* Dot matrix */
@@ -920,6 +916,10 @@ static void ll_init(void)
 static void render_job_fn(job_t *job)
 {
 	job_schedule(&render_job, &render_job_fn, time_get() + MS_TO_MCU_TIME(1000)/FRAMERATE);
+
+	if (menu_is_visible()) {
+		return;
+	}
 
 	hal_update_screen();
 }
