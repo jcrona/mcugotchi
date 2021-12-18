@@ -95,8 +95,10 @@ void job_mainloop(void)
 		}
 
 		if (state == STATE_RUN) {
-			j = jobs;
-			jobs = j->next;
+			if (jobs != NULL) {
+				j = jobs;
+				jobs = j->next;
+			}
 		} else {
 			system_enter_state(state);
 		}
