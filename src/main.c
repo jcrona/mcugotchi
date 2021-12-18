@@ -386,9 +386,6 @@ static void draw_battery(uint8_t x, uint8_t y, uint8_t w, uint8_t thickness, uin
 static void tamalib_screen(void)
 {
 	u8_t i, j;
-	int8_t level;
-
-	ClrBuf();
 
 	/* Dot matrix */
 	for (j = 0; j < LCD_HEIGHT; j++) {
@@ -405,34 +402,6 @@ static void tamalib_screen(void)
 			draw_icon((i % 4) * ICON_STRIDE_X + ICON_OFFSET_X, (i / 4) * ICON_STRIDE_Y + ICON_OFFSET_Y, i, 1);
 		}
 	}
-
-	if (usb_enabled) {
-		PStr(USBON_STR, USBON_X, USBON_Y, 1, PixNorm);
-	} else if (emulation_paused) {
-		PStr(PAUSED_STR, PAUSED_X, PAUSED_Y, 1, PixNorm);
-	}
-
-	/* Battery */
-	if (battery_enabled || current_battery < BATTERY_LOW || is_vbus) {
-		level = (((int32_t) current_battery - BATTERY_MIN) * (BATTERY_MAX_LEVEL + 1))/(BATTERY_MAX - BATTERY_MIN);
-
-		if (level > BATTERY_MAX_LEVEL) {
-			level = BATTERY_MAX_LEVEL;
-		}
-
-		if (level < 0) {
-			level = 0;
-		}
-
-		draw_battery(BATTERY_X, BATTERY_Y, BATTERY_W, BATTERY_THICKNESS, BATTERY_LVL_THICKNESS, BATTERY_MAX_LEVEL, level);
-
-		if (is_charging) {
-			draw_square(BATTERY_X + BATTERY_W/2 - 2, BATTERY_Y - 1 - 3 * 2, 2, 4, 1);
-			draw_square(BATTERY_X + BATTERY_W/2, BATTERY_Y - 1 - 2 * 2, 2, 4, 1);
-		}
-	}
-
-	PScrn();
 }
 
 static void please_wait_screen(void)
@@ -442,6 +411,19 @@ static void please_wait_screen(void)
 	PStr(PLEASE_WAIT_STR, PLEASE_WAIT_X, PLEASE_WAIT_Y, 1, PixNorm);
 
 	PScrn();
+}
+
+static void no_rom_screen(void)
+{
+	PStr("No ROM found !", 0, 0, 0, PixNorm);
+	PStr("Connect me to a PC", 0, 16, 0, PixNorm);
+
+	/* Keep some space for the battery icon */
+	PStr("and copy a Tamagotchi", 0, 24, 0, PixNorm);
+	PStr("ROM named rom0.bin.", 0, 32, 0, PixNorm);
+
+	PStr("Once done, press any", 0, 48, 0, PixNorm);
+	PStr("button to continue.", 0, 56, 0, PixNorm);
 }
 
 static void backlight_job_fn(job_t *job)
@@ -919,13 +901,49 @@ static void ll_init(void)
 
 static void render_job_fn(job_t *job)
 {
+	int8_t level;
+
 	job_schedule(&render_job, &render_job_fn, time_get() + MS_TO_MCU_TIME(1000)/FRAMERATE);
 
 	if (menu_is_visible()) {
 		return;
 	}
 
-	tamalib_screen();
+	ClrBuf();
+
+	if (!rom_loaded) {
+		no_rom_screen();
+	} else {
+		tamalib_screen();
+	}
+
+	if (usb_enabled) {
+		PStr(USBON_STR, USBON_X, USBON_Y, 1, PixNorm);
+	} else if (emulation_paused) {
+		PStr(PAUSED_STR, PAUSED_X, PAUSED_Y, 1, PixNorm);
+	}
+
+	/* Battery */
+	if (battery_enabled || current_battery < BATTERY_LOW || is_vbus) {
+		level = (((int32_t) current_battery - BATTERY_MIN) * (BATTERY_MAX_LEVEL + 1))/(BATTERY_MAX - BATTERY_MIN);
+
+		if (level > BATTERY_MAX_LEVEL) {
+			level = BATTERY_MAX_LEVEL;
+		}
+
+		if (level < 0) {
+			level = 0;
+		}
+
+		draw_battery(BATTERY_X, BATTERY_Y, BATTERY_W, BATTERY_THICKNESS, BATTERY_LVL_THICKNESS, BATTERY_MAX_LEVEL, level);
+
+		if (is_charging) {
+			draw_square(BATTERY_X + BATTERY_W/2 - 2, BATTERY_Y - 1 - 3 * 2, 2, 4, 1);
+			draw_square(BATTERY_X + BATTERY_W/2, BATTERY_Y - 1 - 2 * 2, 2, 4, 1);
+		}
+	}
+
+	PScrn();
 }
 
 static void cpu_job_fn(job_t *job)
@@ -973,12 +991,6 @@ static void power_off_handler(input_t btn, input_state_t state, uint8_t long_pre
 	if (long_press && btn == INPUT_BTN_MIDDLE) {
 		power_on();
 	}
-}
-
-static void no_rom_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
-{
-	turn_on_backlight(0);
-	system_reset();
 }
 
 static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
@@ -1050,6 +1062,11 @@ static void vbus_sensing_handler(input_state_t state)
 
 	if (!is_vbus && usb_enabled) {
 		disable_usb();
+	} else if (is_vbus && !rom_loaded && !power_off_mode) {
+		/* In no_rom mode, enable USB as soon as
+		 * the device is connected to a computer
+		 */
+		enable_usb();
 	}
 }
 
@@ -1062,8 +1079,6 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 		case INPUT_BTN_RIGHT:
 			if (power_off_mode) {
 				power_off_handler(input, state, long_press);
-			} else if (!rom_loaded) {
-				no_rom_btn_handler(input, state, long_press);
 			} else if (usb_enabled) {
 				usb_mode_btn_handler(input, state, long_press);
 			} else if (menu_is_visible()) {
@@ -1105,38 +1120,17 @@ int main(void)
 	ClrBuf();
 	PScrn();
 
-	states_init();
-
 	please_wait_screen();
 
 	fs_ll_init();
 	fs_ll_mount();
 
-	input_register_handler(&input_handler);
-
-	battery_register_cb(&battery_cb);
+	tamalib_register_hal(&hal);
 
 	/* Try to load the default ROM from the filesystem if it is not loaded */
 	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {
 		rom_loaded = 0;
-
-		ClrBuf();
-
-		PStr("No ROM found !", 0, 0, 0, PixNorm);
-		PStr("Connect me to a computer", 0, 16, 0, PixNorm);
-		PStr("and copy a Tamagotchi ROM", 0, 24, 0, PixNorm);
-		PStr("named rom0.bin.", 0, 32, 0, PixNorm);
-		PStr("Once done, press any", 0, 48, 0, PixNorm);
-		PStr("button to continue.", 0, 56, 0, PixNorm);
-
-		PScrn();
-
-		enable_usb();
 	} else {
-		menu_register(main_menu);
-
-		tamalib_register_hal(&hal);
-
 		/* TamaLIB must use an integer time base of at least 32768 Hz,
 		 * so shift the one provided by the MCU until it fits.
 		 */
@@ -1148,10 +1142,19 @@ int main(void)
 			system_fatal_error();
 		}
 
-		job_schedule(&render_job, &render_job_fn, JOB_ASAP);
 		job_schedule(&cpu_job, &cpu_job_fn, JOB_ASAP);
-		job_schedule(&battery_job, &battery_job_fn, JOB_ASAP);
 	}
+
+	states_init();
+
+	input_register_handler(&input_handler);
+
+	battery_register_cb(&battery_cb);
+
+	menu_register(main_menu);
+
+	job_schedule(&render_job, &render_job_fn, JOB_ASAP);
+	job_schedule(&battery_job, &battery_job_fn, JOB_ASAP);
 
 	job_mainloop();
 
