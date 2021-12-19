@@ -65,8 +65,10 @@
 #define PLEASE_WAIT_Y					24
 #define PLEASE_WAIT_STR					"Please Wait"
 
-#define BATTERY_X					114
-#define BATTERY_Y					21
+#define BATTERY_ON_X					114
+#define BATTERY_ON_Y					21
+#define BATTERY_OFF_X					58
+#define BATTERY_OFF_Y					21
 #define BATTERY_W					12
 #define BATTERY_THICKNESS				2
 #define BATTERY_LVL_THICKNESS				2
@@ -197,6 +199,8 @@ static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 		{0, 0, 0, 0, 1, 1, 1, 0},
 	},
 };
+
+static void battery_job_fn(job_t *job);
 
 
 static void update_led(void)
@@ -488,28 +492,57 @@ static void disable_usb(void)
 	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 }
 
+static void power_on(void)
+{
+	power_off_mode = 0;
+
+	/* Just a reset for now */
+	system_reset();
+}
+
+static void power_on_charge_only(void)
+{
+	/* Just enable the display */
+#if defined(BOARD_HAS_SSD1306)
+	ssd1306_set_power_mode(PWR_MODE_ON);
+#elif defined(BOARD_HAS_UC1701X)
+	uc1701x_set_power_mode(PWR_MODE_ON);
+#endif
+
+	/* And battery measurement */
+	job_schedule(&battery_job, &battery_job_fn, JOB_ASAP);
+}
+
 static void power_off(void)
 {
 	/* Disable everything so that the device goes to Stop mode */
-	emulation_paused = 1;
-	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
+	if (!power_off_mode) {
+		emulation_paused = 1;
+		tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 
-	fs_ll_umount();
+		fs_ll_umount();
 
-	if (usb_enabled) {
-		disable_usb();
+		if (usb_enabled) {
+			disable_usb();
+		}
+
+		speaker_enabled = 0;
+
+		led_enabled = 0;
+		update_led();
+
+		backlight_set(0);
+		is_backlight_on = 0;
+
+		job_cancel(&render_job);
+		job_cancel(&cpu_job);
 	}
 
-	speaker_enabled = 0;
-
-	led_enabled = 0;
-	update_led();
-
+	/* Turn OFF backlight */
 	backlight_set(0);
 	is_backlight_on = 0;
+	job_cancel(&backlight_job);
 
-	job_cancel(&render_job);
-	job_cancel(&cpu_job);
 	job_cancel(&battery_job);
 
 #if defined(BOARD_HAS_SSD1306)
@@ -519,12 +552,11 @@ static void power_off(void)
 #endif
 
 	power_off_mode = 1;
-}
 
-static void power_on(void)
-{
-	/* Just a reset for now */
-	system_reset();
+	if (is_vbus) {
+		/* Enter charge only mode */
+		power_on_charge_only();
+	}
 }
 
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
@@ -947,7 +979,7 @@ static void render_job_fn(job_t *job)
 
 	/* Battery */
 	if (battery_enabled || current_battery < BATTERY_LOW || is_vbus) {
-		draw_battery_full(BATTERY_X, BATTERY_Y);
+		draw_battery_full(BATTERY_ON_X, BATTERY_ON_Y);
 	}
 
 	PScrn();
@@ -977,6 +1009,7 @@ static void cpu_job_fn(job_t *job)
 static void battery_job_fn(job_t *job)
 {
 	job_schedule(&battery_job, &battery_job_fn, time_get() + MS_TO_MCU_TIME(BATTERY_JOB_PERIOD));
+
 	battery_start_meas();
 }
 
@@ -987,7 +1020,16 @@ static void battery_cb(uint16_t v)
 		current_battery = v;
 	}
 
-	if (current_battery <= BATTERY_MIN) {
+	if (power_off_mode) {
+		/* The device is "OFF", update the battery icon */
+		ClrBuf();
+
+		draw_battery_full(BATTERY_OFF_X, BATTERY_OFF_Y);
+
+		PScrn();
+	}
+
+	if (current_battery <= BATTERY_MIN && !power_off_mode) {
 		/* Battery is critical */
 		power_off();
 	}
@@ -995,6 +1037,11 @@ static void battery_cb(uint16_t v)
 
 static void power_off_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
+	if (is_vbus) {
+		/* Charge only mode */
+		turn_on_backlight(0);
+	}
+
 	if (long_press && btn == INPUT_BTN_MIDDLE) {
 		power_on();
 	}
@@ -1006,6 +1053,11 @@ static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_
 
 	if (state == INPUT_STATE_HIGH && !long_press) {
 		disable_usb();
+
+		if (!rom_loaded) {
+			/* Try to load the ROM by resetting the device */
+			system_reset();
+		}
 	}
 }
 
@@ -1067,13 +1119,23 @@ static void vbus_sensing_handler(input_state_t state)
 
 	update_led();
 
-	if (!is_vbus && usb_enabled) {
-		disable_usb();
-	} else if (is_vbus && !rom_loaded && !power_off_mode) {
-		/* In no_rom mode, enable USB as soon as
-		 * the device is connected to a computer
-		 */
-		enable_usb();
+	if (!is_vbus) {
+		if (power_off_mode) {
+			/* We were in charge only mode */
+			power_off();
+		} else if (usb_enabled) {
+			disable_usb();
+		}
+	} else {
+		if (power_off_mode) {
+			/* Let's go in charge only mode */
+			power_on_charge_only();
+		} else if (!rom_loaded) {
+			/* In no_rom mode, enable USB as soon as
+			 * the device is connected to a computer
+			 */
+			enable_usb();
+		}
 	}
 }
 
