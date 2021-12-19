@@ -141,7 +141,7 @@ void battery_start_meas(void)
 	gpio_set(BOARD_VBATT_MEAS_PORT, BOARD_VBATT_MEAS_PIN);
 #endif
 
-	/* Make sure everything is stable in case we come from a low-power mode */
+	/* WA: Make sure everything is stable in case we come from a low-power mode */
 	time_delay(MS_TO_MCU_TIME(10));
 
 	adc_init();
