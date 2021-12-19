@@ -440,7 +440,7 @@ static void no_rom_screen(void)
 
 	/* Keep some space for the battery icon */
 	PStr("and copy a Tamagotchi", 0, 24, 0, PixNorm);
-	PStr("ROM named rom0.bin.", 0, 32, 0, PixNorm);
+	PStr("ROM named \"rom0.bin\".", 0, 32, 0, PixNorm);
 
 	PStr("Once done, press any", 0, 48, 0, PixNorm);
 	PStr("button to continue.", 0, 56, 0, PixNorm);
