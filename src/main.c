@@ -383,6 +383,26 @@ static void draw_battery(uint8_t x, uint8_t y, uint8_t w, uint8_t thickness, uin
 	}
 }
 
+static void draw_battery_full(uint8_t x, uint8_t y)
+{
+	int8_t level = (((int32_t) current_battery - BATTERY_MIN) * (BATTERY_MAX_LEVEL + 1))/(BATTERY_MAX - BATTERY_MIN);
+
+	if (level > BATTERY_MAX_LEVEL) {
+		level = BATTERY_MAX_LEVEL;
+	}
+
+	if (level < 0) {
+		level = 0;
+	}
+
+	draw_battery(x, y, BATTERY_W, BATTERY_THICKNESS, BATTERY_LVL_THICKNESS, BATTERY_MAX_LEVEL, level);
+
+	if (is_charging) {
+		draw_square(x + BATTERY_W/2 - 2, y - 1 - 3 * 2, 2, 4, 1);
+		draw_square(x + BATTERY_W/2, y - 1 - 2 * 2, 2, 4, 1);
+	}
+}
+
 static void tamalib_screen(void)
 {
 	u8_t i, j;
@@ -905,8 +925,6 @@ static void ll_init(void)
 
 static void render_job_fn(job_t *job)
 {
-	int8_t level;
-
 	job_schedule(&render_job, &render_job_fn, time_get() + MS_TO_MCU_TIME(1000)/FRAMERATE);
 
 	if (menu_is_visible()) {
@@ -929,22 +947,7 @@ static void render_job_fn(job_t *job)
 
 	/* Battery */
 	if (battery_enabled || current_battery < BATTERY_LOW || is_vbus) {
-		level = (((int32_t) current_battery - BATTERY_MIN) * (BATTERY_MAX_LEVEL + 1))/(BATTERY_MAX - BATTERY_MIN);
-
-		if (level > BATTERY_MAX_LEVEL) {
-			level = BATTERY_MAX_LEVEL;
-		}
-
-		if (level < 0) {
-			level = 0;
-		}
-
-		draw_battery(BATTERY_X, BATTERY_Y, BATTERY_W, BATTERY_THICKNESS, BATTERY_LVL_THICKNESS, BATTERY_MAX_LEVEL, level);
-
-		if (is_charging) {
-			draw_square(BATTERY_X + BATTERY_W/2 - 2, BATTERY_Y - 1 - 3 * 2, 2, 4, 1);
-			draw_square(BATTERY_X + BATTERY_W/2, BATTERY_Y - 1 - 2 * 2, 2, 4, 1);
-		}
+		draw_battery_full(BATTERY_X, BATTERY_Y);
 	}
 
 	PScrn();
