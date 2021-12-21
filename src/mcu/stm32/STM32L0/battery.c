@@ -42,6 +42,8 @@ static void (*battery_cb)(uint16_t) = NULL;
 
 static job_t battery_processing_job;
 
+static uint8_t measurement_ongoing = 0;
+
 static uint8_t state_lock = 0;
 
 
@@ -134,6 +136,13 @@ void battery_register_cb(void (*cb)(uint16_t))
 void battery_start_meas(void)
 {
 #ifdef BOARD_VBATT_ANA_ADC_CHANNEL
+	if (measurement_ongoing) {
+		/* The ADC is already performing a conversion sequence, no need to start another one */
+		return;
+	}
+
+	measurement_ongoing = 1;
+
 	/* The ADC does not work in low-power modes, thus those modes are not allowed */
 	system_lock_max_state(STATE_SLEEP_S1, &state_lock);
 
@@ -155,6 +164,11 @@ void battery_start_meas(void)
 void battery_stop_meas(void)
 {
 #ifdef BOARD_VBATT_ANA_ADC_CHANNEL
+	if (!measurement_ongoing) {
+		/* The ADC is not running, nothing to do */
+		return;
+	}
+
 	HAL_ADC_Stop_DMA(&AdcHandle);
 
 	adc_deinit();
@@ -165,6 +179,8 @@ void battery_stop_meas(void)
 
 	system_unlock_max_state(STATE_SLEEP_S1, &state_lock);
 #endif
+
+	measurement_ongoing = 0;
 }
 
 static void battery_processing_job_fn(job_t *job)
