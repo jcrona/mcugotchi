@@ -1212,7 +1212,7 @@ int main(void)
 	/* Make sure the RGB LED is off */
 	led_set(0, 0, 0);
 
-	/* Clear any remainig data in RAM */
+	/* Clear any remaining data in RAM */
 	ClrBuf();
 	PScrn();
 
