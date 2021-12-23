@@ -150,9 +150,6 @@ void battery_start_meas(void)
 	gpio_set(BOARD_VBATT_MEAS_PORT, BOARD_VBATT_MEAS_PIN);
 #endif
 
-	/* WA: Make sure everything is stable in case we come from a low-power mode */
-	time_delay(MS_TO_MCU_TIME(10));
-
 	adc_init();
 
 	if (HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *) adc_data, ADC_DATA_SIZE) != HAL_OK) {
