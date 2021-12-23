@@ -23,6 +23,7 @@
 
 #include "job.h"
 #include "board.h"
+#include "gpio.h"
 #include "input_ll.h"
 #include "input.h"
 
@@ -60,7 +61,7 @@ static void config_int_line(EXTI_HandleTypeDef *h, uint32_t port, uint8_t trigge
 
 static input_state_t get_input_hw_state(input_t input)
 {
-	return (HAL_GPIO_ReadPin(inputs[input].port, inputs[input].pin) == GPIO_PIN_SET) ? INPUT_STATE_HIGH : INPUT_STATE_LOW;
+	return (gpio_get(inputs[input].port, inputs[input].pin) ? INPUT_STATE_HIGH : INPUT_STATE_LOW);
 }
 
 void input_init(void)
