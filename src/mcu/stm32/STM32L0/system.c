@@ -498,7 +498,7 @@ static void system_sleep(void)
 	__HAL_FLASH_SLEEP_POWERDOWN_ENABLE();
 
 	/* Sleep until the next IRQ */
-	__WFI();
+	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
 	/* Enable FLASH during Sleep */
 	__HAL_FLASH_SLEEP_POWERDOWN_DISABLE();
