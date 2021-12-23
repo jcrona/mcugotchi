@@ -582,11 +582,11 @@ static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.lcd_inverted) {
 		case 0:
-			return "Inv.";
+			return "Norm.";
 
 		default:
 		case 1:
-			return "Norm.";
+			return " Inv.";
 	}
 }
 
@@ -631,11 +631,11 @@ static char * menu_backlight_mode_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.backlight_always_on) {
 		case 0:
-			return "Always ON";
+			return "Dynamic";
 
 		default:
 		case 1:
-			return "Dynamic";
+			return "Always ON";
 	}
 }
 
@@ -648,11 +648,11 @@ static char * menu_sound_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.speaker_enabled) {
 		case 0:
-			return "ON";
+			return "OFF";
 
 		default:
 		case 1:
-			return "OFF";
+			return " ON";
 	}
 }
 
@@ -666,11 +666,11 @@ static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.led_enabled) {
 		case 0:
-			return "ON";
+			return "OFF";
 
 		default:
 		case 1:
-			return "OFF";
+			return " ON";
 	}
 }
 
@@ -683,11 +683,11 @@ static char * menu_battery_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.battery_enabled) {
 		case 0:
-			return "ON";
+			return "OFF";
 
 		default:
 		case 1:
-			return "OFF";
+			return " ON";
 	}
 }
 
@@ -701,11 +701,11 @@ static char * menu_toggle_speed_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (speed_ratio) {
 		case 0:
-			return "x1";
+			return "Max";
 
 		default:
 		case 1:
-			return "Max";
+			return " x1";
 	}
 }
 
@@ -719,11 +719,11 @@ static char * menu_pause_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (emulation_paused) {
 		case 0:
-			return "Pause";
+			return "Running";
 
 		default:
 		case 1:
-			return "Run";
+			return "Paused";
 	}
 }
 
@@ -864,15 +864,15 @@ static menu_item_t interface_menu[] = {
 #ifdef BOARD_HAS_UC1701X
 	{"Backlight", NULL, NULL, 0, backlight_menu},
 #endif
-	{"Sound ", &menu_sound_arg, &menu_sound, 0, NULL},
-	{"RGB LED ", &menu_led_arg, &menu_led, 0, NULL},
-	{"Battery ", &menu_battery_arg, &menu_battery, 0, NULL},
+	{"Sound    ", &menu_sound_arg, &menu_sound, 0, NULL},
+	{"RGB LED  ", &menu_led_arg, &menu_led, 0, NULL},
+	{"Battery  ", &menu_battery_arg, &menu_battery, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
 
 static menu_item_t emulation_menu[] = {
-	{"Speed ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
+	{"Speed    ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
 	{"", &menu_pause_arg, &menu_pause, 0, NULL},
 	{"Reset CPU", NULL, &menu_reset_cpu, 1, NULL},
 
