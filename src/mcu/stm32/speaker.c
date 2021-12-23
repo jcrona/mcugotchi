@@ -23,6 +23,7 @@
 
 #include "board.h"
 #include "system.h"
+#include "gpio.h"
 #include "speaker.h"
 
 #define TIMER_PERIOD					0x10
@@ -82,7 +83,15 @@ void speaker_enable(uint8_t en)
 {
 #ifdef BOARD_SPEAKER_PWM_TIMER
 #ifdef BOARD_SPEAKER_PWM_CHANNEL
+	GPIO_InitTypeDef g;
+
 	if (en) {
+		/* Configure the PIN as PWM output */
+		g.Pin = BOARD_SPEAKER_PIN;
+		g.Mode = GPIO_MODE_AF_PP;
+		g.Alternate = GPIO_AF4_TIM22;
+		HAL_GPIO_Init(BOARD_SPEAKER_PORT, &g);
+
 		/* Start the timer */
 		HAL_TIM_PWM_Start(&htim, BOARD_SPEAKER_PWM_CHANNEL);
 
@@ -91,6 +100,14 @@ void speaker_enable(uint8_t en)
 	} else {
 		/* Stop the timer */
 		HAL_TIM_PWM_Stop(&htim, BOARD_SPEAKER_PWM_CHANNEL);
+
+		/* Connect the PIN to GND to avoid unwanted noise */
+		g.Pin = BOARD_SPEAKER_PIN;
+		g.Mode = GPIO_MODE_OUTPUT_PP;
+		g.Pull = GPIO_PULLDOWN;
+		g.Speed = GPIO_SPEED_FREQ_HIGH;
+		HAL_GPIO_Init(BOARD_SPEAKER_PORT, &g);
+		gpio_clear(BOARD_SPEAKER_PORT, BOARD_SPEAKER_PIN);
 
 		system_unlock_max_state(STATE_SLEEP_S1, &state_lock);
 	}
