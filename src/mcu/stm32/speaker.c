@@ -29,9 +29,9 @@
 
 #ifdef BOARD_SPEAKER_PWM_TIMER
 static TIM_HandleTypeDef htim;
-#endif
 
 static uint8_t state_lock = 0;
+#endif
 
 
 void speaker_init(void)
