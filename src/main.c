@@ -33,6 +33,7 @@
 #include "usb.h"
 #include "fs_ll.h"
 #include "rom.h"
+#include "config.h"
 #include "board.h"
 #if defined(BOARD_HAS_SSD1306)
 #include "ssd1306.h"
@@ -100,22 +101,26 @@ static job_t render_job;
 static job_t battery_job;
 static job_t backlight_job;
 
-static bool_t lcd_inverted = 0;
 static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
 static bool_t usb_enabled = 0;
 static bool_t rom_loaded = 1;
 static bool_t power_off_mode = 0;
-static bool_t backlight_always_on = 0;
 static bool_t is_backlight_on = 0;
-static uint8_t backlight_level = 2;
-static bool_t speaker_enabled = 1;
-static bool_t led_enabled = 1;
-static bool_t battery_enabled = 0;
 static bool_t is_charging = 0;
 static bool_t is_calling = 0;
 static bool_t is_vbus = 0;
 static uint16_t current_battery = BATTERY_MAX;
+
+/* Default config values */
+static config_t config = {
+	.lcd_inverted = 0,
+	.backlight_always_on = 0,
+	.backlight_level = 2,
+	.speaker_enabled = 1,
+	.led_enabled = 1,
+	.battery_enabled = 0,
+};
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 	{
@@ -207,7 +212,7 @@ static void update_led(void)
 {
 	uint8_t r = 0, g = 0, b = 0;
 
-	if (!led_enabled) {
+	if (!config.led_enabled) {
 		led_set(0, 0, 0);
 		return;
 	}
@@ -303,7 +308,7 @@ static void hal_set_frequency(u32_t freq)
 
 static void hal_play_frequency(bool_t en)
 {
-	speaker_enable((uint8_t) (en && speaker_enabled));
+	speaker_enable((uint8_t) (en && config.speaker_enabled));
 }
 
 static int hal_handler(void)
@@ -459,11 +464,11 @@ static void backlight_job_fn(job_t *job)
 static void turn_on_backlight(bool_t force)
 {
 	if (!is_backlight_on || force) {
-		backlight_set((backlight_level < 16) ? backlight_level * 16 : 255);
+		backlight_set((config.backlight_level < 16) ? config.backlight_level * 16 : 255);
 		is_backlight_on = 1;
 	}
 
-	if (!backlight_always_on) {
+	if (!config.backlight_always_on) {
 		job_schedule(&backlight_job, &backlight_job_fn, time_get() + MS_TO_MCU_TIME(BACKLIGHT_OFF_PERIOD));
 	}
 }
@@ -517,6 +522,10 @@ static void power_off(void)
 {
 	/* Disable everything so that the device goes to Stop mode */
 	if (!power_off_mode) {
+		/* Save the current configuration */
+		please_wait_screen();
+		config_save(&config);
+
 		emulation_paused = 1;
 		tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 
@@ -526,9 +535,9 @@ static void power_off(void)
 			disable_usb();
 		}
 
-		speaker_enabled = 0;
+		config.speaker_enabled = 0;
 
-		led_enabled = 0;
+		config.led_enabled = 0;
 		update_led();
 
 		backlight_set(0);
@@ -561,17 +570,17 @@ static void power_off(void)
 
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
-	lcd_inverted = !lcd_inverted;
+	config.lcd_inverted = !config.lcd_inverted;
 #if defined(BOARD_HAS_SSD1306)
-	ssd1306_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+	ssd1306_set_display_mode(config.lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
 #elif defined(BOARD_HAS_UC1701X)
-	uc1701x_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+	uc1701x_set_display_mode(config.lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
 #endif
 }
 
 static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (lcd_inverted) {
+	switch (config.lcd_inverted) {
 		case 0:
 			return "Inv.";
 
@@ -583,16 +592,16 @@ static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
 
 static void menu_backlight_inc(uint8_t pos, menu_parent_t *parent)
 {
-	if (backlight_level < 16) {
-		backlight_level++;
+	if (config.backlight_level < 16) {
+		config.backlight_level++;
 		turn_on_backlight(1);
 	}
 }
 
 static void menu_backlight_dec(uint8_t pos, menu_parent_t *parent)
 {
-	if (backlight_level > 0) {
-		backlight_level--;
+	if (config.backlight_level > 0) {
+		config.backlight_level--;
 		turn_on_backlight(1);
 	}
 }
@@ -601,26 +610,26 @@ static char * menu_backlight_arg(uint8_t pos, menu_parent_t *parent)
 {
 	static char str[] = "00";
 
-	str[0] = '0' + backlight_level/10;
-	str[1] = '0' + backlight_level % 10;
+	str[0] = '0' + config.backlight_level/10;
+	str[1] = '0' + config.backlight_level % 10;
 
 	return str;
 }
 
 static void menu_backlight_mode(uint8_t pos, menu_parent_t *parent)
 {
-	backlight_always_on = !backlight_always_on;
+	config.backlight_always_on = !config.backlight_always_on;
 
 	turn_on_backlight(0);
 
-	if (backlight_always_on) {
+	if (config.backlight_always_on) {
 		job_cancel(&backlight_job);
 	}
 }
 
 static char * menu_backlight_mode_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (backlight_always_on) {
+	switch (config.backlight_always_on) {
 		case 0:
 			return "Always ON";
 
@@ -632,12 +641,12 @@ static char * menu_backlight_mode_arg(uint8_t pos, menu_parent_t *parent)
 
 static void menu_sound(uint8_t pos, menu_parent_t *parent)
 {
-	speaker_enabled = !speaker_enabled;
+	config.speaker_enabled = !config.speaker_enabled;
 }
 
 static char * menu_sound_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (speaker_enabled) {
+	switch (config.speaker_enabled) {
 		case 0:
 			return "ON";
 
@@ -649,13 +658,13 @@ static char * menu_sound_arg(uint8_t pos, menu_parent_t *parent)
 
 static void menu_led(uint8_t pos, menu_parent_t *parent)
 {
-	led_enabled = !led_enabled;
+	config.led_enabled = !config.led_enabled;
 	update_led();
 }
 
 static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (led_enabled) {
+	switch (config.led_enabled) {
 		case 0:
 			return "ON";
 
@@ -667,12 +676,12 @@ static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
 
 static void menu_battery(uint8_t pos, menu_parent_t *parent)
 {
-	battery_enabled = !battery_enabled;
+	config.battery_enabled = !config.battery_enabled;
 }
 
 static char * menu_battery_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (battery_enabled) {
+	switch (config.battery_enabled) {
 		case 0:
 			return "ON";
 
@@ -752,11 +761,19 @@ static void menu_factory_reset(uint8_t pos, menu_parent_t *parent)
 
 static void menu_firmware_update(uint8_t pos, menu_parent_t *parent)
 {
+	/* Save the current configuration */
+	please_wait_screen();
+	config_save(&config);
+
 	system_dfu_reset();
 }
 
 static void menu_reset_device(uint8_t pos, menu_parent_t *parent)
 {
+	/* Save the current configuration */
+	please_wait_screen();
+	config_save(&config);
+
 	system_reset();
 }
 
@@ -936,13 +953,13 @@ static void ll_init(void)
 #if defined(BOARD_HAS_SSD1306)
 	ssd1306_init();
 	ssd1306_set_power_mode(PWR_MODE_ON);
-	ssd1306_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+	ssd1306_set_display_mode(DISP_MODE_NORMAL);
 
 	gfx_register_display(&ssd1306_send_data);
 #elif defined(BOARD_HAS_UC1701X)
 	uc1701x_init();
 	uc1701x_set_power_mode(PWR_MODE_ON);
-	uc1701x_set_display_mode(lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+	uc1701x_set_display_mode(DISP_MODE_NORMAL);
 
 	gfx_register_display(&uc1701x_send_data);
 #endif
@@ -978,7 +995,7 @@ static void render_job_fn(job_t *job)
 	}
 
 	/* Battery */
-	if (battery_enabled || current_battery < BATTERY_LOW || is_vbus) {
+	if (config.battery_enabled || current_battery < BATTERY_LOW || is_vbus) {
 		draw_battery_full(BATTERY_ON_X, BATTERY_ON_Y);
 	}
 
@@ -1055,6 +1072,10 @@ static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_
 		disable_usb();
 
 		if (!rom_loaded) {
+			/* Save the current configuration */
+			please_wait_screen();
+			config_save(&config);
+
 			/* Try to load the ROM by resetting the device */
 			system_reset();
 		}
@@ -1169,6 +1190,12 @@ static void input_handler(input_t input, input_state_t state, uint8_t long_press
 
 static void states_init(void)
 {
+#if defined(BOARD_HAS_SSD1306)
+	ssd1306_set_display_mode(config.lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+#elif defined(BOARD_HAS_UC1701X)
+	uc1701x_set_display_mode(config.lcd_inverted ? DISP_MODE_INVERTED : DISP_MODE_NORMAL);
+#endif
+
 	turn_on_backlight(1);
 
 	is_calling = icon_buffer[7]; // No need for update_led() since that call will be made by the following handlers
@@ -1195,6 +1222,11 @@ int main(void)
 	fs_ll_mount();
 
 	tamalib_register_hal(&hal);
+
+	/* Try to load the configuration */
+	if (config_load(&config) < 0) {
+		config_save(&config);
+	}
 
 	/* Try to load the default ROM from the filesystem if it is not loaded */
 	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {
