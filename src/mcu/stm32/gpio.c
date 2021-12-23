@@ -34,3 +34,8 @@ void gpio_clear(gpio_port_t port, gpio_pin_t pin)
 {
 	HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
 }
+
+uint8_t gpio_get(gpio_port_t port, gpio_pin_t pin)
+{
+	return (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET);
+}

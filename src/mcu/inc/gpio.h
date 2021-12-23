@@ -28,4 +28,6 @@
 void gpio_set(gpio_port_t port, gpio_pin_t pin);
 void gpio_clear(gpio_port_t port, gpio_pin_t pin);
 
+uint8_t gpio_get(gpio_port_t port, gpio_pin_t pin);
+
 #endif /* _GPIO_H_ */
