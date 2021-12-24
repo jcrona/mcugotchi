@@ -817,10 +817,10 @@ static char * menu_slots_arg(uint8_t pos, menu_parent_t *parent)
 	switch (state_stat(pos)) {
 		default:
 		case 0:
-			return "";
+			return " ";
 
 		case 1:
-			return " *";
+			return "*";
 	}
 }
 
@@ -868,10 +868,10 @@ static char * menu_roms_arg(uint8_t pos, menu_parent_t *parent)
 	switch (rom_stat(pos)) {
 		default:
 		case 0:
-			return "";
+			return " ";
 
 		case 1:
-			return " *";
+			return "*";
 	}
 }
 
@@ -924,16 +924,16 @@ static menu_item_t system_menu[] = {
 };
 
 static menu_item_t slots_menu[] = {
-	{"Autosave", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 1", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 2", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 3", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 4", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 5", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 6", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 7", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 8", &menu_slots_arg, &menu_slots, 1, NULL},
-	{"Slot 9", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Autosave   ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 1     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 2     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 3     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 4     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 5     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 6     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 7     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 8     ", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Slot 9     ", &menu_slots_arg, &menu_slots, 1, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
@@ -949,10 +949,10 @@ static menu_item_t states_menu[] = {
 };
 
 static menu_item_t roms_menu[] = {
-	{"ROM 0", &menu_roms_arg, &menu_roms, 1, NULL},
-	{"ROM 1", &menu_roms_arg, &menu_roms, 1, NULL},
-	{"ROM 2", &menu_roms_arg, &menu_roms, 1, NULL},
-	{"ROM 3", &menu_roms_arg, &menu_roms, 1, NULL},
+	{"ROM 0      ", &menu_roms_arg, &menu_roms, 1, NULL},
+	{"ROM 1      ", &menu_roms_arg, &menu_roms, 1, NULL},
+	{"ROM 2      ", &menu_roms_arg, &menu_roms, 1, NULL},
+	{"ROM 3      ", &menu_roms_arg, &menu_roms, 1, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
