@@ -594,6 +594,18 @@ static void power_off(void)
 	}
 }
 
+static char * menu_toggle_arg(uint8_t v)
+{
+	switch (v) {
+		case 0:
+			return "[ ]";
+
+		default:
+		case 1:
+			return "[*]";
+	}
+}
+
 static void menu_screen_mode(uint8_t pos, menu_parent_t *parent)
 {
 	config.lcd_inverted = !config.lcd_inverted;
@@ -672,14 +684,7 @@ static void menu_sound(uint8_t pos, menu_parent_t *parent)
 
 static char * menu_sound_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (config.speaker_enabled) {
-		case 0:
-			return "[ ]";
-
-		default:
-		case 1:
-			return "[*]";
-	}
+	return menu_toggle_arg(config.speaker_enabled);
 }
 
 static void menu_led(uint8_t pos, menu_parent_t *parent)
@@ -690,14 +695,7 @@ static void menu_led(uint8_t pos, menu_parent_t *parent)
 
 static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (config.led_enabled) {
-		case 0:
-			return "[ ]";
-
-		default:
-		case 1:
-			return "[*]";
-	}
+	return menu_toggle_arg(config.led_enabled);
 }
 
 static void menu_battery(uint8_t pos, menu_parent_t *parent)
@@ -707,14 +705,7 @@ static void menu_battery(uint8_t pos, menu_parent_t *parent)
 
 static char * menu_battery_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (config.battery_enabled) {
-		case 0:
-			return "[ ]";
-
-		default:
-		case 1:
-			return "[*]";
-	}
+	return menu_toggle_arg(config.battery_enabled);
 }
 
 static void menu_toggle_speed(uint8_t pos, menu_parent_t *parent)
@@ -857,14 +848,7 @@ static void menu_autosave(uint8_t pos, menu_parent_t *parent)
 
 static char * menu_autosave_arg(uint8_t pos, menu_parent_t *parent)
 {
-	switch (config.autosave_enabled) {
-		case 0:
-			return "[ ]";
-
-		default:
-		case 1:
-			return "[*]";
-	}
+	return menu_toggle_arg(config.autosave_enabled);
 }
 
 static void menu_roms(uint8_t pos, menu_parent_t *parent)
