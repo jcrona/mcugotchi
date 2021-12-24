@@ -612,7 +612,7 @@ static char * menu_screen_mode_arg(uint8_t pos, menu_parent_t *parent)
 
 		default:
 		case 1:
-			return " Inv.";
+			return "Inv.";
 	}
 }
 
@@ -674,11 +674,11 @@ static char * menu_sound_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.speaker_enabled) {
 		case 0:
-			return "OFF";
+			return "[ ]";
 
 		default:
 		case 1:
-			return " ON";
+			return "[*]";
 	}
 }
 
@@ -692,11 +692,11 @@ static char * menu_led_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.led_enabled) {
 		case 0:
-			return "OFF";
+			return "[ ]";
 
 		default:
 		case 1:
-			return " ON";
+			return "[*]";
 	}
 }
 
@@ -709,11 +709,11 @@ static char * menu_battery_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.battery_enabled) {
 		case 0:
-			return "OFF";
+			return "[ ]";
 
 		default:
 		case 1:
-			return " ON";
+			return "[*]";
 	}
 }
 
@@ -727,11 +727,11 @@ static char * menu_toggle_speed_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (speed_ratio) {
 		case 0:
-			return "Max";
+			return "[Max]";
 
 		default:
 		case 1:
-			return " x1";
+			return " [x1]";
 	}
 }
 
@@ -859,11 +859,11 @@ static char * menu_autosave_arg(uint8_t pos, menu_parent_t *parent)
 {
 	switch (config.autosave_enabled) {
 		case 0:
-			return "OFF";
+			return "[ ]";
 
 		default:
 		case 1:
-			return " ON";
+			return "[*]";
 	}
 }
 
@@ -921,7 +921,7 @@ static menu_item_t interface_menu[] = {
 };
 
 static menu_item_t emulation_menu[] = {
-	{"Speed    ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
+	{"Speed  ", &menu_toggle_speed_arg, &menu_toggle_speed, 0, NULL},
 	{"", &menu_pause_arg, &menu_pause, 0, NULL},
 	{"Reset CPU", NULL, &menu_reset_cpu, 1, NULL},
 
