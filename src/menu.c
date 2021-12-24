@@ -59,7 +59,7 @@ static menu_item_t confirm_menu[] = {
 	{NULL, NULL, NULL, 0, NULL},
 };
 
-static void draw_menu(void)
+void menu_draw(void)
 {
 	uint8_t i;
 	uint8_t top_item = 0;
@@ -110,7 +110,7 @@ void menu_open(void)
 	current_item = -1;
 	menu_next();
 
-	draw_menu();
+	menu_draw();
 }
 
 void menu_close(void)
@@ -136,7 +136,7 @@ void menu_next(void)
 		}
 	} while(current_menu[current_item].cb == NULL && current_menu[current_item].sub_menu == NULL);
 
-	draw_menu();
+	menu_draw();
 }
 
 void menu_enter(void)
@@ -166,7 +166,7 @@ void menu_enter(void)
 		menu_next();
 	}
 
-	draw_menu();
+	menu_draw();
 }
 
 void menu_back(void)
@@ -176,7 +176,7 @@ void menu_back(void)
 		current_item = parents[current_depth].pos;
 		current_depth--;
 
-		draw_menu();
+		menu_draw();
 	} else {
 		menu_close();
 	}

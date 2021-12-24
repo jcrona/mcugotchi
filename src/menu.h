@@ -38,6 +38,7 @@ struct menu_parent {
 	uint8_t pos;
 };
 
+void menu_draw(void);
 
 void menu_register(menu_item_t *items);
 
