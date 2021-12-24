@@ -21,8 +21,8 @@
 #define _MCU_H_
 
 /* MCU time frequency is 7,8125 kHz = ((1000000/MCU_TIME_FREQ_DEN) * MCU_TIME_FREQ_NUM) */
-#define MCU_TIME_FREQ_NUM					1UL
-#define MCU_TIME_FREQ_DEN					128UL
+#define MCU_TIME_FREQ_NUM					1ULL
+#define MCU_TIME_FREQ_DEN					128ULL
 
 /* Storage related offsets and sizes */
 #define STORAGE_BASE_ADDRESS					0x800D000
