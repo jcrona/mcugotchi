@@ -66,6 +66,10 @@
 #define PLEASE_WAIT_Y					24
 #define PLEASE_WAIT_STR					"Please Wait"
 
+#define AUTOSAVING_X					14
+#define AUTOSAVING_Y					24
+#define AUTOSAVING_STR					"Autosaving"
+
 #define BATTERY_ON_X					114
 #define BATTERY_ON_Y					21
 #define BATTERY_OFF_X					58
@@ -81,11 +85,14 @@
 #define MAIN_JOB_PERIOD					10 //ms
 #define BATTERY_JOB_PERIOD				60000 //ms
 #define BACKLIGHT_OFF_PERIOD				5000 //ms
+#define AUTOSAVE_PERIOD					3600000 //ms
 
 #define BATTERY_MIN					3500 // mV
 #define BATTERY_MAX					4200 // mV
 #define BATTERY_LOW					3650 // mV
 #define BATTERY_MAX_LEVEL				5
+
+#define AUTOSAVE_SLOT					0
 
 static volatile u12_t *g_program = (volatile u12_t *) (STORAGE_BASE_ADDRESS + (STORAGE_ROM_OFFSET << 2));
 
@@ -100,6 +107,7 @@ static job_t cpu_job;
 static job_t render_job;
 static job_t battery_job;
 static job_t backlight_job;
+static job_t autosave_job;
 
 static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
@@ -120,6 +128,7 @@ static config_t config = {
 	.speaker_enabled = 1,
 	.led_enabled = 1,
 	.battery_enabled = 0,
+	.autosave_enabled = 1,
 };
 
 static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
@@ -206,6 +215,7 @@ static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 };
 
 static void battery_job_fn(job_t *job);
+static void autosave_job_fn(job_t *job);
 
 
 static void update_led(void)
@@ -442,6 +452,15 @@ static void please_wait_screen(void)
 	PScrn();
 }
 
+static void autosaving_screen(void)
+{
+	ClrBuf();
+
+	PStr(AUTOSAVING_STR, AUTOSAVING_X, AUTOSAVING_Y, 1, PixNorm);
+
+	PScrn();
+}
+
 static void no_rom_screen(void)
 {
 	PStr("No ROM found !", 0, 0, 0, PixNorm);
@@ -522,9 +541,16 @@ static void power_off(void)
 {
 	/* Disable everything so that the device goes to Stop mode */
 	if (!power_off_mode) {
-		/* Save the current configuration */
 		please_wait_screen();
+
+		/* Save the current configuration */
 		config_save(&config);
+
+		if (config.autosave_enabled) {
+			/* Save the current state and disable autosave */
+			state_save(AUTOSAVE_SLOT);
+			job_cancel(&autosave_job);
+		}
 
 		emulation_paused = 1;
 		tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
@@ -818,6 +844,29 @@ static void menu_clear_states(uint8_t pos, menu_parent_t *parent)
 	}
 }
 
+static void menu_autosave(uint8_t pos, menu_parent_t *parent)
+{
+	config.autosave_enabled = !config.autosave_enabled;
+
+	if (config.autosave_enabled) {
+		job_schedule(&autosave_job, &autosave_job_fn, time_get() + MS_TO_MCU_TIME(AUTOSAVE_PERIOD));
+	} else {
+		job_cancel(&autosave_job);
+	}
+}
+
+static char * menu_autosave_arg(uint8_t pos, menu_parent_t *parent)
+{
+	switch (config.autosave_enabled) {
+		case 0:
+			return "OFF";
+
+		default:
+		case 1:
+			return " ON";
+	}
+}
+
 static void menu_roms(uint8_t pos, menu_parent_t *parent)
 {
 	please_wait_screen();
@@ -891,7 +940,7 @@ static menu_item_t system_menu[] = {
 };
 
 static menu_item_t slots_menu[] = {
-	{"Slot 0", &menu_slots_arg, &menu_slots, 1, NULL},
+	{"Autosave", &menu_slots_arg, &menu_slots, 1, NULL},
 	{"Slot 1", &menu_slots_arg, &menu_slots, 1, NULL},
 	{"Slot 2", &menu_slots_arg, &menu_slots, 1, NULL},
 	{"Slot 3", &menu_slots_arg, &menu_slots, 1, NULL},
@@ -910,6 +959,7 @@ static menu_item_t states_menu[] = {
 	{"Save", NULL, NULL, 0, slots_menu},
 	{"Clear", NULL, NULL, 0, slots_menu},
 	{"Clear All", NULL, &menu_clear_states, 1, NULL},
+	{"Autosave ", &menu_autosave_arg, &menu_autosave, 0, NULL},
 
 	{NULL, NULL, NULL, 0, NULL},
 };
@@ -970,6 +1020,20 @@ static void ll_init(void)
 	input_init();
 
 	board_init_irq();
+}
+
+static void autosave_job_fn(job_t *job)
+{
+	job_schedule(&autosave_job, &autosave_job_fn, time_get() + MS_TO_MCU_TIME(AUTOSAVE_PERIOD));
+
+	autosaving_screen();
+
+	/* Save to autosave slot */
+	state_save(AUTOSAVE_SLOT);
+
+	if (menu_is_visible()) {
+		menu_draw();
+	}
 }
 
 static void render_job_fn(job_t *job)
@@ -1241,6 +1305,12 @@ int main(void)
 
 		if (tamalib_init((const u12_t *) g_program, NULL, (MCU_TIME_FREQ_X1000 << time_shift)/1000)) {
 			system_fatal_error();
+		}
+
+		if (config.autosave_enabled) {
+			/* Try to load the autosave slot and schedule the next autosave */
+			state_load(AUTOSAVE_SLOT);
+			job_schedule(&autosave_job, &autosave_job_fn, time_get() + MS_TO_MCU_TIME(AUTOSAVE_PERIOD));
 		}
 
 		job_schedule(&cpu_job, &cpu_job_fn, JOB_ASAP);

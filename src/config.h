@@ -29,6 +29,7 @@ typedef struct {
 	uint8_t speaker_enabled;
 	uint8_t led_enabled;
 	uint8_t battery_enabled;
+	uint8_t autosave_enabled;
 } config_t;
 
 

@@ -24,7 +24,7 @@
 #include "config.h"
 
 #define CONFIG_FILE_NAME				"config"
-#define CONFIG_FILE_SIZE				11
+#define CONFIG_FILE_SIZE				12
 #define CONFIG_FILE_MAGIC				"TLCF"
 #define CONFIG_FILE_VERSION				1
 
@@ -65,6 +65,9 @@ void config_save(config_t *cfg)
 	ptr += 1;
 
 	ptr[0] = cfg->battery_enabled & 0x1;
+	ptr += 1;
+
+	ptr[0] = cfg->autosave_enabled & 0x1;
 	ptr += 1;
 
 	if (f_open(&f, CONFIG_FILE_NAME, FA_CREATE_ALWAYS | FA_WRITE)) {
@@ -131,6 +134,9 @@ int8_t config_load(config_t *cfg)
 	ptr += 1;
 
 	cfg->battery_enabled = ptr[0] & 0x1;
+	ptr += 1;
+
+	cfg->autosave_enabled = ptr[0] & 0x1;
 	ptr += 1;
 
 	return 0;
