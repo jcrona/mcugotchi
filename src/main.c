@@ -86,6 +86,7 @@
 #define BATTERY_JOB_PERIOD				60000 //ms
 #define BACKLIGHT_OFF_PERIOD				5000 //ms
 #define AUTOSAVE_PERIOD					3600000 //ms
+#define AUTOOFF_PERIOD					30000 //ms
 
 #define BATTERY_MIN					3500 // mV
 #define BATTERY_MAX					4200 // mV
@@ -108,6 +109,7 @@ static job_t render_job;
 static job_t battery_job;
 static job_t backlight_job;
 static job_t autosave_job;
+static job_t autooff_job;
 
 static uint8_t speed_ratio = 1;
 static bool_t emulation_paused = 0;
@@ -216,6 +218,7 @@ static const bool_t icons[ICON_NUM][ICON_SIZE][ICON_SIZE] = {
 
 static void battery_job_fn(job_t *job);
 static void autosave_job_fn(job_t *job);
+static void autooff_job_fn(job_t *job);
 
 
 static void update_led(void)
@@ -492,8 +495,24 @@ static void turn_on_backlight(bool_t force)
 	}
 }
 
+static void user_feedback(void)
+{
+	/* Delay auto-power-off (only if no ROM is loaded) */
+	if (!rom_loaded && !usb_enabled && !power_off_mode) {
+		job_schedule(&autooff_job, &autooff_job_fn, time_get() + MS_TO_MCU_TIME(AUTOOFF_PERIOD));
+	}
+
+	/* Turn ON the backlight for few seconds */
+	turn_on_backlight(0);
+}
+
 static void enable_usb(void)
 {
+	/* Disable auto-power-off when USB is enabled */
+	if (!rom_loaded) {
+		job_cancel(&autooff_job);
+	}
+
 	emulation_paused = 1;
 	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
 
@@ -516,6 +535,11 @@ static void disable_usb(void)
 
 	emulation_paused = 0;
 	tamalib_set_exec_mode(emulation_paused ? EXEC_MODE_PAUSE : EXEC_MODE_RUN);
+
+	/* Enable auto-power-off if needed */
+	if (!rom_loaded) {
+		job_schedule(&autooff_job, &autooff_job_fn, time_get() + MS_TO_MCU_TIME(AUTOOFF_PERIOD));
+	}
 }
 
 static void power_on(void)
@@ -1008,6 +1032,11 @@ static void ll_init(void)
 	board_init_irq();
 }
 
+static void autooff_job_fn(job_t *job)
+{
+	power_off();
+}
+
 static void autosave_job_fn(job_t *job)
 {
 	job_schedule(&autosave_job, &autosave_job_fn, time_get() + MS_TO_MCU_TIME(AUTOSAVE_PERIOD));
@@ -1106,7 +1135,7 @@ static void power_off_handler(input_t btn, input_state_t state, uint8_t long_pre
 {
 	if (is_vbus) {
 		/* Charge only mode */
-		turn_on_backlight(0);
+		user_feedback();
 	}
 
 	if (long_press && btn == INPUT_BTN_MIDDLE) {
@@ -1116,7 +1145,7 @@ static void power_off_handler(input_t btn, input_state_t state, uint8_t long_pre
 
 static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
-	turn_on_backlight(0);
+	user_feedback();
 
 	if (state == INPUT_STATE_HIGH && !long_press) {
 		disable_usb();
@@ -1134,7 +1163,7 @@ static void usb_mode_btn_handler(input_t btn, input_state_t state, uint8_t long_
 
 static void menu_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
-	turn_on_backlight(0);
+	user_feedback();
 
 	if (state == INPUT_STATE_HIGH) {
 		switch (btn) {
@@ -1158,7 +1187,7 @@ static void menu_btn_handler(input_t btn, input_state_t state, uint8_t long_pres
 
 static void default_btn_handler(input_t btn, input_state_t state, uint8_t long_press)
 {
-	turn_on_backlight(0);
+	user_feedback();
 
 	if (long_press) {
 		if (btn == INPUT_BTN_RIGHT) {
@@ -1184,7 +1213,7 @@ static void battery_charging_handler(input_state_t state)
 
 static void vbus_sensing_handler(input_state_t state)
 {
-	turn_on_backlight(0);
+	user_feedback();
 
 	is_vbus = (state == INPUT_STATE_HIGH);
 
@@ -1280,6 +1309,8 @@ int main(void)
 
 	/* Try to load the default ROM from the filesystem if it is not loaded */
 	if (!rom_is_loaded() && rom_load(DEFAULT_ROM_SLOT) < 0) {
+		job_schedule(&autooff_job, &autooff_job_fn, time_get() + MS_TO_MCU_TIME(AUTOOFF_PERIOD));
+
 		rom_loaded = 0;
 	} else {
 		/* TamaLIB must use an integer time base of at least 32768 Hz,
