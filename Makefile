@@ -10,16 +10,21 @@ TOOLCHAIN = $(ROOT)/toolchain/gcc-arm-none-eabi-10.3-2021.10
 # OpenOCD location
 OPENOCD_BIN = $(ROOT)/openocd/bin/openocd
 
+# dfu-util location
+DFUUTIL_BIN = dfu-util
+
 
 ifeq ($(BOARD), discovery_stm32f0)
 	FWCFG  += -DSTM32F072xB
 	MCU = STM32F0
 	LD_FILE ?= stm32f072xb.ld
 	OPENOCD_CFG_FILE = board/stm32f0discovery.cfg
+	FLASHTOOL = openocd
 else ifeq ($(BOARD), opentama)
 	FWCFG  += -DSTM32L072xx
 	MCU = STM32L0
 	LD_FILE ?= stm32l072xb.ld
+	FLASHTOOL = dfu-util
 endif
 
 BUILDDIR     = build/$(BOARD)
@@ -122,9 +127,19 @@ $(BUILDDIR)/%.hex: $(BUILDDIR)/%.out
 	@echo "[HEX $@]"
 	@$(HEX) $< $(BINOPTS) $@
 
+ifeq ($(FLASHTOOL), openocd)
 flash: $(BUILDDIR)/$(TARGET).out
 	@echo
 	@$(OPENOCD_BIN) -f $(OPENOCD_CFG_FILE) -c 'reset_config srst_only connect_assert_srst' -c init -c "reset halt" -c targets -c "poll off" -c "flash write_image erase $(BUILDDIR)/$(TARGET).out" -c "sleep 100" -c "reset run" -c shutdown
+else ifeq ($(FLASHTOOL), dfu-util)
+flash: $(BUILDDIR)/$(TARGET).out
+	@echo
+	@$(DFUUTIL_BIN) -a 0 -s 0x08000000:leave -D $(BUILDDIR)/$(TARGET).bin
+else
+flash:
+	@echo "I do not know how to flash this board !"
+	@echo
+endif
 
 clean:
 	rm -rf $(BUILDDIR)
