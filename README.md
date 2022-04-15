@@ -7,9 +7,9 @@ MCUGotchi is a Tamagotchi P1 emulator for microcontrollers relying on the hardwa
 
 ![STM32F072 Discovery Board](misc/screenshot.jpg)
 
-For the time being, MCUGotchi only supports the STM32F0 MCU from STMicroelectronics, more precisely the STM32F072 discovery board, with an SPI SSD1306 OLED screen connected to it, but it can basically run on any STM32F0 based board almost out of the box, and on any STM32 MCU with minor modifications.
+For the time being, MCUGotchi supports the STM32F0 MCU from STMicroelectronics, more precisely the STM32F072 discovery board, and the OpenTama board based on a STM32L072, with either an SPI SSD1306 OLED screen or an SPI UC1701x LCD screen connected to it, but it can basically run on any STM32F0/STM32L0 based board almost out of the box, and on any STM32 MCU with some modifications.
 
-The expected connections are the following:
+For the STM32F072 discovery board, the expected connections are the following:
 | Name            | PIN     |
 |-----------------|---------|
 | SSD1306 CLK PIN | PA5     |
@@ -29,8 +29,9 @@ MCUGotchi is also a good example of an embedded implementation of TamaLIB's abst
 
 MCUGotchi depends on several components:
 * the __GNU ARM Embedded Toolchain__, which can be downloaded [there](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)
-* __OpenOCD__, which can be installed using the package manager of your operating system, or built using a release package provided [there](https://sourceforge.net/projects/openocd/)
-* the __STM32Cube Library__, which is provided as submodule
+* __OpenOCD__, if you want to use ST-Link to flash your board, which can be installed using the package manager of your operating system, or built using a release package provided [there](https://sourceforge.net/projects/openocd/)
+* __dfu-util__, if you want to use the embedded DFU compliant bootloader of your board, which can be built following the instructions provided [there](http://dfu-util.sourceforge.net/)
+* the __STM32Cube Libraries__, which are provided as submodules
 * __TamaLIB__, which is also provided as submodule
 * a __Tamagotchi P1 ROM__, which can be downloaded from [there](https://www.planetemu.net/rom/mame-roms/tama) for instance
 * __Optional:__ __TamaTool__ to convert the binary ROM into a __.h__ file, which can be downloaded or built from [there](https://github.com/jcrona/tamatool)
