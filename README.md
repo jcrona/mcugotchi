@@ -25,7 +25,7 @@ For the STM32F072 discovery board, the expected connections are the following:
 
 MCUGotchi is also a good example of an embedded implementation of TamaLIB's abstraction layer.
 
-## Build instruction
+## Build instructions
 
 MCUGotchi depends on several components:
 * the __GNU ARM Embedded Toolchain__, which can be downloaded [there](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)
