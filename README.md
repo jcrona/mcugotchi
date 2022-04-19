@@ -71,4 +71,4 @@ To my knowledge, the ROM available online has been extracted from a high-res pic
 I would love to see the same work done on a P2 and add support for it in TamaLIB/MCUGotchi !
 
 __  
-Copyright (C) 2021 Jean-Christophe Rona
+Copyright (C) 2022 Jean-Christophe Rona
