@@ -1,9 +1,9 @@
 [submodule "libs/STM32CubeF0"]
 	path = libs/STM32CubeF0
-	url = https://github.com/STMicroelectronics/STM32CubeF0.git
+	url = https://github.com/jcrona/STM32CubeF0.git
 [submodule "libs/STM32CubeL0"]
 	path = libs/STM32CubeL0
-	url = https://github.com/STMicroelectronics/STM32CubeL0.git
+	url = https://github.com/jcrona/STM32CubeL0.git
 [submodule "src/lib"]
 	path = src/lib
 	url = https://github.com/jcrona/tamalib.git
