@@ -134,13 +134,13 @@ void state_save(uint8_t slot)
 
 	/* First 640 half bytes correspond to the RAM */
 	for (i = 0; i < MEM_RAM_SIZE; i++) {
-		ptr[i] = state->memory[i + MEM_RAM_ADDR] & 0xF;
+		ptr[i] = GET_RAM_MEMORY(state->memory, i + MEM_RAM_ADDR) & 0xF;
 	}
 	ptr += MEM_RAM_SIZE;
 
 	/* I/Os are from 0xF00 to 0xF7F */
 	for (i = 0; i < MEM_IO_SIZE; i++) {
-		ptr[i] = state->memory[i + MEM_IO_ADDR] & 0xF;
+		ptr[i] = GET_RAM_MEMORY(state->memory, i + MEM_IO_ADDR) & 0xF;
 	}
 	ptr += MEM_IO_SIZE;
 
@@ -263,13 +263,13 @@ void state_load(uint8_t slot)
 
 	/* First 640 half bytes correspond to the RAM */
 	for (i = 0; i < MEM_RAM_SIZE; i++) {
-		state->memory[i + MEM_RAM_ADDR] = ptr[i] & 0xF;
+		SET_RAM_MEMORY(state->memory, i + MEM_RAM_ADDR, ptr[i] & 0xF);
 	}
 	ptr += MEM_RAM_SIZE;
 
 	/* I/Os are from 0xF00 to 0xF7F */
 	for (i = 0; i < MEM_IO_SIZE; i++) {
-		state->memory[i + MEM_IO_ADDR] = ptr[i] & 0xF;
+		SET_RAM_MEMORY(state->memory, i + MEM_IO_ADDR, ptr[i] & 0xF);
 	}
 	ptr += MEM_IO_SIZE;
 
