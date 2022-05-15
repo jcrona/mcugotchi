@@ -345,43 +345,14 @@ static hal_t hal = {
 	.handler = &hal_handler,
 };
 
-static void draw_icon(uint8_t x, uint8_t y, uint8_t num, uint8_t v)
+static void draw_icon(uint8_t x, uint8_t y, uint8_t num, color_t color)
 {
 	uint8_t i, j;
 
-	if (v) {
-		for (j = 0; j < ICON_SIZE; j++) {
-			for (i = 0; i < ICON_SIZE; i++) {
-				if(icons[num][j][i]) {
-					SetPix(x + i, y + j);
-				}
-			}
-		}
-	} else {
-		for (j = 0; j < ICON_SIZE; j++) {
-			for (i = 0; i < ICON_SIZE; i++) {
-				if(icons[num][j][i]) {
-					ClrPix(x + i, y + j);
-				}
-			}
-		}
-	}
-}
-
-static void draw_square(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t v)
-{
-	uint8_t i, j;
-
-	if (v) {
-		for (j = 0; j < h; j++) {
-			for (i = 0; i < w; i++) {
-				SetPix(x + i, y + j);
-			}
-		}
-	} else {
-		for (j = 0; j < h; j++) {
-			for (i = 0; i < w; i++) {
-				ClrPix(x + i, y + j);
+	for (j = 0; j < ICON_SIZE; j++) {
+		for (i = 0; i < ICON_SIZE; i++) {
+			if(icons[num][j][i]) {
+				gfx_pixel(x + i, y + j, color);
 			}
 		}
 	}
@@ -393,15 +364,15 @@ static void draw_battery(uint8_t x, uint8_t y, uint8_t w, uint8_t thickness, uin
 	uint8_t i;
 
 	/* Body */
-	draw_square(x, y + thickness, thickness, h - thickness, 1);
-	draw_square(x + w - thickness, y + thickness, thickness, h - thickness, 1);
-	draw_square(x + thickness, y + thickness, w - thickness * 2, thickness, 1);
-	draw_square(x + thickness, y + h - thickness, w - thickness * 2, thickness, 1);
-	draw_square(x + w/4, y, w/2, thickness, 1);
+	gfx_square(x, y + thickness, thickness, h - thickness, COLOR_ON_BLACK);
+	gfx_square(x + w - thickness, y + thickness, thickness, h - thickness, COLOR_ON_BLACK);
+	gfx_square(x + thickness, y + thickness, w - thickness * 2, thickness, COLOR_ON_BLACK);
+	gfx_square(x + thickness, y + h - thickness, w - thickness * 2, thickness, COLOR_ON_BLACK);
+	gfx_square(x + w/4, y, w/2, thickness, COLOR_ON_BLACK);
 
 	/* Level */
 	for (i = 0; i < level; i++) {
-		draw_square(x + thickness + 1, y + h - thickness - (i + 1) * (level_thickness + 1), w - thickness * 2 - 2, level_thickness, 1);
+		gfx_square(x + thickness + 1, y + h - thickness - (i + 1) * (level_thickness + 1), w - thickness * 2 - 2, level_thickness, COLOR_ON_BLACK);
 	}
 }
 
@@ -420,8 +391,8 @@ static void draw_battery_full(uint8_t x, uint8_t y)
 	draw_battery(x, y, BATTERY_W, BATTERY_THICKNESS, BATTERY_LVL_THICKNESS, BATTERY_MAX_LEVEL, level);
 
 	if (is_charging) {
-		draw_square(x + BATTERY_W/2 - 2, y - 1 - 3 * 2, 2, 4, 1);
-		draw_square(x + BATTERY_W/2, y - 1 - 2 * 2, 2, 4, 1);
+		gfx_square(x + BATTERY_W/2 - 2, y - 1 - 3 * 2, 2, 4, COLOR_ON_BLACK);
+		gfx_square(x + BATTERY_W/2, y - 1 - 2 * 2, 2, 4, COLOR_ON_BLACK);
 	}
 }
 
@@ -433,7 +404,7 @@ static void tamalib_screen(void)
 	for (j = 0; j < LCD_HEIGHT; j++) {
 		for (i = 0; i < LCD_WIDTH; i++) {
 			if (matrix_buffer[j][i]) {
-				draw_square(i * PIXEL_SIZE + LCD_OFFET_X, j * PIXEL_SIZE + LCD_OFFET_Y, PIXEL_SIZE, PIXEL_SIZE, 1);
+				gfx_square(i * PIXEL_SIZE + LCD_OFFET_X, j * PIXEL_SIZE + LCD_OFFET_Y, PIXEL_SIZE, PIXEL_SIZE, COLOR_ON_BLACK);
 			}
 		}
 	}
@@ -441,40 +412,40 @@ static void tamalib_screen(void)
 	/* Icons */
 	for (i = 0; i < ICON_NUM; i++) {
 		if (icon_buffer[i]) {
-			draw_icon((i % 4) * ICON_STRIDE_X + ICON_OFFSET_X, (i / 4) * ICON_STRIDE_Y + ICON_OFFSET_Y, i, 1);
+			draw_icon((i % 4) * ICON_STRIDE_X + ICON_OFFSET_X, (i / 4) * ICON_STRIDE_Y + ICON_OFFSET_Y, i, COLOR_ON_BLACK);
 		}
 	}
 }
 
 static void please_wait_screen(void)
 {
-	ClrBuf();
+	gfx_clear();
 
-	PStr(PLEASE_WAIT_STR, PLEASE_WAIT_X, PLEASE_WAIT_Y, 1, PixNorm);
+	gfx_string(PLEASE_WAIT_STR, PLEASE_WAIT_X, PLEASE_WAIT_Y, 1, COLOR_ON_BLACK, BACKGROUND_ON);
 
-	PScrn();
+	gfx_print_screen();
 }
 
 static void autosaving_screen(void)
 {
-	ClrBuf();
+	gfx_clear();
 
-	PStr(AUTOSAVING_STR, AUTOSAVING_X, AUTOSAVING_Y, 1, PixNorm);
+	gfx_string(AUTOSAVING_STR, AUTOSAVING_X, AUTOSAVING_Y, 1, COLOR_ON_BLACK, BACKGROUND_ON);
 
-	PScrn();
+	gfx_print_screen();
 }
 
 static void no_rom_screen(void)
 {
-	PStr("No ROM found !", 0, 0, 0, PixNorm);
-	PStr("Connect me to a PC", 0, 16, 0, PixNorm);
+	gfx_string("No ROM found !", 0, 0, 0, COLOR_ON_BLACK, BACKGROUND_ON);
+	gfx_string("Connect me to a PC", 0, 16, 0, COLOR_ON_BLACK, BACKGROUND_ON);
 
 	/* Keep some space for the battery icon */
-	PStr("and copy a Tamagotchi", 0, 24, 0, PixNorm);
-	PStr("ROM named \"rom0.bin\".", 0, 32, 0, PixNorm);
+	gfx_string("and copy a Tamagotchi", 0, 24, 0, COLOR_ON_BLACK, BACKGROUND_ON);
+	gfx_string("ROM named \"rom0.bin\".", 0, 32, 0, COLOR_ON_BLACK, BACKGROUND_ON);
 
-	PStr("Once done, press any", 0, 48, 0, PixNorm);
-	PStr("button to continue.", 0, 56, 0, PixNorm);
+	gfx_string("Once done, press any", 0, 48, 0, COLOR_ON_BLACK, BACKGROUND_ON);
+	gfx_string("button to continue.", 0, 56, 0, COLOR_ON_BLACK, BACKGROUND_ON);
 }
 
 static void backlight_job_fn(job_t *job)
@@ -1059,7 +1030,7 @@ static void render_job_fn(job_t *job)
 		return;
 	}
 
-	ClrBuf();
+	gfx_clear();
 
 	if (!rom_loaded) {
 		no_rom_screen();
@@ -1068,9 +1039,9 @@ static void render_job_fn(job_t *job)
 	}
 
 	if (usb_enabled) {
-		PStr(USBON_STR, USBON_X, USBON_Y, 1, PixNorm);
+		gfx_string(USBON_STR, USBON_X, USBON_Y, 1, COLOR_ON_BLACK, BACKGROUND_ON);
 	} else if (emulation_paused) {
-		PStr(PAUSED_STR, PAUSED_X, PAUSED_Y, 1, PixNorm);
+		gfx_string(PAUSED_STR, PAUSED_X, PAUSED_Y, 1, COLOR_ON_BLACK, BACKGROUND_ON);
 	}
 
 	/* Battery */
@@ -1078,7 +1049,7 @@ static void render_job_fn(job_t *job)
 		draw_battery_full(BATTERY_ON_X, BATTERY_ON_Y);
 	}
 
-	PScrn();
+	gfx_print_screen();
 }
 
 static void cpu_job_fn(job_t *job)
@@ -1118,11 +1089,11 @@ static void battery_cb(uint16_t v)
 
 	if (power_off_mode) {
 		/* The device is "OFF", update the battery icon */
-		ClrBuf();
+		gfx_clear();
 
 		draw_battery_full(BATTERY_OFF_X, BATTERY_OFF_Y);
 
-		PScrn();
+		gfx_print_screen();
 	}
 
 	if (current_battery <= BATTERY_MIN && !power_off_mode) {
@@ -1292,8 +1263,8 @@ int main(void)
 	led_set(0, 0, 0);
 
 	/* Clear any remaining data in RAM */
-	ClrBuf();
-	PScrn();
+	gfx_clear();
+	gfx_print_screen();
 
 	please_wait_screen();
 

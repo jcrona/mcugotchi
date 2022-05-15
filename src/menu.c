@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdint.h>
+#include <stddef.h>
 
 #include "gfx.h"
 #include "menu.h"
@@ -73,23 +74,23 @@ void menu_draw(void)
 		top_item = current_item - ITEMS_ON_SCREEN + 1;
 	}
 
-	ClrBuf();
+	gfx_clear();
 
 	for (i = 0; i < ITEMS_ON_SCREEN; i++) {
 		if (current_menu[top_item + i].name == NULL) {
 			break;
 		}
 
-		x = PStr(current_menu[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+		x = gfx_string(current_menu[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? COLOR_OFF_WHITE : COLOR_ON_BLACK, BACKGROUND_ON);
 
 		if (current_menu[top_item + i].arg_cb != NULL) {
-			PStr(current_menu[top_item + i].arg_cb(top_item + i, &parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? PixInv : PixNorm);
+			gfx_string(current_menu[top_item + i].arg_cb(top_item + i, &parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? COLOR_OFF_WHITE : COLOR_ON_BLACK, BACKGROUND_ON);
 		}
 
 		y += MENU_ITEM_STRIDE_Y;
 	}
 
-	PScrn();
+	gfx_print_screen();
 }
 
 void menu_register(menu_item_t *menu)
@@ -115,8 +116,8 @@ void menu_open(void)
 
 void menu_close(void)
 {
-	ClrBuf();
-	PScrn();
+	gfx_clear();
+	gfx_print_screen();
 
 	is_visible = 0;
 }
