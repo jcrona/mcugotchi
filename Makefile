@@ -132,7 +132,7 @@ flash: $(BUILDDIR)/$(TARGET).out
 	@echo
 	@$(OPENOCD_BIN) -f $(OPENOCD_CFG_FILE) -c 'reset_config srst_only connect_assert_srst' -c init -c "reset halt" -c targets -c "poll off" -c "flash write_image erase $(BUILDDIR)/$(TARGET).out" -c "sleep 100" -c "reset run" -c shutdown
 else ifeq ($(FLASHTOOL), dfu-util)
-flash: $(BUILDDIR)/$(TARGET).out
+flash: $(BUILDDIR)/$(TARGET).bin
 	@echo
 	@$(DFUUTIL_BIN) -a 0 -s 0x08000000:leave -D $(BUILDDIR)/$(TARGET).bin
 else
