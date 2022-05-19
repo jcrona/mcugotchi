@@ -25,9 +25,11 @@
 
 #define MENU_OFFSET_X				0
 #define MENU_OFFSET_Y				0
+#define TEXT_OFFSET_X				1
+#define TEXT_OFFSET_Y				1
 #define MENU_ITEM_STRIDE_Y			16
 #define MENU_ITEM_SIZE				1
-#define ITEMS_ON_SCREEN				((64 - MENU_OFFSET_Y)/MENU_ITEM_STRIDE_Y)
+#define ITEMS_ON_SCREEN				((DISPLAY_HEIGHT - MENU_OFFSET_Y)/MENU_ITEM_STRIDE_Y)
 
 #define MAX_DEPTH				9
 
@@ -76,15 +78,17 @@ void menu_draw(void)
 
 	gfx_clear();
 
+	gfx_square(0, y + (current_item - top_item) * MENU_ITEM_STRIDE_Y, DISPLAY_WIDTH, MENU_ITEM_STRIDE_Y, COLOR_ON_BLACK);
+
 	for (i = 0; i < ITEMS_ON_SCREEN; i++) {
 		if (current_menu[top_item + i].name == NULL) {
 			break;
 		}
 
-		x = gfx_string(current_menu[top_item + i].name, MENU_OFFSET_X, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? COLOR_OFF_WHITE : COLOR_ON_BLACK, BACKGROUND_ON);
+		x = gfx_string(current_menu[top_item + i].name, MENU_OFFSET_X + TEXT_OFFSET_X, y + TEXT_OFFSET_Y, MENU_ITEM_SIZE, (top_item + i == current_item) ? COLOR_OFF_WHITE : COLOR_ON_BLACK, BACKGROUND_OFF);
 
 		if (current_menu[top_item + i].arg_cb != NULL) {
-			gfx_string(current_menu[top_item + i].arg_cb(top_item + i, &parents[current_depth]), x, y, MENU_ITEM_SIZE, (top_item + i == current_item) ? COLOR_OFF_WHITE : COLOR_ON_BLACK, BACKGROUND_ON);
+			gfx_string(current_menu[top_item + i].arg_cb(top_item + i, &parents[current_depth]), x, y + TEXT_OFFSET_Y, MENU_ITEM_SIZE, (top_item + i == current_item) ? COLOR_OFF_WHITE : COLOR_ON_BLACK, BACKGROUND_OFF);
 		}
 
 		y += MENU_ITEM_STRIDE_Y;
