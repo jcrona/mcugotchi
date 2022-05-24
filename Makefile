@@ -1,5 +1,5 @@
 # Board selection
-BOARD ?= discovery_stm32f0
+BOARD ?= opentama
 FWCFG += -DBOARD_IS_$(BOARD)
 
 ROOT = ../
