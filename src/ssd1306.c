@@ -91,6 +91,7 @@ void ssd1306_send_cmd_1b(uint8_t reg, uint8_t data)
 	gpio_clear(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 
 	spi_write(reg | data);
+	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 }
@@ -102,6 +103,7 @@ void ssd1306_send_cmd_2b(uint8_t reg, uint8_t data)
 
 	spi_write(reg);
 	spi_write(data);
+	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 }
@@ -114,6 +116,7 @@ void ssd1306_send_cmd_3b(uint8_t reg, uint8_t data1, uint8_t data2)
 	spi_write(reg);
 	spi_write(data1);
 	spi_write(data2);
+	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 }
@@ -128,6 +131,7 @@ void ssd1306_send_data(uint8_t *data, uint16_t length)
 	for (i = 0; i < length; i++) {
 		spi_write(data[i]);
 	}
+	time_delay(US_TO_MCU_TIME(1));
 
 	gpio_set(BOARD_SCREEN_NSS_PORT, BOARD_SCREEN_NSS_PIN);
 }
