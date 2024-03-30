@@ -58,6 +58,9 @@ void board_init(void)
 	g.Mode = GPIO_MODE_AF_PP;
 	g.Alternate = GPIO_AF0_SPI1;
 	HAL_GPIO_Init(BOARD_SCREEN_SCLK_PORT, &g);
+#if defined(BOARD_HAS_SSD1306) && defined(BOARD_SSD1306_NO_CS_PIN)
+	system_register_lp_pin(BOARD_SCREEN_SCLK_PORT, BOARD_SCREEN_SCLK_PIN);
+#endif
 
 	g.Pin = BOARD_SCREEN_MOSI_PIN;
 	g.Mode = GPIO_MODE_AF_PP;

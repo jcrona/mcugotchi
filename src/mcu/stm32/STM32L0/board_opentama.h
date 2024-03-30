@@ -21,6 +21,7 @@
 #define _BOARD_DEF_H_
 
 //#define BOARD_HAS_SSD1306
+//#define BOARD_SSD1306_NO_CS_PIN			// Define this if your SSD1306 module has no CS pin
 #define BOARD_HAS_UC1701X
 
 #define BOARD_SCREEN_SPI			SPI1
